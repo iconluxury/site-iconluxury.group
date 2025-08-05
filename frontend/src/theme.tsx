@@ -10,9 +10,9 @@ const theme = extendTheme({
   styles: {
     global: {
       "html, body": {
-        fontFamily: '"42dot Sans", "Helvetica", "Arial", sans-serif',
-        lineHeight: "1.7",
-        bg: "gray.50",
+        fontFamily: '"Arial", "Helvetica", sans-serif',
+        lineHeight: "1.6",
+        bg: "gray.50", // Light gray background for a clean look
         color: "gray.800",
         padding: "20px",
       },
@@ -25,30 +25,31 @@ const theme = extendTheme({
   },
   colors: {
     ui: {
-      main: "#FFD700", // Gold
-      secondary: "#FFF8E1", // Light cream
-      success: "#38A169", // Green
-      danger: "#E53E3E", // Red
-      light: "#FFFFFF", // White
-      dim: "#A0AEC0", // Light gray
+      main: "#1a6dcd", // Professional blue
+      secondary: "#e8ecef", // Light gray for secondary elements
+      success: "#2e7d32", // Muted green for success
+      danger: "#d32f2f", // Standard red for errors
+      light: "#ffffff", // White
+      dim: "#6b7280", // Muted gray for subtle elements
     },
   },
   shadows: {
-    card: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    card: "0 2px 8px rgba(0, 0, 0, 0.1)", // Subtle shadow for cards
   },
   components: {
     Heading: {
       baseStyle: {
         color: "gray.900",
-        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+        fontFamily: '"Arial", "Helvetica", sans-serif',
+        fontWeight: "600",
       },
     },
     Text: {
       baseStyle: {
         color: "gray.800",
-        fontSize: "sm",
-        fontWeight: "medium",
-        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+        fontSize: "md",
+        fontWeight: "normal",
+        fontFamily: '"Arial", "Helvetica", sans-serif',
       },
     },
     Code: {
@@ -56,22 +57,22 @@ const theme = extendTheme({
         bg: "gray.100",
         color: "gray.800",
         fontSize: "sm",
-        p: 3,
-        borderRadius: "md",
+        p: 2,
+        borderRadius: "4px",
       },
     },
     Button: {
       baseStyle: {
-        fontWeight: "bold",
-        borderRadius: "md",
-        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+        fontWeight: "600",
+        borderRadius: "4px",
+        fontFamily: '"Arial", "Helvetica", sans-serif',
       },
       variants: {
         primary: {
           backgroundColor: "ui.main",
-          color: "gray.800",
+          color: "white",
           _hover: {
-            backgroundColor: "#E6C200",
+            backgroundColor: "#155a9e", // Darker blue on hover
           },
           _disabled: {
             backgroundColor: "ui.main",
@@ -82,7 +83,7 @@ const theme = extendTheme({
           backgroundColor: "ui.secondary",
           color: "gray.800",
           _hover: {
-            backgroundColor: "#F5E1E1",
+            backgroundColor: "#d3d9df", // Slightly darker gray on hover
           },
           _disabled: {
             backgroundColor: "ui.secondary",
@@ -91,9 +92,9 @@ const theme = extendTheme({
         },
         danger: {
           backgroundColor: "ui.danger",
-          color: "ui.light",
+          color: "white",
           _hover: {
-            backgroundColor: "#E32727",
+            backgroundColor: "#b71c1c", // Darker red on hover
           },
         },
       },
@@ -108,7 +109,7 @@ const theme = extendTheme({
             color: "ui.dim",
             _selected: {
               color: "ui.main",
-              fontWeight: "bold",
+              fontWeight: "600",
               borderBottomColor: "ui.main",
               borderBottomWidth: "2px",
             },
@@ -124,47 +125,48 @@ const theme = extendTheme({
         container: {
           bg: "ui.light",
           color: "gray.700",
-          borderRadius: "md",
-          padding: "16px",
-          position: "absolute",
+          borderRadius: "4px",
+          padding: "12px",
+          position: "fixed",
           top: "20px",
           transform: "translateX(-50%)",
           minWidth: "300px",
           maxWidth: "90%",
-          fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
         },
       },
       variants: {
         error: {
           container: {
-            bg: "red.100",
+            bg: "red.50",
             color: "red.800",
             border: "1px solid",
-            borderColor: "red.300",
+            borderColor: "red.200",
           },
         },
         success: {
           container: {
-            bg: "green.100",
+            bg: "green.50",
             color: "green.800",
             border: "1px solid",
-            borderColor: "green.300",
+            borderColor: "green.200",
           },
         },
         info: {
           container: {
-            bg: "blue.100",
+            bg: "blue.50",
             color: "blue.800",
             border: "1px solid",
-            borderColor: "blue.300",
+            borderColor: "blue.200",
           },
         },
         warning: {
           container: {
-            bg: "yellow.100",
+            bg: "yellow.50",
             color: "yellow.800",
             border: "1px solid",
-            borderColor: "yellow.300",
+            borderColor: "yellow.200",
           },
         },
       },
