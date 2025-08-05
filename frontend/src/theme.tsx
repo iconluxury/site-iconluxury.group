@@ -12,31 +12,44 @@ const theme = extendTheme({
       "html, body": {
         fontFamily: '"Arial", "Helvetica", sans-serif',
         lineHeight: "1.6",
-        bg: "gray.50", // Light gray background for a clean look
-        color: "gray.800",
-        padding: "20px",
+        bg: "gray.50",
+        color: "gray.900",
+        padding: "24px",
       },
       ".sidebar": {
         bg: "gray.100",
         minHeight: "100vh",
-        p: 4,
+        p: 6,
+        borderRight: "1px solid",
+        borderColor: "gray.200",
       },
     },
   },
   colors: {
     ui: {
       main: "#1a6dcd", // Professional blue
-      secondary: "#e8ecef", // Light gray for secondary elements
-      success: "#2e7d32", // Muted green for success
-      danger: "#d32f2f", // Standard red for errors
+      secondary: "#e8ecef", // Light gray
+      success: "#2e7d32", // Muted green
+      danger: "#d32f2f", // Standard red
+      warning: "#d97706", // Professional amber
+      info: "#1e40af", // Darker blue for info
       light: "#ffffff", // White
-      dim: "#6b7280", // Muted gray for subtle elements
+      dim: "#6b7280", // Subtle gray
     },
   },
   shadows: {
-    card: "0 2px 8px rgba(0, 0, 0, 0.1)", // Subtle shadow for cards
+    card: "0 4px 12px rgba(0, 0, 0, 0.1)", // Softer, professional shadow
+    subtle: "0 2px 4px rgba(0, 0, 0, 0.05)",
   },
   components: {
+    Container: {
+      baseStyle: {
+        bg: "white",
+        borderRadius: "8px",
+        boxShadow: "subtle",
+        p: 6,
+      },
+    },
     Heading: {
       baseStyle: {
         color: "gray.900",
@@ -46,7 +59,7 @@ const theme = extendTheme({
     },
     Text: {
       baseStyle: {
-        color: "gray.800",
+        color: "gray.700",
         fontSize: "md",
         fontWeight: "normal",
         fontFamily: '"Arial", "Helvetica", sans-serif',
@@ -59,42 +72,56 @@ const theme = extendTheme({
         fontSize: "sm",
         p: 2,
         borderRadius: "4px",
+        fontFamily: '"Arial", "Helvetica", sans-serif',
       },
     },
     Button: {
       baseStyle: {
         fontWeight: "600",
-        borderRadius: "4px",
+        borderRadius: "6px",
         fontFamily: '"Arial", "Helvetica", sans-serif',
+        px: 4,
+        py: 2,
       },
       variants: {
         primary: {
-          backgroundColor: "ui.main",
+          bg: "ui.main",
           color: "white",
           _hover: {
-            backgroundColor: "#155a9e", // Darker blue on hover
+            bg: "#155a9e",
           },
           _disabled: {
-            backgroundColor: "ui.main",
-            opacity: 0.6,
+            bg: "ui.main",
+            opacity: 0.5,
           },
         },
         secondary: {
-          backgroundColor: "ui.secondary",
+          bg: "ui.secondary",
           color: "gray.800",
+          border: "1px solid",
+          borderColor: "gray.300",
           _hover: {
-            backgroundColor: "#d3d9df", // Slightly darker gray on hover
+            bg: "#d3d9df",
           },
           _disabled: {
-            backgroundColor: "ui.secondary",
-            opacity: 0.6,
+            bg: "ui.secondary",
+            opacity: 0.5,
           },
         },
         danger: {
-          backgroundColor: "ui.danger",
+          bg: "ui.danger",
           color: "white",
           _hover: {
-            backgroundColor: "#b71c1c", // Darker red on hover
+            bg: "#b71c1c",
+          },
+        },
+        outline: {
+          border: "1px solid",
+          borderColor: "ui.main",
+          color: "ui.main",
+          bg: "transparent",
+          _hover: {
+            bg: "ui.secondary",
           },
         },
       },
@@ -102,11 +129,141 @@ const theme = extendTheme({
         variant: "primary",
       },
     },
+    Input: {
+      baseStyle: {
+        field: {
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          fontSize: "md",
+          color: "gray.800",
+          bg: "white",
+          border: "1px solid",
+          borderColor: "gray.300",
+          borderRadius: "6px",
+          _hover: {
+            borderColor: "gray.400",
+          },
+          _focus: {
+            borderColor: "ui.main",
+            boxShadow: "0 0 0 1px #1a6dcd",
+          },
+        },
+      },
+    },
+    Select: {
+      baseStyle: {
+        field: {
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          fontSize: "md",
+          color: "gray.800",
+          bg: "white",
+          border: "1px solid",
+          borderColor: "gray.300",
+          borderRadius: "6px",
+          _hover: {
+            borderColor: "gray.400",
+          },
+          _focus: {
+            borderColor: "ui.main",
+            boxShadow: "0 0 0 1px #1a6dcd",
+          },
+        },
+      },
+    },
+    Table: {
+      baseStyle: {
+        th: {
+          bg: "gray.100",
+          color: "gray.800",
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          fontWeight: "600",
+          fontSize: "sm",
+          textTransform: "none",
+          letterSpacing: "normal",
+          p: 3,
+        },
+        td: {
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          fontSize: "sm",
+          color: "gray.700",
+          p: 3,
+          borderColor: "gray.200",
+        },
+      },
+    },
+    Card: {
+      baseStyle: {
+        container: {
+          bg: "white",
+          borderRadius: "8px",
+          boxShadow: "subtle",
+          border: "1px solid",
+          borderColor: "gray.200",
+        },
+        header: {
+          p: 4,
+          borderBottom: "1px solid",
+          borderColor: "gray.200",
+        },
+        body: {
+          p: 4,
+        },
+      },
+    },
+    Checkbox: {
+      baseStyle: {
+        control: {
+          borderColor: "gray.300",
+          _checked: {
+            bg: "ui.main",
+            borderColor: "ui.main",
+            _hover: {
+              bg: "#155a9e",
+              borderColor: "#155a9e",
+            },
+          },
+        },
+        label: {
+          fontFamily: '"Arial", "Helvetica", sans-serif',
+          fontSize: "md",
+          color: "gray.700",
+        },
+      },
+    },
+    Badge: {
+      baseStyle: {
+        fontFamily: '"Arial", "Helvetica", sans-serif',
+        fontSize: "sm",
+        fontWeight: "500",
+        borderRadius: "4px",
+        px: 2,
+        py: 1,
+      },
+      variants: {
+        teal: {
+          bg: "ui.main",
+          color: "white",
+        },
+      },
+    },
+    Tooltip: {
+      baseStyle: {
+        bg: "gray.700",
+        color: "white",
+        fontFamily: '"Arial", "Helvetica", sans-serif',
+        fontSize: "sm",
+        borderRadius: "4px",
+        px: 3,
+        py: 2,
+      },
+    },
     Tabs: {
       variants: {
         enclosed: {
           tab: {
             color: "ui.dim",
+            fontFamily: '"Arial", "Helvetica", sans-serif',
+            fontSize: "md",
+            fontWeight: "500",
             _selected: {
               color: "ui.main",
               fontWeight: "600",
@@ -114,7 +271,7 @@ const theme = extendTheme({
               borderBottomWidth: "2px",
             },
             _hover: {
-              color: "ui.secondary",
+              color: "ui.main",
             },
           },
         },
@@ -123,17 +280,20 @@ const theme = extendTheme({
     Toast: {
       baseStyle: {
         container: {
-          bg: "ui.light",
+          bg: "white",
           color: "gray.700",
-          borderRadius: "4px",
+          borderRadius: "6px",
           padding: "12px",
           position: "fixed",
           top: "20px",
+          left: "50%",
           transform: "translateX(-50%)",
           minWidth: "300px",
           maxWidth: "90%",
           fontFamily: '"Arial", "Helvetica", sans-serif',
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+          boxShadow: "card",
+          border: "1px solid",
+          borderColor: "gray.200",
         },
       },
       variants: {
@@ -141,7 +301,6 @@ const theme = extendTheme({
           container: {
             bg: "red.50",
             color: "red.800",
-            border: "1px solid",
             borderColor: "red.200",
           },
         },
@@ -149,7 +308,6 @@ const theme = extendTheme({
           container: {
             bg: "green.50",
             color: "green.800",
-            border: "1px solid",
             borderColor: "green.200",
           },
         },
@@ -157,7 +315,6 @@ const theme = extendTheme({
           container: {
             bg: "blue.50",
             color: "blue.800",
-            border: "1px solid",
             borderColor: "blue.200",
           },
         },
@@ -165,7 +322,6 @@ const theme = extendTheme({
           container: {
             bg: "yellow.50",
             color: "yellow.800",
-            border: "1px solid",
             borderColor: "yellow.200",
           },
         },
