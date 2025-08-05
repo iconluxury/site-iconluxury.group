@@ -26,12 +26,87 @@ import {
   CardHeader,
   Icon,
   SimpleGrid,
+  ChakraProvider,
+  extendTheme,
 } from '@chakra-ui/react';
-import { CloseIcon, SearchIcon } from '@chakra-ui/icons'; 
+import { CloseIcon, SearchIcon } from '@chakra-ui/icons';
 import { FaWarehouse } from 'react-icons/fa';
 import { createFileRoute } from '@tanstack/react-router';
 import * as XLSX from 'xlsx';
 import useCustomToast from '../hooks/useCustomToast';
+
+// Custom Chakra UI Theme
+const theme = extendTheme({
+  fonts: {
+    heading: 'Arial, sans-serif',
+    body: 'Arial, sans-serif',
+  },
+  colors: {
+    primary: {
+      50: '#EBF8FF',
+      100: '#BFDBFE',
+      200: '#93C5FD',
+      300: '#60A5FA',
+      400: '#3B82F6',
+      500: '#2563EB', // Main blue color replacing teal.500
+      600: '#1D4ED8',
+      700: '#1E40AF',
+      800: '#1E3A8A',
+      900: '#1E3A8A',
+    },
+  },
+  components: {
+    Button: {
+      baseStyle: {
+        fontFamily: 'Arial, sans-serif',
+      },
+      variants: {
+        solid: {
+          bg: 'primary.500',
+          color: 'white',
+          _hover: {
+            bg: 'primary.600',
+          },
+        },
+        outline: {
+          borderColor: 'primary.500',
+          color: 'primary.500',
+          _hover: {
+            bg: 'primary.50',
+          },
+        },
+      },
+    },
+    Checkbox: {
+      baseStyle: {
+        control: {
+          borderColor: 'primary.500',
+          _checked: {
+            bg: 'primary.500',
+            borderColor: 'primary.500',
+          },
+        },
+      },
+    },
+    Badge: {
+      variants: {
+        solid: {
+          bg: 'primary.500',
+          color: 'white',
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        fontFamily: 'Arial, sans-serif',
+        color: 'black',
+        bg: 'white',
+      },
+    },
+  },
+});
 
 // Shared Constants and Types
 type ColumnType = 'style' | 'brand' | 'category' | 'colorName' | 'msrp';
@@ -393,7 +468,7 @@ const GoogleImagesForm: React.FC = () => {
               <Text
                 key={s}
                 fontWeight={step === s.toLowerCase().replace('header selection', 'preview') ? 'bold' : 'normal'}
-                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'teal.500' : 'gray.500'}
+                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'primary.500' : 'gray.500'}
                 cursor={i < ['upload', 'preview', 'map', 'submit'].indexOf(step) ? 'pointer' : 'default'}
                 onClick={() => {
                   if (i < ['upload', 'preview', 'map', 'submit'].indexOf(step)) setStep(s.toLowerCase().replace('header selection', 'preview') as typeof step);
@@ -409,20 +484,20 @@ const GoogleImagesForm: React.FC = () => {
                 <Button
                   onClick={() => setStep(['upload', 'preview', 'map', 'submit'][['upload', 'preview', 'map', 'submit'].indexOf(step) - 1] as typeof step)}
                   variant="outline"
-                  colorScheme="gray"
+                  colorScheme="primary"
                   size="sm"
                 >
                   Back
                 </Button>
               )}
               {step === 'preview' && (
-                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="gray" size="sm">
+                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="primary" size="sm">
                   Back
                 </Button>
               )}
               {step !== 'submit' && (
                 <Button
-                  colorScheme="teal"
+                  colorScheme="primary"
                   onClick={() => setStep(['preview', 'map', 'submit'][['upload', 'preview', 'map'].indexOf(step)] as typeof step)}
                   size="sm"
                   isDisabled={step === 'map' && !validateForm.isValid}
@@ -431,7 +506,7 @@ const GoogleImagesForm: React.FC = () => {
                 </Button>
               )}
               {step === 'submit' && (
-                <Button colorScheme="teal" onClick={handleSubmit} isLoading={isLoading} size="sm">
+                <Button colorScheme="primary" onClick={handleSubmit} isLoading={isLoading} size="sm">
                   Submit
                 </Button>
               )}
@@ -495,7 +570,8 @@ const GoogleImagesForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -568,7 +644,7 @@ const GoogleImagesForm: React.FC = () => {
                     />
                   </Tooltip>
                   <Button
-                    colorScheme="teal"
+                    colorScheme="primary"
                     size="sm"
                     onClick={applyManualBrand}
                     isDisabled={!manualBrand.trim() || columnMapping.brand !== null}
@@ -582,7 +658,7 @@ const GoogleImagesForm: React.FC = () => {
                   )}
                 </HStack>
                 {isManualBrandApplied && (
-                  <Badge colorScheme="teal" mt={2}>
+                  <Badge colorScheme="primary" mt={2}>
                     Manual Brand Column Applied
                   </Badge>
                 )}
@@ -637,7 +713,8 @@ const GoogleImagesForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -675,7 +752,7 @@ const GoogleImagesForm: React.FC = () => {
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl>
                 <Checkbox
-                  colorScheme="teal"
+                  colorScheme="primary"
                   size="lg"
                   isChecked={isIconDistro}
                   onChange={e => setIsIconDistro(e.target.checked)}
@@ -725,7 +802,8 @@ const GoogleImagesForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -1020,7 +1098,7 @@ const DataWarehouseForm: React.FC = () => {
               <Text
                 key={s}
                 fontWeight={step === s.toLowerCase().replace('header selection', 'preview') ? 'bold' : 'normal'}
-                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'teal.500' : 'gray.500'}
+                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'primary.500' : 'gray.500'}
                 cursor={i < ['upload', 'preview', 'map', 'submit'].indexOf(step) ? 'pointer' : 'default'}
                 onClick={() => {
                   if (i < ['upload', 'preview', 'map', 'submit'].indexOf(step)) setStep(s.toLowerCase().replace('header selection', 'preview') as typeof step);
@@ -1036,20 +1114,20 @@ const DataWarehouseForm: React.FC = () => {
                 <Button
                   onClick={() => setStep(['upload', 'preview', 'map', 'submit'][['upload', 'preview', 'map', 'submit'].indexOf(step) - 1] as typeof step)}
                   variant="outline"
-                  colorScheme="gray"
+                  colorScheme="primary"
                   size="sm"
                 >
                   Back
                 </Button>
               )}
               {step === 'preview' && (
-                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="gray" size="sm">
+                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="primary" size="sm">
                   Back
                 </Button>
               )}
               {step !== 'submit' && (
                 <Button
-                  colorScheme="teal"
+                  colorScheme="primary"
                   onClick={() => setStep(['preview', 'map', 'submit'][['upload', 'preview', 'map'].indexOf(step)] as typeof step)}
                   size="sm"
                   isDisabled={step === 'map' && !validateForm.isValid}
@@ -1058,7 +1136,7 @@ const DataWarehouseForm: React.FC = () => {
                 </Button>
               )}
               {step === 'submit' && (
-                <Button colorScheme="teal" onClick={handleSubmit} isLoading={isLoading} size="sm">
+                <Button colorScheme="primary" onClick={handleSubmit} isLoading={isLoading} size="sm">
                   Submit
                 </Button>
               )}
@@ -1123,7 +1201,8 @@ const DataWarehouseForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -1235,7 +1314,7 @@ const DataWarehouseForm: React.FC = () => {
                     />
                   </Tooltip>
                   <Button
-                    colorScheme="teal"
+                    colorScheme="primary"
                     size="sm"
                     onClick={applyManualBrand}
                     isDisabled={!manualBrand.trim() || columnMapping.brand !== null}
@@ -1249,7 +1328,7 @@ const DataWarehouseForm: React.FC = () => {
                   )}
                 </HStack>
                 {isManualBrandApplied && (
-                  <Badge colorScheme="teal" mt={2}>
+                  <Badge colorScheme="primary" mt={2}>
                     Manual Brand Column Applied
                   </Badge>
                 )}
@@ -1265,7 +1344,8 @@ const DataWarehouseForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -1303,7 +1383,7 @@ const DataWarehouseForm: React.FC = () => {
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl>
                 <Checkbox
-                  colorScheme="teal"
+                  colorScheme="primary"
                   size="lg"
                   isChecked={isNewDistro}
                   onChange={e => setIsNewDistro(e.target.checked)}
@@ -1360,7 +1440,8 @@ const DataWarehouseForm: React.FC = () => {
                         bg="gray.100"
                         position="sticky"
                         top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid green' : undefined}
+                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                        borderColor="primary.500"
                       >
                         {header || `Column ${indexToColumnLetter(index)}`}
                       </Th>
@@ -1415,7 +1496,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card cursor="pointer" onClick={() => setSelectedType('images')}>
             <CardHeader>
               <HStack>
-                <Icon as={SearchIcon} boxSize={6} color="teal.500" />
+                <Icon as={SearchIcon} boxSize={6} color="primary.500" />
                 <Text fontSize="xl" fontWeight="bold">Scrape Google Images</Text>
               </HStack>
             </CardHeader>
@@ -1426,7 +1507,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card cursor="pointer" onClick={() => setSelectedType('data')}>
             <CardHeader>
               <HStack>
-                <Icon as={FaWarehouse} boxSize={6} color="teal.500" /> 
+                <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
                 <Text fontSize="xl" fontWeight="bold">Scrape Data Warehouse</Text>
               </HStack>
             </CardHeader>
@@ -1442,7 +1523,9 @@ const CMSGoogleSerpForm: React.FC = () => {
 
 // Export
 export const Route = createFileRoute('/google-serp-cms')({
-  component: CMSGoogleSerpForm,
+  component: () => (
+      <CMSGoogleSerpForm />
+  ),
 });
 
 export default CMSGoogleSerpForm;
