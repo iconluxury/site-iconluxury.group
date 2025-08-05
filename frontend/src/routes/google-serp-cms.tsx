@@ -532,14 +532,6 @@ const GoogleImagesForm: React.FC = () => {
               </Tooltip>
             </FormControl>
             {isLoading && <Spinner mt={4} />}
-            <Box fontSize="sm" lineHeight="short">
-              <Text fontWeight="bold" mb={2}>Required Fields</Text>
-              <Text>Style #: Used to search google</Text>
-              <Text>Brand</Text>
-              <Text fontWeight="bold" mt={4} mb={2}>Optional Fields (Excluded from Search Context)</Text>
-              <Text>Category</Text>
-              <Text>Color Name</Text>
-            </Box>
           </VStack>
         )}
 
@@ -1162,15 +1154,6 @@ const DataWarehouseForm: React.FC = () => {
               </Tooltip>
             </FormControl>
             {isLoading && <Spinner mt={4} />}
-            <Box fontSize="sm" lineHeight="short">
-              <Text fontWeight="bold" mb={2}>Required Fields</Text>
-              <Text>Style: Used to query database</Text>
-              <Text>MSRP: Target column for msrp</Text>
-              <Text fontWeight="bold" mt={4} mb={2}>Optional Fields (Excluded from Search Context) </Text>
-              <Text>Brand</Text>
-              <Text>Category</Text>
-              <Text>Color Name</Text>
-            </Box>
           </VStack>
         )}
 
