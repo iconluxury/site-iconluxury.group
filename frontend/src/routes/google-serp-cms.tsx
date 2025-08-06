@@ -460,44 +460,54 @@ const GoogleImagesForm: React.FC = () => {
         )}
 
         {step === 'preview' && (
-          <VStack spacing={4} align="stretch">
-            <HStack>
-              <Text>Select Header Row:</Text>
-              <Select
-                value={headerIndex}
-                onChange={e => handleHeaderChange(Number(e.target.value))}
-                w="150px"
-                aria-label="Select header row"
-              >
-                {rawData.slice(0, 10).map((_, index) => (
-                  <option key={index} value={index}>
-                    Row {index + 1} {index === headerIndex ? '(Selected)' : ''}
-                  </option>
-                ))}
-              </Select>
-            </HStack>
-            <Box overflowX="auto" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Thead>
-                  <Tr>
-                    {excelData.headers.map((header, index) => (
-                      <Th
-                        key={index}
-                        bg="gray.100"
-                        position="sticky"
-                        top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
-                        borderColor="primary.500"
-                      >
-                        {header || `Column ${indexToColumnLetter(index)}`}
-                      </Th>
-                    ))}
-                  </Tr>
-                </Thead>
-              </Table>
-            </Box>
-          </VStack>
-        )}
+  <VStack spacing={4} align="stretch">
+    <HStack>
+      <Text>Select Header Row:</Text>
+      <Select
+        value={headerIndex}
+        onChange={e => handleHeaderChange(Number(e.target.value))}
+        w="150px"
+        aria-label="Select header row"
+      >
+        {rawData.slice(0, 10).map((_, index) => (
+          <option key={index} value={index}>
+            Row {index + 1} {index === headerIndex ? '(Selected)' : ''}
+          </option>
+        ))}
+      </Select>
+    </HStack>
+    <Box overflowX="auto" borderWidth="1px" borderRadius="md" p={2}>
+      <Table size="sm">
+        <Tbody>
+          {rawData.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
+            <Tr
+              key={rowIndex}
+              bg={rowIndex === headerIndex ? 'primary.100' : undefined}
+              fontWeight={rowIndex === headerIndex ? 'bold' : 'normal'}
+            >
+              {row.map((cell, cellIndex) => (
+                <Td
+                  key={cellIndex}
+                  maxW="200px"
+                  isTruncated
+                  border={rowIndex === headerIndex ? '2px solid' : '1px solid'}
+                  borderColor={rowIndex === headerIndex ? 'primary.500' : 'gray.200'}
+                >
+                  {getDisplayValue(cell)}
+                </Td>
+              ))}
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      {rawData.length > MAX_PREVIEW_ROWS && (
+        <Text fontSize="sm" color="gray.600" mt={2}>
+          Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length} total rows
+        </Text>
+      )}
+    </Box>
+  </VStack>
+)}
 
   {step === 'map' && (
   <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="stretch" maxH="70vh" overflow="auto">
