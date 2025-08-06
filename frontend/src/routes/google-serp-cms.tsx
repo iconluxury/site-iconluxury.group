@@ -36,79 +36,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import * as XLSX from 'xlsx';
 import useCustomToast from '../hooks/useCustomToast';
 
-// Custom Chakra UI Theme
-const theme = extendTheme({
-  fonts: {
-    heading: 'Arial, sans-serif',
-    body: 'Arial, sans-serif',
-  },
-  colors: {
-    primary: {
-      50: '#EBF8FF',
-      100: '#BFDBFE',
-      200: '#93C5FD',
-      300: '#60A5FA',
-      400: '#3B82F6',
-      500: '#2563EB', // Main blue color replacing teal.500
-      600: '#1D4ED8',
-      700: '#1E40AF',
-      800: '#1E3A8A',
-      900: '#1E3A8A',
-    },
-  },
-  components: {
-    Button: {
-      baseStyle: {
-        fontFamily: 'Arial, sans-serif',
-      },
-      variants: {
-        solid: {
-          bg: 'primary.500',
-          color: 'white',
-          _hover: {
-            bg: 'primary.600',
-          },
-        },
-        outline: {
-          borderColor: 'primary.500',
-          color: 'primary.500',
-          _hover: {
-            bg: 'primary.50',
-          },
-        },
-      },
-    },
-    Checkbox: {
-      baseStyle: {
-        control: {
-          borderColor: 'primary.500',
-          _checked: {
-            bg: 'primary.500',
-            borderColor: 'primary.500',
-          },
-        },
-      },
-    },
-    Badge: {
-      variants: {
-        solid: {
-          bg: 'primary.500',
-          color: 'white',
-        },
-      },
-    },
-  },
-  styles: {
-    global: {
-      body: {
-        fontFamily: 'Arial, sans-serif',
-        color: 'black',
-        bg: 'white',
-      },
-    },
-  },
-});
-
 // Shared Constants and Types
 type ColumnType = 'style' | 'brand' | 'category' | 'colorName' | 'msrp';
 const SERVER_URL = 'https://external.iconluxury.group';
@@ -820,7 +747,7 @@ const DataWarehouseForm: React.FC = () => {
   const showToast: ToastFunction = useCustomToast();
 
   const REQUIRED_COLUMNS: ColumnType[] = ['style', 'msrp'];
-  const OPTIONAL_COLUMNS: ColumnType[] = ['brand', 'category', 'colorName'];
+  const OPTIONAL_COLUMNS: ColumnType[] = ['brand'];
   const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
 
   const handleFileChange = useCallback(
@@ -1162,7 +1089,7 @@ const DataWarehouseForm: React.FC = () => {
           </VStack>
         )}
 
-        {step === 'map' && (
+{step === 'map' && (
   <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="stretch" maxH="70vh" overflow="auto">
     <VStack gap={4} align="stretch" bg="gray.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
       {!validateForm.isValid && (
@@ -1209,7 +1136,79 @@ const DataWarehouseForm: React.FC = () => {
           </Box>
         </HStack>
       ))}
-      
+      <Text fontWeight="bold" mt={4}>Optional Columns</Text>
+      {OPTIONAL_COLUMNS.map(field => (
+        <HStack key={field} gap={2} align="center">
+          <Text w="120px">{field}:</Text>
+          <Tooltip label={`Select Excel column for ${field}`}>
+            <Select
+              value={columnMapping[field] !== null ? columnMapping[field]! : ''}
+              onChange={e => handleColumnMap(Number(e.target.value), field)}
+              placeholder="Unmapped"
+              aria-label={`Map ${field} column`}
+              flex="1"
+            >
+              <option value="">Unmapped</option>
+              {excelData.headers.map((header, index) => (
+                <option
+                  key={index}
+                  value={index}
+                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                >
+                  {header || `Column ${indexToColumnLetter(index)}`}
+                </option>
+              ))}
+            </Select>
+          </Tooltip>
+          {columnMapping[field] !== null && (
+            <Tooltip label="Clear mapping">
+              <IconButton
+                aria-label={`Clear ${field} mapping`}
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={() => handleClearMapping(columnMapping[field]!)}
+              />
+            </Tooltip>
+          )}
+          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+            {getColumnPreview(columnMapping[field], excelData.rows)}
+          </Box>
+        </HStack>
+      ))}
+      {columnMapping.brand === null && !isManualBrandApplied && (
+        <FormControl>
+          <HStack gap={2}>
+            <Text w="120px">Add Brand Column:</Text>
+            <Tooltip label="Enter a brand to apply to all rows">
+              <Input
+                placeholder="Add Brand for All Rows (Optional)"
+                value={manualBrand}
+                onChange={e => setManualBrand(e.target.value)}
+                aria-label="Manual brand input"
+                flex="1"
+              />
+            </Tooltip>
+            <Button
+              colorScheme="primary"
+              size="sm"
+              onClick={applyManualBrand}
+              isDisabled={!manualBrand.trim()}
+            >
+              Apply
+            </Button>
+            {isManualBrandApplied && (
+              <Button colorScheme="red" variant="outline" size="sm" onClick={removeManualBrand}>
+                Remove
+              </Button>
+            )}
+          </HStack>
+          {isManualBrandApplied && (
+            <Badge colorScheme="primary" mt={2}>
+              Manual Brand Column Applied
+            </Badge>
+          )}
+        </FormControl>
+      )}
     </VStack>
     <Box
       overflow="auto"
@@ -1261,7 +1260,6 @@ const DataWarehouseForm: React.FC = () => {
     </Box>
   </Flex>
 )}
-
         {step === 'submit' && (
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
