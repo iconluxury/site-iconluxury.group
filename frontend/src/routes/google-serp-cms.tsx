@@ -39,7 +39,7 @@ import useCustomToast from '../hooks/useCustomToast';
 // Shared Constants and Types
 type ColumnType = 'style' | 'brand' | 'category' | 'colorName' | 'msrp';
 const SERVER_URL = 'https://external.iconluxury.group';
-const MAX_PREVIEW_ROWS = 10;
+const MAX_PREVIEW_ROWS = 20;
 const MAX_FILE_SIZE_MB = 10;
 
 type CellValue = string | number | boolean | null;
