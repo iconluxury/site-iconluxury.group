@@ -220,7 +220,7 @@ const GoogleImagesForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [excelData, setExcelData] = useState<ExcelData>({ headers: [], rows: [] });
   const [rawData, setRawData] = useState<CellValue[][]>([]);
-  const [headerIndex, setHeaderIndex] = useState<number>(0);
+  const [headerIndex, setHeaderIndex] = useState<number>(1);
   const [columnMapping, setColumnMapping] = useState<ColumnMapping>({
     style: null,
     brand: null,
@@ -838,7 +838,7 @@ const DataWarehouseForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [excelData, setExcelData] = useState<ExcelData>({ headers: [], rows: [] });
   const [rawData, setRawData] = useState<CellValue[][]>([]);
-  const [headerIndex, setHeaderIndex] = useState<number>(0);
+  const [headerIndex, setHeaderIndex] = useState<number>(1);
   const [columnMapping, setColumnMapping] = useState<ColumnMapping>({
     style: null,
     brand: null,
