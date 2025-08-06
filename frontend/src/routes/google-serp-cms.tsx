@@ -233,7 +233,7 @@ const GoogleImagesForm: React.FC = () => {
   const showToast: ToastFunction = useCustomToast();
 
   const REQUIRED_COLUMNS: ColumnType[] = ['style', 'brand'];
-  const OPTIONAL_COLUMNS: ColumnType[] = ['category', 'colorName'];
+  const OPTIONAL_COLUMNS: ColumnType[] = ['category', 'colorName', 'msrp'];
   const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
 
   const handleFileChange = useCallback(
