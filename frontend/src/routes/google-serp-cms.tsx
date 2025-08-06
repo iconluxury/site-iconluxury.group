@@ -14,6 +14,7 @@ import {
   Tr,
   Th,
   Td,
+  Flex,
   Select,
   Spinner,
   Tooltip,
@@ -575,169 +576,177 @@ const GoogleImagesForm: React.FC = () => {
           </VStack>
         )}
 
-        {step === 'map' && (
-          <VStack spacing={4} align="stretch">
-            {!validateForm.isValid && (
-              <Text color="red.500" fontSize="sm" fontWeight="medium">
-                Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
-              </Text>
+  {step === 'map' && (
+  <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="stretch" maxH="70vh" overflow="auto">
+    <VStack gap={4} align="stretch" bg="gray.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
+      {!validateForm.isValid && (
+        <Text color="red.500" fontSize="sm" fontWeight="medium">
+          Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
+        </Text>
+      )}
+      <Text fontWeight="bold">Required Columns</Text>
+      {REQUIRED_COLUMNS.map(field => (
+        <HStack key={field} gap={2} align="center">
+          <Text w="120px">{field}:</Text>
+          <Tooltip label={`Select Excel column for ${field}`}>
+            <Select
+              value={columnMapping[field] !== null ? columnMapping[field]! : ''}
+              onChange={e => handleColumnMap(Number(e.target.value), field)}
+              placeholder="Unmapped"
+              aria-label={`Map ${field} column`}
+              flex="1"
+            >
+              <option value="">Unmapped</option>
+              {excelData.headers.map((header, index) => (
+                <option
+                  key={index}
+                  value={index}
+                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                >
+                  {header || `Column ${indexToColumnLetter(index)}`}
+                </option>
+              ))}
+            </Select>
+          </Tooltip>
+          {columnMapping[field] !== null && (
+            <Tooltip label="Clear mapping">
+              <IconButton
+                aria-label={`Clear ${field} mapping`}
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={() => handleClearMapping(columnMapping[field]!)}
+              />
+            </Tooltip>
+          )}
+          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+            {getColumnPreview(columnMapping[field], excelData.rows)}
+          </Box>
+        </HStack>
+      ))}
+      {columnMapping.brand === null && !isManualBrandApplied && (
+        <FormControl>
+          <HStack gap={2}>
+            <Text w="120px">Add Brand Column:</Text>
+            <Tooltip label="Enter a brand to apply to all rows">
+              <Input
+                placeholder="Add Brand for All Rows (Optional)"
+                value={manualBrand}
+                onChange={e => setManualBrand(e.target.value)}
+                aria-label="Manual brand input"
+                flex="1"
+              />
+            </Tooltip>
+            <Button
+              colorScheme="primary"
+              size="sm"
+              onClick={applyManualBrand}
+              isDisabled={!manualBrand.trim()}
+            >
+              Apply
+            </Button>
+            {isManualBrandApplied && (
+              <Button colorScheme="red" variant="outline" size="sm" onClick={removeManualBrand}>
+                Remove
+              </Button>
             )}
-            <VStack spacing={4} align="stretch" bg="gray.50" p={4} borderRadius="md">
-              <Text fontWeight="bold">Required Columns</Text>
-              {REQUIRED_COLUMNS.map(field => (
-                <HStack key={field} spacing={2} align="center">
-                  <Text w="150px">{field}:</Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={columnMapping[field] !== null ? columnMapping[field]! : ''}
-                      onChange={e => handleColumnMap(Number(e.target.value), field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
-                    >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
-                        >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() => handleClearMapping(columnMapping[field]!)}
-                      />
-                    </Tooltip>
-                  )}
-                  <Box w="200px" fontSize="sm" color="gray.600" isTruncated>
-                    {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
+          </HStack>
+          {isManualBrandApplied && (
+            <Badge colorScheme="primary" mt={2}>
+              Manual Brand Column Applied
+            </Badge>
+          )}
+        </FormControl>
+      )}
+      <Text fontWeight="bold" mt={4}>Optional Columns</Text>
+      {OPTIONAL_COLUMNS.map(field => (
+        <HStack key={field} gap={2} align="center">
+          <Text w="120px">{field}:</Text>
+          <Tooltip label={`Select Excel column for ${field}`}>
+            <Select
+              value={columnMapping[field] !== null ? columnMapping[field]! : ''}
+              onChange={e => handleColumnMap(Number(e.target.value), field)}
+              placeholder="Unmapped"
+              aria-label={`Map ${field} column`}
+              flex="1"
+            >
+              <option value="">Unmapped</option>
+              {excelData.headers.map((header, index) => (
+                <option
+                  key={index}
+                  value={index}
+                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                >
+                  {header || `Column ${indexToColumnLetter(index)}`}
+                </option>
               ))}
-              <FormControl>
-                <HStack spacing={2}>
-                  <Text w="150px">Manual Brand:</Text>
-                  <Tooltip label="Enter a brand to apply to all rows">
-                    <Input
-                      placeholder="Add Brand for All Rows (Optional)"
-                      value={manualBrand}
-                      onChange={e => setManualBrand(e.target.value)}
-                      disabled={columnMapping.brand !== null}
-                      aria-label="Manual brand input"
-                      flex="1"
-                    />
-                  </Tooltip>
-                  <Button
-                    colorScheme="primary"
-                    size="sm"
-                    onClick={applyManualBrand}
-                    isDisabled={!manualBrand.trim() || columnMapping.brand !== null}
-                  >
-                    Apply
-                  </Button>
-                  {isManualBrandApplied && (
-                    <Button colorScheme="red" variant="outline" size="sm" onClick={removeManualBrand}>
-                      Remove
-                    </Button>
-                  )}
-                </HStack>
-                {isManualBrandApplied && (
-                  <Badge colorScheme="primary" mt={2}>
-                    Manual Brand Column Applied
-                  </Badge>
-                )}
-              </FormControl>
-              <Text fontWeight="bold" mt={4}>Optional Columns</Text>
-              {OPTIONAL_COLUMNS.map(field => (
-                <HStack key={field} spacing={2} align="center">
-                  <Text w="150px">{field}:</Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={columnMapping[field] !== null ? columnMapping[field]! : ''}
-                      onChange={e => handleColumnMap(Number(e.target.value), field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
-                    >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
-                        >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() => handleClearMapping(columnMapping[field]!)}
-                      />
-                    </Tooltip>
-                  )}
-                  <Box w="200px" fontSize="sm" color="gray.600" isTruncated>
-                    {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
+            </Select>
+          </Tooltip>
+          {columnMapping[field] !== null && (
+            <Tooltip label="Clear mapping">
+              <IconButton
+                aria-label={`Clear ${field} mapping`}
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={() => handleClearMapping(columnMapping[field]!)}
+              />
+            </Tooltip>
+          )}
+          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+            {getColumnPreview(columnMapping[field], excelData.rows)}
+          </Box>
+        </HStack>
+      ))}
+    </VStack>
+    <Box
+      overflow="auto"
+      borderWidth="1px"
+      borderRadius="md"
+      p={2}
+      w={{ base: '100%', md: '60%' }}
+      maxH="70vh"
+      mt={{ base: 4, md: 0 }}
+    >
+      <Table size="sm">
+        <Thead>
+          <Tr>
+            {excelData.headers.map((header, index) => (
+              <Th
+                key={index}
+                bg="gray.100"
+                position="sticky"
+                top={0}
+                border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
+                borderColor="primary.500"
+              >
+                {header || `Column ${indexToColumnLetter(index)}`}
+              </Th>
+            ))}
+          </Tr>
+        </Thead>
+        <Tbody>
+          {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
+            <Tr key={rowIndex}>
+              {row.map((cell, cellIndex) => (
+                <Td
+                  key={cellIndex}
+                  maxW="200px"
+                  isTruncated
+                  bg={
+                    (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell
+                      ? 'red.100'
+                      : undefined
+                  }
+                >
+                  {getDisplayValue(cell)}
+                </Td>
               ))}
-            </VStack>
-            <Box overflowX="auto" maxH="40vh" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Thead>
-                  <Tr>
-                    {excelData.headers.map((header, index) => (
-                      <Th
-                        key={index}
-                        bg="gray.100"
-                        position="sticky"
-                        top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
-                        borderColor="primary.500"
-                      >
-                        {header || `Column ${indexToColumnLetter(index)}`}
-                      </Th>
-                    ))}
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                    <Tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <Td
-                          key={cellIndex}
-                          maxW="200px"
-                          isTruncated
-                          bg={
-                            (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell
-                              ? 'red.100'
-                              : undefined
-                          }
-                        >
-                          {getDisplayValue(cell)}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Box>
-          </VStack>
-        )}
-
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </Box>
+  </Flex>
+)}
         {step === 'submit' && (
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
