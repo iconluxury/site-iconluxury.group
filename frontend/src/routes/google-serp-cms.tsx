@@ -793,46 +793,6 @@ const GoogleImagesForm: React.FC = () => {
                 </Tbody>
               </Table>
             </VStack>
-            <Box overflowX="auto" maxH="40vh" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Thead>
-                  <Tr>
-                    {excelData.headers.map((header, index) => (
-                      <Th
-                        key={index}
-                        bg="gray.100"
-                        position="sticky"
-                        top={0}
-                        border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
-                        borderColor="primary.500"
-                      >
-                        {header || `Column ${indexToColumnLetter(index)}`}
-                      </Th>
-                    ))}
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                    <Tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <Td
-                          key={cellIndex}
-                          maxW="200px"
-                          isTruncated
-                          bg={
-                            (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell
-                              ? 'red.100'
-                              : undefined
-                          }
-                        >
-                          {getDisplayValue(cell)}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Box>
           </VStack>
         )}
       </VStack>
