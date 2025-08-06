@@ -469,7 +469,7 @@ const GoogleImagesForm: React.FC = () => {
         w="150px"
         aria-label="Select header row"
       >
-        {rawData.slice(0, 10).map((_, index) => (
+        {rawData.slice(0, 20).map((_, index) => (
           <option key={index} value={index}>
             Row {index + 1} {index === headerIndex ? '(Selected)' : ''}
           </option>
