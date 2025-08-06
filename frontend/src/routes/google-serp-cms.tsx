@@ -1341,7 +1341,7 @@ const DataWarehouseForm: React.FC = () => {
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
-              <FormControl>
+              {/* <FormControl>
                 <Checkbox
                   colorScheme="primary"
                   size="lg"
@@ -1353,7 +1353,7 @@ const DataWarehouseForm: React.FC = () => {
                 <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
                   If not selected, results will be populate uploaded file.
                 </Text>
-              </FormControl>
+              </FormControl> */}
               <HStack>
                 <Text>Currency:</Text>
                 <Select value={currency} onChange={e => setCurrency(e.target.value as 'USD' | 'EUR')} w="100px">
