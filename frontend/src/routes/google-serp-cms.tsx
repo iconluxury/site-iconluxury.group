@@ -1213,78 +1213,7 @@ const DataWarehouseForm: React.FC = () => {
           </Box>
         </HStack>
       ))}
-      <Text fontWeight="bold" mt={4}>Optional Columns</Text>
-      {OPTIONAL_COLUMNS.map(field => (
-        <HStack key={field} gap={2} align="center">
-          <Text w="120px">{field}:</Text>
-          <Tooltip label={`Select Excel column for ${field}`}>
-            <Select
-              value={columnMapping[field] !== null ? columnMapping[field]! : ''}
-              onChange={e => handleColumnMap(Number(e.target.value), field)}
-              placeholder="Unmapped"
-              aria-label={`Map ${field} column`}
-              flex="1"
-            >
-              <option value="">Unmapped</option>
-              {excelData.headers.map((header, index) => (
-                <option
-                  key={index}
-                  value={index}
-                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
-                >
-                  {header || `Column ${indexToColumnLetter(index)}`}
-                </option>
-              ))}
-            </Select>
-          </Tooltip>
-          {columnMapping[field] !== null && (
-            <Tooltip label="Clear mapping">
-              <IconButton
-                aria-label={`Clear ${field} mapping`}
-                icon={<CloseIcon />}
-                size="sm"
-                onClick={() => handleClearMapping(columnMapping[field]!)}
-              />
-            </Tooltip>
-          )}
-          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
-            {getColumnPreview(columnMapping[field], excelData.rows)}
-          </Box>
-        </HStack>
-      ))}
-      <FormControl>
-        <HStack gap={2}>
-          <Text w="120px">Manual Brand:</Text>
-          <Tooltip label="Enter a brand to apply to all rows">
-            <Input
-              placeholder="Add Brand for All Rows (Optional)"
-              value={manualBrand}
-              onChange={e => setManualBrand(e.target.value)}
-              disabled={columnMapping.brand !== null}
-              aria-label="Manual brand input"
-              flex="1"
-            />
-          </Tooltip>
-          <Button
-            colorScheme="primary"
-            size="sm"
-            onClick={applyManualBrand}
-            isDisabled={!manualBrand.trim() || columnMapping.brand !== null}
-          >
-            Apply
-          </Button>
-          {isManualBrandApplied && (
-            <Button colorScheme="red" variant="outline" size="sm" onClick={removeManualBrand}>
-              Remove
-            </Button>
-          )}
-        </HStack>
-        {isManualBrandApplied && (
-          <Badge colorScheme="primary" mt={2}>
-            Manual Brand Column Applied
-          </Badge>
-        )}
-      </FormControl>
+      
     </VStack>
     <Box
       overflow="auto"
@@ -1341,19 +1270,6 @@ const DataWarehouseForm: React.FC = () => {
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
-              {/* <FormControl>
-                <Checkbox
-                  colorScheme="primary"
-                  size="lg"
-                  isChecked={isNewDistro}
-                  onChange={e => setIsNewDistro(e.target.checked)}
-                >
-                  Output as New Distro
-                </Checkbox>
-                <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
-                  If not selected, results will be populate uploaded file.
-                </Text>
-              </FormControl> */}
               <HStack>
                 <Text>Currency:</Text>
                 <Select value={currency} onChange={e => setCurrency(e.target.value as 'USD' | 'EUR')} w="100px">
