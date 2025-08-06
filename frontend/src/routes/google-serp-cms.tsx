@@ -875,15 +875,7 @@ const DataWarehouseForm: React.FC = () => {
         const headers = (jsonData[detectedHeaderIndex] as any[]).map(cell => String(cell ?? ''));
         const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][];
         setExcelData({ headers, rows });
-        setColumnMapping({
-          style: null,
-          brand: null,
-          category: null,
-          colorName: null,
-          msrp: null,
-          readImage: null,
-          imageAdd: null,
-        });
+        setColumnMapping(autoMapColumns(headers));
         setStep('preview');
       } catch (error) {
         showToast('File Processing Error', error instanceof Error ? error.message : 'Unknown error', 'error');
@@ -902,15 +894,7 @@ const DataWarehouseForm: React.FC = () => {
       const headers = rawData[newHeaderIndex].map(cell => String(cell ?? ''));
       const rows = rawData.slice(newHeaderIndex + 1) as CellValue[][];
       setExcelData({ headers, rows });
-      setColumnMapping({
-          style: null,
-          brand: null,
-          category: null,
-          colorName: null,
-          msrp: null,
-          readImage: null,
-          imageAdd: null,
-        });
+      setColumnMapping(autoMapColumns(headers));
       setIsManualBrandApplied(false);
       setManualBrand('');
     },
