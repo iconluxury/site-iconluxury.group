@@ -1343,7 +1343,7 @@ const DataWarehouseForm: React.FC = () => {
                   Output as New Distro
                 </Checkbox>
                 <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
-                  If not selected, results will be populated into the uploaded file.
+                  If not selected, results will be populate uploaded file.
                 </Text>
               </FormControl>
               <HStack>
