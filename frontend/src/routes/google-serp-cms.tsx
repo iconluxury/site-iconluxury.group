@@ -190,8 +190,6 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
   const patterns = {
     style: /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
     brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
-    category: /^(category|type|product\s*type|group)/i,
-    colorName: /^(color|colour\s*$|color\s*name|colour\s*name)/i,
     msrp: /^(msrp|manufacturer\s*suggested\s*retail\s*price|list\s*price|suggested\s*retail)/i,
     image: /^(image|photo|picture|img|readImage|imageAdd)/i,
   };
@@ -200,8 +198,6 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
     if (!normalizedHeader) return;
     if (patterns.style.test(normalizedHeader) && mapping.style === null) mapping.style = index;
     else if (patterns.brand.test(normalizedHeader) && mapping.brand === null) mapping.brand = index;
-    else if (patterns.category.test(normalizedHeader) && mapping.category === null) mapping.category = index;
-    else if (patterns.colorName.test(normalizedHeader) && mapping.colorName === null) mapping.colorName = index;
     else if (patterns.msrp.test(normalizedHeader) && mapping.msrp === null) mapping.msrp = index;
     else if (patterns.image.test(normalizedHeader) && mapping.readImage === null && mapping.imageAdd === null) {
       mapping.readImage = index;
