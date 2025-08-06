@@ -881,7 +881,7 @@ const DataWarehouseForm: React.FC = () => {
         const workbook = XLSX.read(data, { type: 'array' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         if (!worksheet) throw new Error('No worksheet found');
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: true, defval: '' });
         if (jsonData.length === 0) throw new Error('Excel file is empty');
 
         const detectedHeaderIndex = detectHeaderRow(jsonData as CellValue[][]);
