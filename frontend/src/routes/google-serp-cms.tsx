@@ -156,6 +156,7 @@ const GoogleImagesForm: React.FC = () => {
   });
   const [manualBrand, setManualBrand] = useState('');
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false);
+  const [skipDataWarehouse, setSkipDataWarehouse] = useState(false);
   const [isIconDistro, setIsIconDistro] = useState(false);
   const showToast: ToastFunction = useCustomToast();
 
@@ -318,7 +319,7 @@ const GoogleImagesForm: React.FC = () => {
     };
   }, [columnMapping, isManualBrandApplied, file, excelData.rows.length]);
 
-  const handleSubmit = useCallback(async () => {
+const handleSubmit = useCallback(async () => {
     if (!validateForm.isValid) {
       showToast('Validation Error', `Missing required columns: ${validateForm.missing.join(', ')}`, 'warning');
       return;
@@ -350,6 +351,7 @@ const GoogleImagesForm: React.FC = () => {
     formData.append('header_index', String(headerIndex + 1));
     formData.append('sendToEmail', 'nik@luxurymarket.com');
     formData.append('isIconDistro', String(isIconDistro));
+    formData.append('skipDataWarehouse', String(skipDataWarehouse)); // Add new parameter
 
     try {
       const response = await fetch(`${SERVER_URL}/submitImage`, {
@@ -379,6 +381,7 @@ const GoogleImagesForm: React.FC = () => {
     isManualBrandApplied,
     headerIndex,
     isIconDistro,
+    skipDataWarehouse, // Add to dependencies
     showToast,
     excelData,
   ]);
@@ -680,7 +683,7 @@ const GoogleImagesForm: React.FC = () => {
     </Box>
   </Flex>
 )}
-        {step === 'submit' && (
+       {step === 'submit' && (
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
@@ -695,6 +698,19 @@ const GoogleImagesForm: React.FC = () => {
                 </Checkbox>
                 <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
                   If not selected, results will be populated into the uploaded file.
+                </Text>
+              </FormControl>
+              <FormControl>
+                <Checkbox
+                  colorScheme="primary"
+                  size="lg"
+                  isChecked={skipDataWarehouse}
+                  onChange={e => setSkipDataWarehouse(e.target.checked)}
+                >
+                  Skip Data Warehouse Processing
+                </Checkbox>
+                <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
+                  If selected, data will not be processed for the data warehouse.
                 </Text>
               </FormControl>
               <Text>Mapped Columns:</Text>
@@ -732,7 +748,6 @@ const GoogleImagesForm: React.FC = () => {
     </Container>
   );
 };
-
 // Data Warehouse Form Component
 const DataWarehouseForm: React.FC = () => {
   const [step, setStep] = useState<'upload' | 'preview' | 'map' | 'submit'>('upload');
