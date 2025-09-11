@@ -213,7 +213,7 @@ const GoogleImagesForm: React.FC = () => {
         const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][];
         setExcelData({ headers, rows });
         setColumnMapping(autoMapColumns(headers));
-        setColumnMapping(prev => ({ ...prev, readImage: 0 }));
+        setColumnMapping(prev => ({ ...prev, readImage: 0, imageAdd: 0 }));
         setStep('preview');
       } catch (error) {
         showToast('File Processing Error', error instanceof Error ? error.message : 'Unknown error', 'error');
@@ -233,7 +233,6 @@ const GoogleImagesForm: React.FC = () => {
       const rows = rawData.slice(newHeaderIndex + 1) as CellValue[][];
       setExcelData({ headers, rows });
       setColumnMapping(autoMapColumns(headers));
-      setColumnMapping(prev => ({ ...prev, readImage: 0 }));
       setIsManualBrandApplied(false);
       setManualBrand('');
     },
