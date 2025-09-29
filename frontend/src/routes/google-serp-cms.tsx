@@ -235,6 +235,7 @@ const GoogleImagesForm: React.FC = () => {
       setColumnMapping(autoMapColumns(headers));
       setIsManualBrandApplied(false);
       setManualBrand('');
+      setActiveMappingField(null);
     },
     [rawData]
   );
@@ -262,6 +263,15 @@ const GoogleImagesForm: React.FC = () => {
     []
   );
 
+  const handleColumnMapFromGrid = useCallback(
+    (index: number) => {
+      if (activeMappingField === null) return;
+      handleColumnMap(index, activeMappingField);
+      setActiveMappingField(null);
+    },
+    [activeMappingField, handleColumnMap]
+  );
+
   const handleClearMapping = useCallback(
     (index: number) => {
       setColumnMapping(prev => {
@@ -281,6 +291,16 @@ const GoogleImagesForm: React.FC = () => {
     []
   );
 
+  const mappedColumns = useMemo(
+    () =>
+      new Set(
+        (Object.values(columnMapping).filter((value): value is number => typeof value === 'number') as number[])
+      ),
+    [columnMapping]
+  );
+
+  const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null;
+
   const applyManualBrand = useCallback(() => {
     if (!manualBrand.trim()) {
       showToast('Manual Brand Error', 'Please enter a non-empty brand name', 'warning');
@@ -298,6 +318,7 @@ const GoogleImagesForm: React.FC = () => {
     });
     showToast('Success', `Manual brand "${manualBrand.trim()}" applied`, 'success');
     setManualBrand('');
+    setActiveMappingField(null);
   }, [manualBrand, showToast]);
 
   const removeManualBrand = useCallback(() => {
@@ -308,6 +329,7 @@ const GoogleImagesForm: React.FC = () => {
     setColumnMapping(prev => ({ ...prev, brand: null }));
     setIsManualBrandApplied(false);
     showToast('Success', 'Manual brand removed', 'success');
+    setActiveMappingField(null);
   }, [showToast]);
 
   const validateForm = useMemo(() => {
@@ -488,6 +510,10 @@ const handleSubmit = useCallback(async () => {
               key={rowIndex}
               bg={rowIndex === headerIndex ? 'primary.100' : undefined}
               fontWeight={rowIndex === headerIndex ? 'bold' : 'normal'}
+              cursor="pointer"
+              onClick={() => handleHeaderChange(rowIndex)}
+              role="button"
+              _hover={{ bg: rowIndex === headerIndex ? 'primary.200' : 'primary.50' }}
             >
               {row.map((cell, cellIndex) => (
                 <Td
@@ -521,14 +547,32 @@ const handleSubmit = useCallback(async () => {
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
         </Text>
       )}
+      <Text fontSize="sm" color="gray.600">
+        Select a field below, then click a column in the preview grid to map it instantly.
+      </Text>
       <Text fontWeight="bold">Required Columns</Text>
       {REQUIRED_COLUMNS.map(field => (
-        <HStack key={field} gap={2} align="center">
-          <Text w="120px">{field}:</Text>
+        <HStack
+          key={field}
+          gap={2}
+          align="center"
+          p={2}
+          borderRadius="md"
+          borderWidth={activeMappingField === field ? '2px' : '1px'}
+          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
+          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          cursor="pointer"
+          onClick={() => setActiveMappingField(field)}
+        >
+          <Text w="120px" fontWeight="semibold">
+            {field}:
+          </Text>
           <Tooltip label={`Select Excel column for ${field}`}>
             <Select
               value={columnMapping[field] !== null ? columnMapping[field]! : ''}
               onChange={e => handleColumnMap(Number(e.target.value), field)}
+              onFocus={() => setActiveMappingField(field)}
+              onClick={() => setActiveMappingField(field)}
               placeholder="Unmapped"
               aria-label={`Map ${field} column`}
               flex="1"
@@ -538,7 +582,7 @@ const handleSubmit = useCallback(async () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -596,12 +640,27 @@ const handleSubmit = useCallback(async () => {
       )}
       <Text fontWeight="bold" mt={4}>Optional Columns</Text>
       {OPTIONAL_COLUMNS.map(field => (
-        <HStack key={field} gap={2} align="center">
-          <Text w="120px">{field}:</Text>
+        <HStack
+          key={field}
+          gap={2}
+          align="center"
+          p={2}
+          borderRadius="md"
+          borderWidth={activeMappingField === field ? '2px' : '1px'}
+          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
+          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          cursor="pointer"
+          onClick={() => setActiveMappingField(field)}
+        >
+          <Text w="120px" fontWeight="semibold">
+            {field}:
+          </Text>
           <Tooltip label={`Select Excel column for ${field}`}>
             <Select
               value={columnMapping[field] !== null ? columnMapping[field]! : ''}
               onChange={e => handleColumnMap(Number(e.target.value), field)}
+              onFocus={() => setActiveMappingField(field)}
+              onClick={() => setActiveMappingField(field)}
               placeholder="Unmapped"
               aria-label={`Map ${field} column`}
               flex="1"
@@ -611,7 +670,7 @@ const handleSubmit = useCallback(async () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -646,37 +705,65 @@ const handleSubmit = useCallback(async () => {
       <Table size="sm">
         <Thead>
           <Tr>
-            {excelData.headers.map((header, index) => (
-              <Th
-                key={index}
-                bg="gray.100"
-                position="sticky"
-                top={0}
-                border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
-                borderColor="primary.500"
-              >
-                {header || `Column ${indexToColumnLetter(index)}`}
-              </Th>
-            ))}
+            {excelData.headers.map((header, index) => {
+              const isMapped = mappedColumns.has(index);
+              const isSelected = selectedColumnIndex === index;
+              return (
+                <Th
+                  key={index}
+                  bg={isSelected ? 'primary.100' : isMapped ? 'gray.200' : 'gray.100'}
+                  position="sticky"
+                  top={0}
+                  border={isMapped ? '2px solid' : undefined}
+                  borderColor="primary.500"
+                  cursor={activeMappingField ? 'pointer' : 'default'}
+                  onClick={() => handleColumnMapFromGrid(index)}
+                  tabIndex={activeMappingField ? 0 : undefined}
+                  onKeyDown={event => {
+                    if (!activeMappingField) return;
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleColumnMapFromGrid(index);
+                    }
+                  }}
+                  role={activeMappingField ? 'button' : undefined}
+                  aria-pressed={isSelected}
+                  _hover={activeMappingField ? { bg: isSelected ? 'primary.200' : 'primary.100' } : undefined}
+                >
+                  {header || `Column ${indexToColumnLetter(index)}`}
+                </Th>
+              );
+            })}
           </Tr>
         </Thead>
         <Tbody>
           {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
             <Tr key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <Td
-                  key={cellIndex}
-                  maxW="200px"
-                  isTruncated
-                  bg={
-                    (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell
-                      ? 'red.100'
-                      : undefined
-                  }
-                >
-                  {getDisplayValue(cell)}
-                </Td>
-              ))}
+              {row.map((cell, cellIndex) => {
+                const isMissingRequired =
+                  (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell;
+                const isSelectedColumn = selectedColumnIndex === cellIndex;
+                const isMappedColumn = mappedColumns.has(cellIndex);
+                const bgColor = isMissingRequired
+                  ? 'red.100'
+                  : isSelectedColumn
+                    ? 'primary.50'
+                    : isMappedColumn
+                      ? 'gray.50'
+                      : undefined;
+                return (
+                  <Td
+                    key={cellIndex}
+                    maxW="200px"
+                    isTruncated
+                    bg={bgColor}
+                    cursor={activeMappingField ? 'pointer' : 'default'}
+                    onClick={() => handleColumnMapFromGrid(cellIndex)}
+                  >
+                    {getDisplayValue(cell)}
+                  </Td>
+                );
+              })}
             </Tr>
           ))}
         </Tbody>
@@ -766,6 +853,7 @@ const DataWarehouseForm: React.FC = () => {
     readImage: null,
     imageAdd: null,
   });
+  const [activeMappingField, setActiveMappingField] = useState<ColumnType | null>(null);
   const [manualBrand, setManualBrand] = useState('');
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false);
   const [isNewDistro, setIsNewDistro] = useState(false);
@@ -846,6 +934,7 @@ const DataWarehouseForm: React.FC = () => {
       setColumnMapping(autoMapColumns(headers));
       setIsManualBrandApplied(false);
       setManualBrand('');
+      setActiveMappingField(null);
     },
     [rawData]
   );
@@ -873,6 +962,15 @@ const DataWarehouseForm: React.FC = () => {
     []
   );
 
+  const handleColumnMapFromGrid = useCallback(
+    (index: number) => {
+      if (activeMappingField === null) return;
+      handleColumnMap(index, activeMappingField);
+      setActiveMappingField(null);
+    },
+    [activeMappingField, handleColumnMap]
+  );
+
   const handleClearMapping = useCallback(
     (index: number) => {
       setColumnMapping(prev => {
@@ -891,6 +989,16 @@ const DataWarehouseForm: React.FC = () => {
     },
     []
   );
+
+  const mappedColumns = useMemo(
+    () =>
+      new Set(
+        (Object.values(columnMapping).filter((value): value is number => typeof value === 'number') as number[])
+      ),
+    [columnMapping]
+  );
+
+  const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null;
 
   const applyManualBrand = useCallback(() => {
     if (!manualBrand.trim()) {
