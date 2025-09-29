@@ -413,15 +413,15 @@ const handleSubmit = useCallback(async () => {
   ]);
 
   return (
-    <Container maxW="container.xl" p={4} bg="white" color="black">
+    <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
-        <HStack justify="space-between" bg="gray.50" p={2} borderRadius="md" align="center">
+        <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center">
           <HStack spacing={4}>
             {['Upload', 'Header Selection', 'Map', 'Submit'].map((s, i) => (
               <Text
                 key={s}
                 fontWeight={step === s.toLowerCase().replace('header selection', 'preview') ? 'bold' : 'normal'}
-                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'primary.500' : 'gray.500'}
+                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'brand.600' : 'subtle'}
                 cursor={i < ['upload', 'preview', 'map', 'submit'].indexOf(step) ? 'pointer' : 'default'}
                 onClick={() => {
                   if (i < ['upload', 'preview', 'map', 'submit'].indexOf(step)) setStep(s.toLowerCase().replace('header selection', 'preview') as typeof step);
@@ -437,20 +437,18 @@ const handleSubmit = useCallback(async () => {
                 <Button
                   onClick={() => setStep(['upload', 'preview', 'map', 'submit'][['upload', 'preview', 'map', 'submit'].indexOf(step) - 1] as typeof step)}
                   variant="outline"
-                  colorScheme="primary"
                   size="sm"
                 >
                   Back
                 </Button>
               )}
               {step === 'preview' && (
-                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="primary" size="sm">
+                <Button onClick={() => setStep('upload')} variant="outline" size="sm">
                   Back
                 </Button>
               )}
               {step !== 'submit' && (
                 <Button
-                  colorScheme="primary"
                   onClick={() => setStep(['preview', 'map', 'submit'][['upload', 'preview', 'map'].indexOf(step)] as typeof step)}
                   size="sm"
                   isDisabled={step === 'map' && !validateForm.isValid}
@@ -459,7 +457,7 @@ const handleSubmit = useCallback(async () => {
                 </Button>
               )}
               {step === 'submit' && (
-                <Button colorScheme="primary" onClick={handleSubmit} isLoading={isLoading} size="sm">
+                <Button colorScheme="brand" onClick={handleSubmit} isLoading={isLoading} size="sm">
                   Submit
                 </Button>
               )}
@@ -621,7 +619,7 @@ const handleSubmit = useCallback(async () => {
               />
             </Tooltip>
             <Button
-              colorScheme="primary"
+              colorScheme="brand"
               size="sm"
               onClick={applyManualBrand}
               isDisabled={!manualBrand.trim()}
@@ -635,7 +633,7 @@ const handleSubmit = useCallback(async () => {
             )}
           </HStack>
           {isManualBrandApplied && (
-            <Badge colorScheme="primary" mt={2}>
+            <Badge colorScheme="brand" mt={2}>
               Manual Brand Column Applied
             </Badge>
           )}
@@ -780,7 +778,7 @@ const handleSubmit = useCallback(async () => {
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl>
                 <Checkbox
-                  colorScheme="primary"
+                  colorScheme="brand"
                   size="lg"
                   isChecked={isIconDistro}
                   onChange={e => setIsIconDistro(e.target.checked)}
@@ -793,7 +791,7 @@ const handleSubmit = useCallback(async () => {
               </FormControl>
               <FormControl>
                 <Checkbox
-                  colorScheme="primary"
+                  colorScheme="brand"
                   size="lg"
                   isChecked={skipDataWarehouse}
                   onChange={e => setSkipDataWarehouse(e.target.checked)}
@@ -1144,13 +1142,13 @@ const DataWarehouseForm: React.FC = () => {
                 </Button>
               )}
               {step === 'preview' && (
-                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="primary" size="sm">
+                <Button onClick={() => setStep('upload')} variant="outline" colorScheme="brand" size="sm">
                   Back
                 </Button>
               )}
               {step !== 'submit' && (
                 <Button
-                  colorScheme="primary"
+                  colorScheme="brand"
                   onClick={() => setStep(['preview', 'map', 'submit'][['upload', 'preview', 'map'].indexOf(step)] as typeof step)}
                   size="sm"
                   isDisabled={step === 'map' && !validateForm.isValid}
@@ -1159,7 +1157,7 @@ const DataWarehouseForm: React.FC = () => {
                 </Button>
               )}
               {step === 'submit' && (
-                <Button colorScheme="primary" onClick={handleSubmit} isLoading={isLoading} size="sm">
+                <Button colorScheme="brand" onClick={handleSubmit} isLoading={isLoading} size="sm">
                   Submit
                 </Button>
               )}
@@ -1375,7 +1373,7 @@ const DataWarehouseForm: React.FC = () => {
               />
             </Tooltip>
             <Button
-              colorScheme="primary"
+              colorScheme="brand"
               size="sm"
               onClick={applyManualBrand}
               isDisabled={!manualBrand.trim()}
@@ -1389,7 +1387,7 @@ const DataWarehouseForm: React.FC = () => {
             )}
           </HStack>
           {isManualBrandApplied && (
-            <Badge colorScheme="primary" mt={2}>
+            <Badge colorScheme="brand" mt={2}>
               Manual Brand Column Applied
             </Badge>
           )}
