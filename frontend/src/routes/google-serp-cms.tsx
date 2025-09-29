@@ -154,6 +154,7 @@ const GoogleImagesForm: React.FC = () => {
     readImage: null,
     imageAdd: null,
   });
+  const [activeMappingField, setActiveMappingField] = useState<ColumnType | null>(null);
   const [manualBrand, setManualBrand] = useState('');
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false);
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false);

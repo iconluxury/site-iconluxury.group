@@ -1,81 +1,100 @@
-import { Box, Heading, Text, VStack, HStack, Switch, Badge } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  Badge,
+  Box,
+  HStack,
+  Heading,
+  Switch,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 
 // Define the shape of API status settings
 type ApiStatusSettings = {
-  isActive: boolean;
-  isLimited: boolean;
-  isDeactivated: boolean;
-};
+  isActive: boolean
+  isLimited: boolean
+  isDeactivated: boolean
+}
 
 // Define API services for dev, prod, and beta
 const API_SERVICES = [
   "dev-service-distro-image",
   "prod-service-distro-image",
   "beta-service-distro-image",
-] as const;
-type ApiServiceType = (typeof API_SERVICES)[number];
+] as const
+type ApiServiceType = (typeof API_SERVICES)[number]
 
-const STORAGE_KEY = "apiStatusSettings"; // Key for localStorage
+const STORAGE_KEY = "apiStatusSettings" // Key for localStorage
 
 const ApiStatusManagement = () => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   // Load API status settings with React Query
   const { data: apiStatusSettings, refetch } = useQuery({
     queryKey: ["apiStatusSettings"],
     queryFn: () => {
-      const storedSettings = localStorage.getItem(STORAGE_KEY);
-      return storedSettings ? JSON.parse(storedSettings) : {};
+      const storedSettings = localStorage.getItem(STORAGE_KEY)
+      return storedSettings ? JSON.parse(storedSettings) : {}
     },
-    staleTime: Infinity,
-  });
+    staleTime: Number.POSITIVE_INFINITY,
+  })
 
   // Store API status settings locally for UI updates
-  const [settings, setSettings] = useState<Record<ApiServiceType, ApiStatusSettings>>(() =>
-    API_SERVICES.reduce((acc, service) => {
-      acc[service] = apiStatusSettings?.[service] || {
-        isActive: true,
-        isLimited: false,
-        isDeactivated: false,
-      };
-      return acc;
-    }, {} as Record<ApiServiceType, ApiStatusSettings>)
-  );
+  const [settings, setSettings] = useState<
+    Record<ApiServiceType, ApiStatusSettings>
+  >(() =>
+    API_SERVICES.reduce(
+      (acc, service) => {
+        acc[service] = apiStatusSettings?.[service] || {
+          isActive: true,
+          isLimited: false,
+          isDeactivated: false,
+        }
+        return acc
+      },
+      {} as Record<ApiServiceType, ApiStatusSettings>,
+    ),
+  )
 
   // Sync React Query Data into State
   useEffect(() => {
     setSettings((prevSettings) =>
-      API_SERVICES.reduce((acc, service) => {
-        acc[service] = apiStatusSettings?.[service] || prevSettings[service];
-        return acc;
-      }, {} as Record<ApiServiceType, ApiStatusSettings>)
-    );
-  }, [apiStatusSettings]);
+      API_SERVICES.reduce(
+        (acc, service) => {
+          acc[service] = apiStatusSettings?.[service] || prevSettings[service]
+          return acc
+        },
+        {} as Record<ApiServiceType, ApiStatusSettings>,
+      ),
+    )
+  }, [apiStatusSettings])
 
   // Update settings locally and sync with localStorage & React Query
-  const updateSettings = (service: ApiServiceType, newSettings: ApiStatusSettings) => {
-    const updatedSettings = { ...apiStatusSettings, [service]: newSettings };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
-    queryClient.setQueryData(["apiStatusSettings"], updatedSettings);
-    refetch(); // Ensure UI updates reflect instantly
-  };
+  const updateSettings = (
+    service: ApiServiceType,
+    newSettings: ApiStatusSettings,
+  ) => {
+    const updatedSettings = { ...apiStatusSettings, [service]: newSettings }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings))
+    queryClient.setQueryData(["apiStatusSettings"], updatedSettings)
+    refetch() // Ensure UI updates reflect instantly
+  }
 
   // Determine status badge properties
   const getStatusBadge = (service: ApiServiceType) => {
-    const { isActive, isLimited, isDeactivated } = settings[service];
-    if (isDeactivated) return { text: "Down", color: "red" };
-    if (isLimited) return { text: "Limited", color: "yellow" };
-    if (isActive) return { text: "Active", color: "green" };
-    return { text: "Unknown", color: "red" };
-  };
+    const { isActive, isLimited, isDeactivated } = settings[service]
+    if (isDeactivated) return { text: "Down", color: "red" }
+    if (isLimited) return { text: "Limited", color: "yellow" }
+    if (isActive) return { text: "Active", color: "green" }
+    return { text: "Unknown", color: "red" }
+  }
 
   return (
     <Box borderWidth="1px" borderRadius="lg" p={5} w="100%">
       <VStack align="stretch" spacing={6}>
         {API_SERVICES.map((service) => {
-          const status = getStatusBadge(service);
+          const status = getStatusBadge(service)
           return (
             <Box key={service} p={4} borderWidth="1px" borderRadius="md">
               <HStack justify="space-between" mb={2}>
@@ -125,11 +144,11 @@ const ApiStatusManagement = () => {
                 </HStack>
               </VStack>
             </Box>
-          );
+          )
         })}
       </VStack>
     </Box>
-  );
-};
+  )
+}
 
-export default ApiStatusManagement;
+export default ApiStatusManagement

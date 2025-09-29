@@ -2,6 +2,7 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import {
   Button,
   Container,
+  Flex,
   FormControl,
   FormErrorMessage,
   Icon,
@@ -11,10 +12,13 @@ import {
   InputRightElement,
   Link,
   Text,
-  Flex,
   useBoolean,
 } from "@chakra-ui/react"
-import { Link as RouterLink, createFileRoute, redirect } from "@tanstack/react-router"
+import {
+  Link as RouterLink,
+  createFileRoute,
+  redirect,
+} from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
 import Logo from "/assets/images/lm-logo-blk.svg"
@@ -90,12 +94,8 @@ function Login() {
       href="https://twitter.com/iconluxurygroup"
       target="_blank"
       rel="noopener noreferrer"
-     >
-      <Image
-        src="/assets/images/twitter-x.svg"
-        alt="X Logo"
-        boxSize="32px"
-      />
+    >
+      <Image src="/assets/images/twitter-x.svg" alt="X Logo" boxSize="32px" />
     </Link>
   )
 
@@ -113,7 +113,11 @@ function Login() {
       height="100vh"
       gap={6}
     >
-      <Link href="https://iconluxury.group" target="_blank" rel="noopener noreferrer">
+      <Link
+        href="https://iconluxury.group"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         <Image
           src={Logo}
           alt="iconluxurygroup logo"

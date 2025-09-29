@@ -1,37 +1,38 @@
-// src/components/LogFiles.tsx
-import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
-  Text,
-  Flex,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Spinner,
   Button,
+  Flex,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
   Tooltip,
-} from "@chakra-ui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import useCustomToast from "./../hooks/useCustomToast"; // Ensure path is correct
-import debounce from "lodash/debounce";
+  Tr,
+} from "@chakra-ui/react"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import debounce from "lodash/debounce"
+// src/components/LogFiles.tsx
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import useCustomToast from "./../hooks/useCustomToast" // Ensure path is correct
 
 interface LogFile {
-  fileId: string;
-  fileName: string;
-  url: string | null;
-  lastModified: string;
-  entries: LogEntry[] | null; // Not used here, but kept for consistency
+  fileId: string
+  fileName: string
+  url: string | null
+  lastModified: string
+  entries: LogEntry[] | null // Not used here, but kept for consistency
 }
 
 interface LogEntry {
-  timestamp: string;
-  endpoint: string;
-  query: string;
-  status: "success" | "error";
-  responseTime: number;
+  timestamp: string
+  endpoint: string
+  query: string
+  status: "success" | "error"
+  responseTime: number
 }
 
 const logFileUrls = [
@@ -52,54 +53,67 @@ const logFileUrls = [
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_79.log",
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_80.log",
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_82.log",
-];
+]
 
 const LogFiles: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [logFiles, setLogFiles] = useState<LogFile[]>([]);
-  const showToast = useCustomToast();
+  const [isLoading, setIsLoading] = useState(true)
+  const [logFiles, setLogFiles] = useState<LogFile[]>([])
+  const showToast = useCustomToast()
 
   const initializeLogFiles = () => {
     const initialLogFiles = logFileUrls.map((url, index) => {
-      const jobId = parseInt(url?.split("/").pop()?.replace("job_", "").replace(".log", "") || `${index + 3}`, 10);
-      const fileName = url ? url.split("/").pop() || `job_${jobId}.log` : `job_${jobId}.log`;
-      const fileId = fileName.replace(".log", "");
+      const jobId = Number.parseInt(
+        url?.split("/").pop()?.replace("job_", "").replace(".log", "") ||
+          `${index + 3}`,
+        10,
+      )
+      const fileName = url
+        ? url.split("/").pop() || `job_${jobId}.log`
+        : `job_${jobId}.log`
+      const fileId = fileName.replace(".log", "")
       return {
         fileId,
         fileName,
         url,
         lastModified: new Date(Date.now() - index * 86400000).toISOString(),
         entries: null,
-      };
-    });
-    setLogFiles(initialLogFiles);
-    setIsLoading(false);
-  };
+      }
+    })
+    setLogFiles(initialLogFiles)
+    setIsLoading(false)
+  }
 
   const debouncedFetchLogFiles = useCallback(
     debounce(() => {
-      setIsLoading(true);
-      setLogFiles([]);
-      initializeLogFiles();
+      setIsLoading(true)
+      setLogFiles([])
+      initializeLogFiles()
     }, 500),
-    []
-  );
+    [],
+  )
 
   useEffect(() => {
-    initializeLogFiles();
-  }, []);
+    initializeLogFiles()
+  }, [])
 
   const handleDownload = (url: string | null) => {
-    if (url) { // Explicitly check for null and narrow type to string
-      window.open(url, "_blank");
-      showToast("File Opened", `Opened ${url.split("/").pop()} in new tab`, "info");
+    if (url) {
+      // Explicitly check for null and narrow type to string
+      window.open(url, "_blank")
+      showToast(
+        "File Opened",
+        `Opened ${url.split("/").pop()} in new tab`,
+        "info",
+      )
     }
-  };
+  }
 
   return (
     <Box p={4} width="100%">
       <Flex justify="space-between" align="center" mb={4}>
-        <Text fontSize="lg" fontWeight="bold">Log Files</Text>
+        <Text fontSize="lg" fontWeight="bold">
+          Log Files
+        </Text>
         <Flex gap={2}>
           <Tooltip label="Refresh log files">
             <Button
@@ -156,7 +170,9 @@ const LogFiles: React.FC = () => {
                         Download
                       </Button>
                     ) : (
-                      <Text fontSize="xs" color="gray.500">No file</Text>
+                      <Text fontSize="xs" color="gray.500">
+                        No file
+                      </Text>
                     )}
                   </Td>
                 </Tr>
@@ -166,7 +182,7 @@ const LogFiles: React.FC = () => {
         </Box>
       )}
     </Box>
-  );
-};
+  )
+}
 
-export default LogFiles;
+export default LogFiles

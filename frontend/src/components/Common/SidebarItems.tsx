@@ -1,31 +1,31 @@
-import { Box, Flex, Icon, Text, Tooltip, Avatar } from "@chakra-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Avatar, Box, Flex, Icon, Text, Tooltip } from "@chakra-ui/react"
+import { useQueryClient } from "@tanstack/react-query"
+import { Link, useLocation } from "@tanstack/react-router"
 import {
-  FiHome,
-  FiUsers,
-  FiLayers,
-  FiCalendar,
-  FiFileText,
-  FiMessageSquare,
-  FiGlobe,
-  FiShield,
-  FiHelpCircle,
-  FiLogOut,
-  FiSearch,
   FiArchive,
+  FiCalendar,
   FiEye,
+  FiFileText,
+  FiGlobe,
   FiGlobe as FiGoogleSerp,
-} from "react-icons/fi";
-import type { UserPublic } from "../../client";
-import useAuth from "../../hooks/useAuth";
+  FiHelpCircle,
+  FiHome,
+  FiLayers,
+  FiLogOut,
+  FiMessageSquare,
+  FiSearch,
+  FiShield,
+  FiUsers,
+} from "react-icons/fi"
+import type { UserPublic } from "../../client"
+import useAuth from "../../hooks/useAuth"
 
 interface SidebarItem {
-  title: string;
-  icon?: any;
-  path?: string;
-  subItems?: SidebarItem[];
-  action?: () => void;
+  title: string
+  icon?: any
+  path?: string
+  subItems?: SidebarItem[]
+  action?: () => void
 }
 
 const sidebarStructure: SidebarItem[] = [
@@ -38,64 +38,100 @@ const sidebarStructure: SidebarItem[] = [
     title: "Scraper",
     subItems: [
       { title: "Jobs", path: "/scraping-api/explore", icon: FiSearch },
-      { title: "Google SERP", path: "/scraping-api/google-serp", icon: FiGoogleSerp },
+      {
+        title: "Google SERP",
+        path: "/scraping-api/google-serp",
+        icon: FiGoogleSerp,
+      },
     ],
   },
   {
     title: "Logs",
     subItems: [
-      { title: "Network Logs", path: "/support/network-logs", icon: FiFileText },
+      {
+        title: "Network Logs",
+        path: "/support/network-logs",
+        icon: FiFileText,
+      },
       { title: "Email Logs", path: "/support/email", icon: FiMessageSquare },
     ],
   },
   { title: "Support", icon: FiHelpCircle, path: "/support" },
   { title: "VPN", icon: FiShield, path: "/vpn" },
   { title: "Sign out", icon: FiLogOut, action: () => {} },
-];
+]
 
 interface SidebarItemsProps {
-  onClose?: () => void;
+  onClose?: () => void
 }
 
 const SidebarItems = ({ onClose }: SidebarItemsProps) => {
-  const queryClient = useQueryClient();
-  const { logout } = useAuth();
-  const location = useLocation();
-  const textColor = "gray.800";
-  const disabledColor = "ui.dim";
-  const hoverColor = "ui.main";
-  const bgActive = "ui.light";
-  const activeTextColor = "gray.800";
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"]);
+  const queryClient = useQueryClient()
+  const { logout } = useAuth()
+  const location = useLocation()
+  const textColor = "gray.800"
+  const disabledColor = "ui.dim"
+  const hoverColor = "ui.main"
+  const bgActive = "ui.light"
+  const activeTextColor = "gray.800"
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
-  const avatarOptions = [
-    "https://i.pravatar.cc/150",
-  ];
-  const hardcodedAvatar = avatarOptions[Math.floor(Math.random() * avatarOptions.length)];
+  const avatarOptions = ["https://i.pravatar.cc/150"]
+  const hardcodedAvatar =
+    avatarOptions[Math.floor(Math.random() * avatarOptions.length)]
 
-  const finalSidebarStructure = [...sidebarStructure];
-  if (currentUser?.is_superuser && !finalSidebarStructure.some(item => item.title === "Admin")) {
-    finalSidebarStructure.splice(finalSidebarStructure.length - 1, 0, { title: "Admin", icon: FiShield, path: "/admin" });
+  const finalSidebarStructure = [...sidebarStructure]
+  if (
+    currentUser?.is_superuser &&
+    !finalSidebarStructure.some((item) => item.title === "Admin")
+  ) {
+    finalSidebarStructure.splice(finalSidebarStructure.length - 1, 0, {
+      title: "Admin",
+      icon: FiShield,
+      path: "/admin",
+    })
   }
 
   const isEnabled = (title: string) => {
-    if (["Dashboard", "Orders", "Offers", "Customers", "Support", "Sign out"].includes(title)) {
-      return true;
+    if (
+      [
+        "Dashboard",
+        "Orders",
+        "Offers",
+        "Customers",
+        "Support",
+        "Sign out",
+      ].includes(title)
+    ) {
+      return true
     }
-    if (["Scraper", "Jobs", "Archive", "Google SERP", "Logs", "Network Logs", "Email Logs", "VPN", "Admin"].includes(title)) {
-      return currentUser?.is_superuser || false;
+    if (
+      [
+        "Scraper",
+        "Jobs",
+        "Archive",
+        "Google SERP",
+        "Logs",
+        "Network Logs",
+        "Email Logs",
+        "VPN",
+        "Admin",
+      ].includes(title)
+    ) {
+      return currentUser?.is_superuser || false
     }
-    return true;
-  };
+    return true
+  }
 
   const renderItems = (items: SidebarItem[]) =>
     items.map(({ icon, title, path, subItems, action }) => {
-      const enabled = isEnabled(title);
+      const enabled = isEnabled(title)
       if (!enabled) {
-        return null;
+        return null
       }
-      const showAdminLabel = ["Archive","VPN", "Admin"].includes(title);
-      const isActive = path === location.pathname || (path === "/" && location.pathname === "");
+      const showAdminLabel = ["Archive", "VPN", "Admin"].includes(title)
+      const isActive =
+        path === location.pathname || (path === "/" && location.pathname === "")
       return (
         <Box key={title} mb={2}>
           {path ? (
@@ -105,12 +141,16 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
               w="100%"
               p={2}
               borderRadius="md"
-              style={isActive ? {
-                background: bgActive,
-                boxShadow: "card",
-                color: activeTextColor,
-                borderRadius: "md",
-              } : {}}
+              style={
+                isActive
+                  ? {
+                      background: bgActive,
+                      boxShadow: "card",
+                      color: activeTextColor,
+                      borderRadius: "md",
+                    }
+                  : {}
+              }
               color={textColor}
               _hover={{ color: hoverColor }}
               onClick={onClose}
@@ -118,7 +158,13 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
               justify="space-between"
             >
               <Flex align="center">
-                {icon && <Icon as={icon} mr={2} color={isActive ? activeTextColor : textColor} />}
+                {icon && (
+                  <Icon
+                    as={icon}
+                    mr={2}
+                    color={isActive ? activeTextColor : textColor}
+                  />
+                )}
                 <Text>{title}</Text>
               </Flex>
               {showAdminLabel && (
@@ -143,8 +189,8 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
               color={textColor}
               _hover={{ color: hoverColor }}
               onClick={() => {
-                if (title === "Sign out") logout();
-                onClose?.();
+                if (title === "Sign out") logout()
+                onClose?.()
               }}
               cursor="pointer"
               align="center"
@@ -154,13 +200,15 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
             </Flex>
           ) : (
             <Box>
-              <Text p={2} fontWeight="bold">{title}</Text>
+              <Text p={2} fontWeight="bold">
+                {title}
+              </Text>
               <Box>{subItems && renderItems(subItems)}</Box>
             </Box>
           )}
         </Box>
-      );
-    });
+      )
+    })
 
   return (
     <Box className="sidebar">
@@ -203,14 +251,19 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
           />
           <Box flex="1">
             <Text fontWeight="medium">{currentUser.full_name || "User"}</Text>
-            <Text fontSize="xs" color="ui.dim" isTruncated={false} whiteSpace="normal">
+            <Text
+              fontSize="xs"
+              color="ui.dim"
+              isTruncated={false}
+              whiteSpace="normal"
+            >
               {currentUser.email || "email@example.com"}
             </Text>
           </Box>
         </Flex>
       )}
     </Box>
-  );
-};
+  )
+}
 
-export default SidebarItems;
+export default SidebarItems

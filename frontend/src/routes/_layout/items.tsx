@@ -18,8 +18,8 @@ import { z } from "zod"
 import { ItemsService } from "../../client"
 import ActionsMenu from "../../components/Common/ActionsMenu"
 import Navbar from "../../components/Common/Navbar"
-import AddItem from "../../components/Items/AddItem"
 import { PaginationFooter } from "../../components/Common/PaginationFooter.tsx"
+import AddItem from "../../components/Items/AddItem"
 const itemsSearchSchema = z.object({
   page: z.number().catch(1),
 })
@@ -46,12 +46,12 @@ function ItemsTable() {
   const { page } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
 
-  type ItemsSearch = z.infer<typeof itemsSearchSchema>; // { page: number }
+  type ItemsSearch = z.infer<typeof itemsSearchSchema> // { page: number }
 
   const setPage = (page: number) =>
     navigate({
       search: (prev: ItemsSearch) => ({ ...prev, page }),
-    });
+    })
   const {
     data: items,
     isPending,

@@ -1,38 +1,29 @@
+import { Flex, Image, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react"
 // src/components/OptimalReferencesTable.tsx
-import { useState, useEffect } from "react";
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Image,
-  Flex,
-} from "@chakra-ui/react";
+import { useEffect, useState } from "react"
 
 interface Reference {
-  category: string;
-  url: string;
+  category: string
+  url: string
 }
 
 interface ReferencesData {
-  [key: string]: string;
+  [key: string]: string
 }
 
 const OptimalReferencesTable = () => {
-  const [references, setReferences] = useState<Reference[]>([]);
+  const [references, setReferences] = useState<Reference[]>([])
 
   // Fetch data from the GitHub URL on component mount
   useEffect(() => {
     fetch(
-      "https://raw.githubusercontent.com/iconluxurygroup/settings-static-data/refs/heads/main/optimal-references.json"
+      "https://raw.githubusercontent.com/iconluxurygroup/settings-static-data/refs/heads/main/optimal-references.json",
     )
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error("Network response was not ok")
         }
-        return response.json() as Promise<ReferencesData>;
+        return response.json() as Promise<ReferencesData>
       })
       .then((data) => {
         // Transform the JSON object into an array of Reference objects
@@ -40,15 +31,15 @@ const OptimalReferencesTable = () => {
           ([category, url]) => ({
             category,
             url,
-          })
-        );
-        setReferences(fetchedReferences);
+          }),
+        )
+        setReferences(fetchedReferences)
       })
       .catch((error) => {
-        console.error("Error fetching references:", error);
-        setReferences([]); // Fallback to empty array on error
-      });
-  }, []); // Empty dependency array ensures this runs only once on mount
+        console.error("Error fetching references:", error)
+        setReferences([]) // Fallback to empty array on error
+      })
+  }, []) // Empty dependency array ensures this runs only once on mount
 
   return (
     <Flex direction="column" p={4}>
@@ -80,7 +71,7 @@ const OptimalReferencesTable = () => {
         </Tbody>
       </Table>
     </Flex>
-  );
-};
+  )
+}
 
-export default OptimalReferencesTable;
+export default OptimalReferencesTable

@@ -1,10 +1,10 @@
-import React from 'react';
-import { Container, VStack, Heading } from '@chakra-ui/react';
-import { createFileRoute } from '@tanstack/react-router';
+import { Container, Heading, VStack } from "@chakra-ui/react"
+import { createFileRoute } from "@tanstack/react-router"
+import React from "react"
 
-export const Route = createFileRoute('/_layout/submit-form/success')({
+export const Route = createFileRoute("/_layout/submit-form/success")({
   component: SuccessPage,
-});
+})
 
 function SuccessPage() {
   return (
@@ -13,7 +13,7 @@ function SuccessPage() {
         <Heading color="green.400">Success!</Heading>
       </VStack>
     </Container>
-  );
+  )
 }
 
-export default SuccessPage;
+export default SuccessPage

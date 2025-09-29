@@ -10,21 +10,21 @@ import {
   Image,
   Link,
   Text,
-} from "@chakra-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { FiMenu } from "react-icons/fi";
-import Logo from "/assets/images/lm-logo-blk.svg";
-import type { UserPublic } from "../../client";
-import { useDisclosure } from "@chakra-ui/react";
-import SidebarItems from "./SidebarItems";
+} from "@chakra-ui/react"
+import { useDisclosure } from "@chakra-ui/react"
+import { useQueryClient } from "@tanstack/react-query"
+import { FiMenu } from "react-icons/fi"
+import Logo from "/assets/images/lm-logo-blk.svg"
+import type { UserPublic } from "../../client"
+import SidebarItems from "./SidebarItems"
 
 const Sidebar = () => {
-  const queryClient = useQueryClient();
-  const bgColor = "gray.100"; // Matches theme's .sidebar background
-  const textColor = "gray.800"; // Matches theme's text color
-  const accentColor = "ui.main"; // Yellow accent from theme
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const queryClient = useQueryClient()
+  const bgColor = "gray.100" // Matches theme's .sidebar background
+  const textColor = "gray.800" // Matches theme's text color
+  const accentColor = "ui.main" // Yellow accent from theme
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <>
@@ -83,7 +83,7 @@ const Sidebar = () => {
         </Flex>
       </Box>
     </>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar
