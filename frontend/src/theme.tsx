@@ -5,329 +5,407 @@ const config: ThemeConfig = {
   useSystemColorMode: false,
 }
 
+const fonts = {
+  heading: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+  body: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+  mono: '"JetBrains Mono", "SFMono-Regular", Menlo, monospace',
+}
+
+const colors = {
+  brand: {
+    50: "#eef2ff",
+    100: "#e0e7ff",
+    200: "#c7d2fe",
+    300: "#a5b4fc",
+    400: "#818cf8",
+    500: "#6366f1",
+    600: "#4f46e5",
+    700: "#4338ca",
+    800: "#3730a3",
+    900: "#312e81",
+  },
+  neutral: {
+    50: "#f8fafc",
+    100: "#f1f5f9",
+    200: "#e2e8f0",
+    300: "#cbd5f5",
+    400: "#94a3b8",
+    500: "#64748b",
+    600: "#475569",
+    700: "#334155",
+    800: "#1e293b",
+    900: "#0f172a",
+  },
+  success: {
+    50: "#ecfdf5",
+    100: "#d1fae5",
+    200: "#a7f3d0",
+    300: "#6ee7b7",
+    400: "#34d399",
+    500: "#16a34a",
+    600: "#15803d",
+    700: "#166534",
+    800: "#14532d",
+    900: "#0f3920",
+  },
+  warning: {
+    50: "#fffbeb",
+    100: "#fef3c7",
+    200: "#fde68a",
+    300: "#fcd34d",
+    400: "#fbbf24",
+    500: "#f59e0b",
+    600: "#d97706",
+    700: "#b45309",
+    800: "#92400e",
+    900: "#78350f",
+  },
+  danger: {
+    50: "#fef2f2",
+    100: "#fee2e2",
+    200: "#fecaca",
+    300: "#fca5a5",
+    400: "#f87171",
+    500: "#ef4444",
+    600: "#dc2626",
+    700: "#b91c1c",
+    800: "#991b1b",
+    900: "#7f1d1d",
+  },
+  info: {
+    50: "#e0f2fe",
+    100: "#bae6fd",
+    200: "#7dd3fc",
+    300: "#38bdf8",
+    400: "#0ea5e9",
+    500: "#0284c7",
+    600: "#0369a1",
+    700: "#075985",
+    800: "#0c4a6e",
+    900: "#0a3651",
+  },
+}
+
+const semanticTokens = {
+  colors: {
+    background: {
+      default: "neutral.50",
+      _dark: "gray.900",
+    },
+    surface: {
+      default: "white",
+      _dark: "gray.800",
+    },
+    text: {
+      default: "neutral.800",
+      _dark: "gray.100",
+    },
+    subtle: {
+      default: "neutral.500",
+      _dark: "gray.400",
+    },
+    border: {
+      default: "neutral.200",
+      _dark: "neutral.700",
+    },
+    highlight: {
+      default: "brand.50",
+      _dark: "brand.800",
+    },
+  },
+}
+
+const components = {
+  Button: {
+    baseStyle: {
+      fontWeight: "600",
+      borderRadius: "md",
+      px: 4,
+      py: 2,
+    },
+    variants: {
+      primary: {
+        bg: "brand.600",
+        color: "white",
+        _hover: { bg: "brand.700" },
+        _active: { bg: "brand.800" },
+        _disabled: {
+          bg: "brand.200",
+          color: "white",
+          cursor: "not-allowed",
+        },
+      },
+      secondary: {
+        bg: "surface",
+        color: "brand.600",
+        border: "1px solid",
+        borderColor: "border",
+        _hover: {
+          borderColor: "brand.200",
+          bg: "brand.50",
+        },
+      },
+      outline: {
+        bg: "transparent",
+        border: "1px solid",
+        borderColor: "brand.600",
+        color: "brand.600",
+        _hover: {
+          bg: "brand.50",
+        },
+      },
+      ghost: {
+        bg: "transparent",
+        color: "brand.600",
+        _hover: {
+          bg: "brand.50",
+        },
+      },
+      link: {
+        color: "brand.600",
+        fontWeight: "600",
+        bg: "transparent",
+        _hover: {
+          color: "brand.700",
+          textDecoration: "underline",
+        },
+      },
+      danger: {
+        bg: "danger.500",
+        color: "white",
+        _hover: { bg: "danger.600" },
+        _active: { bg: "danger.700" },
+      },
+    },
+    defaultProps: {
+      variant: "primary",
+    },
+  },
+  Input: {
+    baseStyle: {
+      field: {
+        borderRadius: "md",
+        borderColor: "border",
+        bg: "surface",
+        _placeholder: {
+          color: "neutral.500",
+        },
+        _hover: {
+          borderColor: "neutral.300",
+        },
+        _focus: {
+          borderColor: "brand.500",
+          boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
+        },
+      },
+    },
+  },
+  Select: {
+    baseStyle: {
+      field: {
+        borderRadius: "md",
+        borderColor: "border",
+        bg: "surface",
+        _hover: {
+          borderColor: "neutral.300",
+        },
+        _focus: {
+          borderColor: "brand.500",
+          boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
+        },
+      },
+    },
+  },
+  Textarea: {
+    baseStyle: {
+      borderRadius: "md",
+      borderColor: "border",
+      bg: "surface",
+      _hover: {
+        borderColor: "neutral.300",
+      },
+      _focus: {
+        borderColor: "brand.500",
+        boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
+      },
+    },
+  },
+  Table: {
+    baseStyle: {
+      th: {
+        bg: "neutral.100",
+        color: "text",
+        fontWeight: "600",
+        fontSize: "sm",
+        textTransform: "none",
+        letterSpacing: "normal",
+        borderBottom: "1px solid",
+        borderColor: "border",
+        py: 3,
+        px: 4,
+      },
+      td: {
+        borderColor: "border",
+        color: "subtle",
+        fontSize: "sm",
+        py: 3,
+        px: 4,
+      },
+    },
+  },
+  Card: {
+    baseStyle: {
+      container: {
+        bg: "surface",
+        borderRadius: "lg",
+        border: "1px solid",
+        borderColor: "border",
+        boxShadow: "none",
+      },
+      header: {
+        borderBottom: "1px solid",
+        borderColor: "border",
+        py: 4,
+        px: 5,
+      },
+      body: {
+        px: 5,
+        py: 4,
+      },
+    },
+  },
+  Checkbox: {
+    baseStyle: {
+      control: {
+        borderRadius: "md",
+        borderColor: "border",
+        _checked: {
+          bg: "brand.600",
+          borderColor: "brand.600",
+          _hover: {
+            bg: "brand.700",
+            borderColor: "brand.700",
+          },
+        },
+      },
+      label: {
+        color: "subtle",
+        fontWeight: "500",
+      },
+    },
+  },
+  Badge: {
+    baseStyle: {
+      borderRadius: "md",
+      fontWeight: "600",
+      textTransform: "none",
+      letterSpacing: "normal",
+      px: 2,
+      py: 1,
+    },
+    variants: {
+      solid: {
+        bg: "brand.50",
+        color: "brand.700",
+      },
+      success: {
+        bg: "success.100",
+        color: "success.700",
+      },
+      danger: {
+        bg: "danger.100",
+        color: "danger.700",
+      },
+      warning: {
+        bg: "warning.100",
+        color: "warning.700",
+      },
+    },
+  },
+  Tooltip: {
+    baseStyle: {
+      bg: "neutral.700",
+      color: "white",
+      borderRadius: "md",
+      px: 3,
+      py: 2,
+      boxShadow: "md",
+      fontSize: "sm",
+    },
+  },
+  Tabs: {
+    variants: {
+      enclosed: {
+        tab: {
+          color: "subtle",
+          fontWeight: "500",
+          _selected: {
+            color: "brand.700",
+            borderBottomWidth: "2px",
+            borderBottomColor: "brand.600",
+          },
+          _hover: {
+            color: "brand.700",
+          },
+        },
+        tablist: {
+          borderBottom: "1px solid",
+          borderColor: "border",
+        },
+      },
+    },
+  },
+  Alert: {
+    baseStyle: {
+      container: {
+        borderRadius: "lg",
+        border: "1px solid",
+        borderColor: "border",
+        boxShadow: "none",
+      },
+      title: {
+        fontWeight: "600",
+      },
+    },
+  },
+  Link: {
+    baseStyle: {
+      color: "brand.600",
+      fontWeight: "500",
+      _hover: {
+        color: "brand.700",
+        textDecoration: "underline",
+      },
+    },
+  },
+}
+
+const styles = {
+  global: {
+    "*, *::before, *::after": {
+      boxSizing: "border-box",
+    },
+    body: {
+      fontFamily: "body",
+      bg: "background",
+      color: "text",
+      lineHeight: "1.6",
+      minHeight: "100vh",
+      margin: 0,
+    },
+    "a, button": {
+      transition: "all 0.15s ease-in-out",
+    },
+  },
+}
+
 const theme = extendTheme({
   config,
-  styles: {
-    global: {
-      "html, body": {
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-        lineHeight: "1.6",
-        bg: "gray.50",
-        color: "gray.900",
-        padding: "24px",
-      },
-      ".sidebar": {
-        bg: "gray.100",
-        minHeight: "100vh",
-        p: 6,
-        borderRight: "1px solid",
-        borderColor: "gray.200",
-      },
-    },
-  },
-  colors: {
-    ui: {
-      main: "#1a6dcd", // Professional blue
-      secondary: "#e8ecef", // Light gray
-      success: "#2e7d32", // Muted green
-      danger: "#d32f2f", // Standard red
-      warning: "#d97706", // Professional amber
-      info: "#1e40af", // Darker blue for info
-      light: "#ffffff", // White
-      dim: "#6b7280", // Subtle gray
-    },
-  },
-  shadows: {
-    card: "0 4px 12px rgba(0, 0, 0, 0.1)", // Softer, professional shadow
-    subtle: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  },
-  components: {
-    Container: {
-      baseStyle: {
-        bg: "white",
-        borderRadius: "8px",
-        boxShadow: "subtle",
-        p: 6,
-      },
-    },
-    Heading: {
-      baseStyle: {
-        color: "gray.900",
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-        fontWeight: "600",
-      },
-    },
-    Text: {
-      baseStyle: {
-        color: "gray.700",
-        fontSize: "md",
-        fontWeight: "normal",
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-      },
-    },
-    Code: {
-      baseStyle: {
-        bg: "gray.100",
-        color: "gray.800",
-        fontSize: "sm",
-        p: 2,
-        borderRadius: "4px",
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-      },
-    },
-    Button: {
-      baseStyle: {
-        fontWeight: "600",
-        borderRadius: "6px",
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-        px: 4,
-        py: 2,
-      },
-      variants: {
-        primary: {
-          bg: "ui.main",
-          color: "white",
-          _hover: {
-            bg: "#155a9e",
-          },
-          _disabled: {
-            bg: "ui.main",
-            opacity: 0.5,
-          },
-        },
-        secondary: {
-          bg: "ui.secondary",
-          color: "gray.800",
-          border: "1px solid",
-          borderColor: "gray.300",
-          _hover: {
-            bg: "#d3d9df",
-          },
-          _disabled: {
-            bg: "ui.secondary",
-            opacity: 0.5,
-          },
-        },
-        danger: {
-          bg: "ui.danger",
-          color: "white",
-          _hover: {
-            bg: "#b71c1c",
-          },
-        },
-        outline: {
-          border: "1px solid",
-          borderColor: "ui.main",
-          color: "ui.main",
-          bg: "transparent",
-          _hover: {
-            bg: "ui.secondary",
-          },
-        },
-      },
-      defaultProps: {
-        variant: "primary",
-      },
-    },
-    Input: {
-      baseStyle: {
-        field: {
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          fontSize: "md",
-          color: "gray.800",
-          bg: "white",
-          border: "1px solid",
-          borderColor: "gray.300",
-          borderRadius: "6px",
-          _hover: {
-            borderColor: "gray.400",
-          },
-          _focus: {
-            borderColor: "ui.main",
-            boxShadow: "0 0 0 1px #1a6dcd",
-          },
-        },
-      },
-    },
-    Select: {
-      baseStyle: {
-        field: {
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          fontSize: "md",
-          color: "gray.800",
-          bg: "white",
-          border: "1px solid",
-          borderColor: "gray.300",
-          borderRadius: "6px",
-          _hover: {
-            borderColor: "gray.400",
-          },
-          _focus: {
-            borderColor: "ui.main",
-            boxShadow: "0 0 0 1px #1a6dcd",
-          },
-        },
-      },
-    },
-    Table: {
-      baseStyle: {
-        th: {
-          bg: "gray.100",
-          color: "gray.800",
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          fontWeight: "600",
-          fontSize: "sm",
-          textTransform: "none",
-          letterSpacing: "normal",
-          p: 3,
-        },
-        td: {
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          fontSize: "sm",
-          color: "gray.700",
-          p: 3,
-          borderColor: "gray.200",
-        },
-      },
-    },
-    Card: {
-      baseStyle: {
-        container: {
-          bg: "white",
-          borderRadius: "8px",
-          boxShadow: "subtle",
-          border: "1px solid",
-          borderColor: "gray.200",
-        },
-        header: {
-          p: 4,
-          borderBottom: "1px solid",
-          borderColor: "gray.200",
-        },
-        body: {
-          p: 4,
-        },
-      },
-    },
-    Checkbox: {
-      baseStyle: {
-        control: {
-          borderColor: "gray.300",
-          _checked: {
-            bg: "ui.main",
-            borderColor: "ui.main",
-            _hover: {
-              bg: "#155a9e",
-              borderColor: "#155a9e",
-            },
-          },
-        },
-        label: {
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          fontSize: "md",
-          color: "gray.700",
-        },
-      },
-    },
-    Badge: {
-      baseStyle: {
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-        fontSize: "sm",
-        fontWeight: "500",
-        borderRadius: "4px",
-        px: 2,
-        py: 1,
-      },
-      variants: {
-        teal: {
-          bg: "ui.main",
-          color: "white",
-        },
-      },
-    },
-    Tooltip: {
-      baseStyle: {
-        bg: "gray.700",
-        color: "white",
-        fontFamily: '"Arial", "Helvetica", sans-serif',
-        fontSize: "sm",
-        borderRadius: "4px",
-        px: 3,
-        py: 2,
-      },
-    },
-    Tabs: {
-      variants: {
-        enclosed: {
-          tab: {
-            color: "ui.dim",
-            fontFamily: '"Arial", "Helvetica", sans-serif',
-            fontSize: "md",
-            fontWeight: "500",
-            _selected: {
-              color: "ui.main",
-              fontWeight: "600",
-              borderBottomColor: "ui.main",
-              borderBottomWidth: "2px",
-            },
-            _hover: {
-              color: "ui.main",
-            },
-          },
-        },
-      },
-    },
-    Toast: {
-      baseStyle: {
-        container: {
-          bg: "white",
-          color: "gray.700",
-          borderRadius: "6px",
-          padding: "12px",
-          position: "fixed",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          minWidth: "300px",
-          maxWidth: "90%",
-          fontFamily: '"Arial", "Helvetica", sans-serif',
-          boxShadow: "card",
-          border: "1px solid",
-          borderColor: "gray.200",
-        },
-      },
-      variants: {
-        error: {
-          container: {
-            bg: "red.50",
-            color: "red.800",
-            borderColor: "red.200",
-          },
-        },
-        success: {
-          container: {
-            bg: "green.50",
-            color: "green.800",
-            borderColor: "green.200",
-          },
-        },
-        info: {
-          container: {
-            bg: "blue.50",
-            color: "blue.800",
-            borderColor: "blue.200",
-          },
-        },
-        warning: {
-          container: {
-            bg: "yellow.50",
-            color: "yellow.800",
-            borderColor: "yellow.200",
-          },
-        },
-      },
-    },
-  },
+  fonts,
+  colors,
+  semanticTokens,
+  components,
+  styles,
 })
 
 export default theme

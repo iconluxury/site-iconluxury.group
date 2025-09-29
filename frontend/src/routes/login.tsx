@@ -100,30 +100,33 @@ function Login() {
   )
 
   return (
-    <Container
-      as="form"
-      onSubmit={handleSubmit(onSubmit)}
-      maxW="sm"
-      p={10}
-      centerContent
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      height="100vh"
-      gap={6}
-    >
+    <Flex minH="100vh" align="center" justify="center" py={16} px={4}>
+      <Container
+        as="form"
+        onSubmit={handleSubmit(onSubmit)}
+        maxW="md"
+        bg="surface"
+        borderWidth="1px"
+        borderColor="border"
+        borderRadius="xl"
+        boxShadow="none"
+        py={10}
+        px={{ base: 6, md: 10 }}
+        display="flex"
+        flexDir="column"
+        gap={6}
+      >
       <Link
         href="https://iconluxury.group"
         target="_blank"
         rel="noopener noreferrer"
+        alignSelf="center"
       >
         <Image
           src={Logo}
           alt="iconluxurygroup logo"
           height="auto"
           maxW="180px"
-          p={6}
         />
       </Link>
       <FormControl id="username" isInvalid={!!errors.username || !!error}>
@@ -136,11 +139,6 @@ function Login() {
           placeholder="Email"
           type="email"
           required
-          bg="gray.700"
-          color="gray.100"
-          _placeholder={{ color: "gray.400" }}
-          borderColor="gray.600"
-          _focus={{ borderColor: "#FFD700" }}
         />
         {errors.username && (
           <FormErrorMessage>{errors.username.message}</FormErrorMessage>
@@ -154,11 +152,6 @@ function Login() {
             type={show ? "text" : "password"}
             placeholder="Password"
             required
-            bg="gray.700"
-            color="gray.100"
-            _placeholder={{ color: "gray.400" }}
-            borderColor="gray.600"
-            _focus={{ borderColor: "#FFD700" }}
           />
           <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
             <Icon
@@ -174,35 +167,26 @@ function Login() {
       <Link
         as={RouterLink}
         to="/recover-password"
-        color="gray.100"
-        _hover={{ borderBottom: "1px solid #FFD700" }}
-        fontWeight="bold"
+        fontWeight="600"
+        alignSelf="flex-end"
       >
         Forgot password?
       </Link>
 
       <Button
-        variant="primary"
         type="submit"
         isLoading={isSubmitting}
         w="full"
-        bg="gray.700"
-        color="gray.100"
-        border="2px solid"
-        borderColor="#FFD700"
-        _hover={{ bg: "gray.600" }}
       >
         Log In
       </Button>
 
-      <Text color="gray.100">
+      <Text color="subtle" textAlign="center">
         Don't have an account?{" "}
         <Link
           as={RouterLink}
           to="/signup"
-          color="gray.100"
-          _hover={{ borderBottom: "1px solid #FFD700" }}
-          fontWeight="bold"
+          fontWeight="600"
         >
           Sign up
         </Link>
@@ -213,7 +197,8 @@ function Login() {
         <LinkedInLogo />
         <XLogo />
       </Flex>
-    </Container>
+      </Container>
+    </Flex>
   )
 }
 
