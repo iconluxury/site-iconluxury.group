@@ -137,6 +137,11 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
 const getColumnMappingEntries = (mapping: ColumnMapping): [keyof ColumnMapping, number | null][] =>
   Object.entries(mapping) as [keyof ColumnMapping, number | null][];
 
+const SELECTED_BG_STRONG = 'rgba(26, 109, 205, 0.22)';
+const SELECTED_BG_SUBTLE = 'rgba(26, 109, 205, 0.12)';
+const MAPPED_BG = 'rgba(26, 109, 205, 0.06)';
+const SELECTED_BORDER_COLOR = '#1a6dcd';
+
 // Google Images Form Component
 const GoogleImagesForm: React.FC = () => {
   const [step, setStep] = useState<'upload' | 'preview' | 'map' | 'submit'>('upload');
@@ -559,8 +564,8 @@ const handleSubmit = useCallback(async () => {
           p={2}
           borderRadius="md"
           borderWidth={activeMappingField === field ? '2px' : '1px'}
-          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
-          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          borderColor={activeMappingField === field ? SELECTED_BORDER_COLOR : 'transparent'}
+          bg={activeMappingField === field ? SELECTED_BG_SUBTLE : 'transparent'}
           cursor="pointer"
           onClick={() => setActiveMappingField(field)}
         >
@@ -647,8 +652,8 @@ const handleSubmit = useCallback(async () => {
           p={2}
           borderRadius="md"
           borderWidth={activeMappingField === field ? '2px' : '1px'}
-          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
-          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          borderColor={activeMappingField === field ? SELECTED_BORDER_COLOR : 'transparent'}
+          bg={activeMappingField === field ? SELECTED_BG_SUBTLE : 'transparent'}
           cursor="pointer"
           onClick={() => setActiveMappingField(field)}
         >
@@ -711,11 +716,11 @@ const handleSubmit = useCallback(async () => {
               return (
                 <Th
                   key={index}
-                  bg={isSelected ? 'primary.100' : isMapped ? 'gray.200' : 'gray.100'}
+                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'gray.100'}
                   position="sticky"
                   top={0}
-                  border={isMapped ? '2px solid' : undefined}
-                  borderColor="primary.500"
+                  border={(isSelected || isMapped) ? '2px solid' : undefined}
+                  borderColor={isSelected || isMapped ? SELECTED_BORDER_COLOR : 'transparent'}
                   cursor={activeMappingField ? 'pointer' : 'default'}
                   onClick={() => handleColumnMapFromGrid(index)}
                   tabIndex={activeMappingField ? 0 : undefined}
@@ -728,7 +733,7 @@ const handleSubmit = useCallback(async () => {
                   }}
                   role={activeMappingField ? 'button' : undefined}
                   aria-pressed={isSelected}
-                  _hover={activeMappingField ? { bg: isSelected ? 'primary.200' : 'primary.100' } : undefined}
+                  _hover={activeMappingField ? { bg: isSelected ? SELECTED_BG_STRONG : SELECTED_BG_SUBTLE } : undefined}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </Th>
@@ -747,9 +752,9 @@ const handleSubmit = useCallback(async () => {
                 const bgColor = isMissingRequired
                   ? 'red.100'
                   : isSelectedColumn
-                    ? 'primary.50'
+                    ? SELECTED_BG_SUBTLE
                     : isMappedColumn
-                      ? 'gray.50'
+                      ? MAPPED_BG
                       : undefined;
                 return (
                   <Td
@@ -1259,8 +1264,8 @@ const DataWarehouseForm: React.FC = () => {
           p={2}
           borderRadius="md"
           borderWidth={activeMappingField === field ? '2px' : '1px'}
-          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
-          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          borderColor={activeMappingField === field ? SELECTED_BORDER_COLOR : 'transparent'}
+          bg={activeMappingField === field ? SELECTED_BG_SUBTLE : 'transparent'}
           cursor="pointer"
           onClick={() => setActiveMappingField(field)}
         >
@@ -1313,8 +1318,8 @@ const DataWarehouseForm: React.FC = () => {
           p={2}
           borderRadius="md"
           borderWidth={activeMappingField === field ? '2px' : '1px'}
-          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
-          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          borderColor={activeMappingField === field ? SELECTED_BORDER_COLOR : 'transparent'}
+          bg={activeMappingField === field ? SELECTED_BG_SUBTLE : 'transparent'}
           cursor="pointer"
           onClick={() => setActiveMappingField(field)}
         >
@@ -1411,11 +1416,11 @@ const DataWarehouseForm: React.FC = () => {
               return (
                 <Th
                   key={index}
-                  bg={isSelected ? 'primary.100' : isMapped ? 'gray.200' : 'gray.100'}
+                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'gray.100'}
                   position="sticky"
                   top={0}
-                  border={isMapped ? '2px solid' : undefined}
-                  borderColor="primary.500"
+                  border={(isSelected || isMapped) ? '2px solid' : undefined}
+                  borderColor={isSelected || isMapped ? SELECTED_BORDER_COLOR : 'transparent'}
                   cursor={activeMappingField ? 'pointer' : 'default'}
                   onClick={() => handleColumnMapFromGrid(index)}
                   tabIndex={activeMappingField ? 0 : undefined}
@@ -1428,7 +1433,7 @@ const DataWarehouseForm: React.FC = () => {
                   }}
                   role={activeMappingField ? 'button' : undefined}
                   aria-pressed={isSelected}
-                  _hover={activeMappingField ? { bg: isSelected ? 'primary.200' : 'primary.100' } : undefined}
+                  _hover={activeMappingField ? { bg: isSelected ? SELECTED_BG_STRONG : SELECTED_BG_SUBTLE } : undefined}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </Th>
@@ -1447,9 +1452,9 @@ const DataWarehouseForm: React.FC = () => {
                 const bgColor = isMissingRequired
                   ? 'red.100'
                   : isSelectedColumn
-                    ? 'primary.50'
+                    ? SELECTED_BG_SUBTLE
                     : isMappedColumn
-                      ? 'gray.50'
+                      ? MAPPED_BG
                       : undefined;
                 return (
                   <Td
