@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Response, Request
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Response
+from fastapi.middleware.cors import CORSMiddleware
 from boto3 import client
 from typing import Optional, List
 import os
@@ -6,11 +7,13 @@ import logging
 from botocore.exceptions import ClientError
 from fastapi import Query
 from pydantic import BaseModel
+import re
 import csv
 from io import StringIO
 from datetime import datetime
 import json
 import mimetypes
+from io import BytesIO
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -597,10 +600,10 @@ async def r2_get_signed_url(key: str, expires_in: int = 3600):
     return await get_signed_url(key, expires_in)
 
 @r2_router.post("/upload")
-async def r2_upload_file(request: Request, file: UploadFile = File(...)):
-    path = request.query_params.get("path")
-    if not path:
-        raise HTTPException(status_code=400, detail="Query parameter 'path' is required")
+async def r2_upload_file(
+    file: UploadFile = File(...),
+    path: str = Depends(lambda x: x.query_params.get("path"))
+):
     return await upload_file(file, path)
 
 @r2_router.post("/delete")
@@ -610,9 +613,3 @@ async def r2_delete_objects(request: DeleteRequest):
 @r2_router.get("/export-csv")
 async def r2_export_to_csv(prefix: str = ""):
     return await export_to_csv(prefix)
-
-
-# Backwards-compatible router export
-router = APIRouter()
-router.include_router(s3_router)
-router.include_router(r2_router)

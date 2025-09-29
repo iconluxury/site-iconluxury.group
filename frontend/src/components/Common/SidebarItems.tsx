@@ -1,14 +1,15 @@
-import { Avatar, Box, Flex, Icon, Text } from "@chakra-ui/react"
+import { Avatar, Box, Flex, Icon, Text, Tooltip } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useLocation } from "@tanstack/react-router"
 import {
   FiArchive,
   FiCalendar,
+  FiEye,
   FiFileText,
+  FiGlobe,
   FiGlobe as FiGoogleSerp,
   FiHelpCircle,
   FiHome,
-  FiImage,
   FiLayers,
   FiLogOut,
   FiMessageSquare,
@@ -27,18 +28,12 @@ interface SidebarItem {
   action?: () => void
 }
 
-const baseSidebarStructure: SidebarItem[] = [
+const sidebarStructure: SidebarItem[] = [
   { title: "Dashboard", icon: FiHome, path: "/" },
   { title: "Offers", icon: FiCalendar, path: "/offers" },
   { title: "Orders", icon: FiLayers, path: "/orders" },
   { title: "Customers", icon: FiUsers, path: "/customers" },
-  { title: "Support", icon: FiHelpCircle, path: "/support" },
-  {
-    title: "Dropship",
-    subItems: [
-      { title: "Image Hosting", path: "/dropship/", icon: FiImage },
-    ],
-  },
+  { title: "Archive", path: "/explore", icon: FiArchive },
   {
     title: "Scraper",
     subItems: [
@@ -48,7 +43,6 @@ const baseSidebarStructure: SidebarItem[] = [
         path: "/scraping-api/google-serp",
         icon: FiGoogleSerp,
       },
-      { title: "Archive", path: "/explore", icon: FiArchive },
     ],
   },
   {
@@ -62,16 +56,8 @@ const baseSidebarStructure: SidebarItem[] = [
       { title: "Email Logs", path: "/support/email", icon: FiMessageSquare },
     ],
   },
+  { title: "Support", icon: FiHelpCircle, path: "/support" },
   { title: "VPN", icon: FiShield, path: "/vpn" },
-  {
-    title: "Vendor Demo",
-    subItems: [
-      { title: "Dashboard", icon: FiHome, path: "/supplier/dashboard" },
-      { title: "Offers", icon: FiCalendar, path: "/offers" },
-      { title: "Orders", icon: FiLayers, path: "/orders" },
-      { title: "Customers", icon: FiUsers, path: "/customers" },
-    ],
-  },
   { title: "Sign out", icon: FiLogOut, action: () => {} },
 ]
 
@@ -84,6 +70,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const { logout } = useAuth()
   const location = useLocation()
   const textColor = "gray.800"
+  const disabledColor = "ui.dim"
   const hoverColor = "ui.main"
   const bgActive = "ui.light"
   const activeTextColor = "gray.800"
@@ -93,7 +80,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const hardcodedAvatar =
     avatarOptions[Math.floor(Math.random() * avatarOptions.length)]
 
-  const finalSidebarStructure = [...baseSidebarStructure]
+  const finalSidebarStructure = [...sidebarStructure]
   if (
     currentUser?.is_superuser &&
     !finalSidebarStructure.some((item) => item.title === "Admin")
@@ -120,8 +107,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
     }
     if (
       [
-        "Dropship",
-        "Image Hosting",
         "Scraper",
         "Jobs",
         "Archive",
@@ -130,7 +115,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
         "Network Logs",
         "Email Logs",
         "VPN",
-        "Vendor Demo",
         "Admin",
       ].includes(title)
     ) {
@@ -145,21 +129,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       if (!enabled) {
         return null
       }
-      const showAdminLabel =
-        [
-          "Dropship",
-          "Image Hosting",
-          "Scraper",
-          "Jobs",
-          "Archive",
-          "Google SERP",
-          "Logs",
-          "Network Logs",
-          "Email Logs",
-          "VPN",
-          "Vendor Demo",
-          "Admin",
-        ].includes(title)
+      const showAdminLabel = ["Archive", "VPN", "Admin"].includes(title)
       const isActive =
         path === location.pathname || (path === "/" && location.pathname === "")
       return (
