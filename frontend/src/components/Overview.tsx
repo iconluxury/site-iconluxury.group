@@ -102,39 +102,39 @@ interface ChartData {
 }
 
 const chartOptions = [
-  { key: "requests", label: "Requests", color: "#805AD5", yLabel: "Requests" },
+  { key: "requests", label: "Requests", color: "#6366F1", yLabel: "Requests" },
   {
     key: "successRate",
     label: "Success vs Error",
-    color: "#38A169",
+    color: "#34D399",
     yLabel: "Percentage (%)",
   },
   {
     key: "latency",
     label: "Avg Latency",
-    color: "#DD6B20",
+    color: "#F59E0B",
     yLabel: "Latency (ms)",
   },
   {
     key: "queryDistribution",
     label: "Query Distribution",
-    color: "#C53030",
+    color: "#EF4444",
     yLabel: "Count",
   },
-  { key: "cost", label: "Cost Trend", color: "#2B6CB0", yLabel: "Cost ($)" },
+  { key: "cost", label: "Cost Trend", color: "#0EA5E9", yLabel: "Cost ($)" },
 ]
 
 const PIE_COLORS = [
-  "#805AD5",
-  "#38A169",
-  "#DD6B20",
-  "#C53030",
-  "#2B6CB0",
-  "#D69E2E",
-  "#9F7AEA",
-  "#4A5568",
+  "#6366F1",
+  "#34D399",
+  "#F59E0B",
+  "#EF4444",
+  "#0EA5E9",
+  "#A855F7",
+  "#14B8A6",
+  "#64748B",
 ]
-const COMPARE_COLORS = ["#805AD5", "#E53E3E"]
+const COMPARE_COLORS = ["#6366F1", "#EF4444"]
 
 const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -197,7 +197,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="200px">
-        <Spinner size="xl" color="blue.500" />
+        <Spinner size="xl" color="brand.500" />
       </Flex>
     )
   }
@@ -205,7 +205,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   if (error) {
     return (
       <Box>
-        <Text color="red.500">{error}</Text>
+  <Text color="danger.600">{error}</Text>
         <Button mt={2} onClick={fetchData}>
           Retry
         </Button>
@@ -219,7 +219,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
         <Text fontSize="lg" fontWeight="bold" mb={4}>
           Overview
         </Text>
-        <Text color="gray.400">No endpoint specified or data available.</Text>
+        <Text color="subtle">No endpoint specified or data available.</Text>
       </Box>
     )
   }

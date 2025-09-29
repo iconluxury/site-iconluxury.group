@@ -703,48 +703,48 @@ const OverviewGSerp: React.FC = () => {
         </Flex>
       </Flex>
 
-      {isLoading ? (
-        <Flex
-          justify="center"
-          align="center"
-          h="200px"
-          flexDirection="column"
-          gap={4}
-        >
-          <Spinner size="xl" color="blue.500" />
-          <Text>Loading SERP data...</Text>
-        </Flex>
-      ) : (
-        <>
-          <Grid
-            templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-            gap={6}
-            mb={6}
-            alignItems="start"
-          >
-            <GridItem>
-              <Text fontSize="md" fontWeight="semibold" mb={2}>
-                {selectedOption.label}
-              </Text>
-              <Box
-                height="400px"
-                borderRadius="md"
-                overflow="hidden"
-                shadow="md"
-                bg="gray.700"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={updateChartData[selectedChart]}
-                    margin={{
-                      top: 20,
-                      right: 20,
-                      bottom: showLabels ? 60 : 20,
-                      left: showLabels ? 40 : 20,
-                    }}
-                  >
-                    <CartesianGrid stroke="gray.600" />
-                    <XAxis
+      const cardConfigs = [
+        { value: "totalRequests", label: "Total Requests", color: "#6366F1" },
+        { value: "avgHourly", label: "Avg Hourly Requests", color: "#8B5CF6" },
+        { value: "maxHourly", label: "Max Hourly Requests", color: "#A855F7" },
+        { value: "minHourly", label: "Min Hourly Requests", color: "#C4B5FD" },
+      ]
+      const totalQueriesConfig = [
+        { value: "totalQueries", label: "Total Queries", color: "#34D399" },
+        { value: "avgPerCategory", label: "Avg Per Category", color: "#10B981" },
+        { value: "maxCategory", label: "Max Category Count", color: "#6EE7B7" },
+        { value: "uniqueCategories", label: "Unique Categories", color: "#A7F3D0" },
+      ]
+      const queryCountConfig = [
+        { value: "queryCount", label: "Query Count", color: "#F59E0B" },
+        { value: "avgQueryCount", label: "Avg Query Count", color: "#F97316" },
+        { value: "maxQuery", label: "Max Query Count", color: "#FDBA74" },
+        { value: "featuredQueries", label: "Featured Queries", color: "#FED7AA" },
+      ]
+      const successRateConfig = [
+        { value: "successRate", label: "Success Rate", color: "#EF4444" },
+        { value: "errorRate", label: "Error Rate", color: "#F87171" },
+        { value: "avgSuccess", label: "Avg Success Rate", color: "#FB7185" },
+        { value: "variance", label: "Success Variance", color: "#FCA5A5" },
+      ]
+      const endpointRequestConfig = [
+        { value: "totalRequests", label: "Total Requests", color: "#0EA5E9" },
+        { value: "successRate", label: "Success Rate", color: "#38BDF8" },
+        { value: "endpoints", label: "Endpoints", color: "#7DD3FC" },
+        { value: "avgRequests", label: "Avg Requests", color: "#BAE6FD" },
+      ]
+      const barColors = [
+        "#6366F1",
+        "#34D399",
+        "#F59E0B",
+        "#EF4444",
+        "#0EA5E9",
+        "#8B5CF6",
+        "#10B981",
+        "#F97316",
+        "#F87171",
+        "#38BDF8",
+      ]
                       dataKey={
                         selectedChart === "requestsOverTime" &&
                         !compares[selectedChart].length
