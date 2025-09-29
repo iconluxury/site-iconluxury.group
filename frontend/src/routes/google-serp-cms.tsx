@@ -27,8 +27,6 @@ import {
   CardHeader,
   Icon,
   SimpleGrid,
-  ChakraProvider,
-  extendTheme,
 } from '@chakra-ui/react';
 import { CloseIcon, SearchIcon } from '@chakra-ui/icons';
 import { FaWarehouse } from 'react-icons/fa';
@@ -137,10 +135,10 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
 const getColumnMappingEntries = (mapping: ColumnMapping): [keyof ColumnMapping, number | null][] =>
   Object.entries(mapping) as [keyof ColumnMapping, number | null][];
 
-const SELECTED_BG_STRONG = 'rgba(26, 109, 205, 0.22)';
-const SELECTED_BG_SUBTLE = 'rgba(26, 109, 205, 0.12)';
-const MAPPED_BG = 'rgba(26, 109, 205, 0.06)';
-const SELECTED_BORDER_COLOR = '#1a6dcd';
+const SELECTED_BG_STRONG = 'brand.100';
+const SELECTED_BG_SUBTLE = 'brand.50';
+const MAPPED_BG = 'neutral.100';
+const SELECTED_BORDER_COLOR = 'brand.600';
 
 // Google Images Form Component
 const GoogleImagesForm: React.FC = () => {
@@ -604,7 +602,7 @@ const handleSubmit = useCallback(async () => {
               />
             </Tooltip>
           )}
-          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+          <Box w="150px" fontSize="sm" color="subtle" isTruncated>
             {getColumnPreview(columnMapping[field], excelData.rows)}
           </Box>
         </HStack>
@@ -716,7 +714,7 @@ const handleSubmit = useCallback(async () => {
               return (
                 <Th
                   key={index}
-                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'gray.100'}
+                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'neutral.100'}
                   position="sticky"
                   top={0}
                   border={(isSelected || isMapped) ? '2px solid' : undefined}
@@ -750,7 +748,7 @@ const handleSubmit = useCallback(async () => {
                 const isSelectedColumn = selectedColumnIndex === cellIndex;
                 const isMappedColumn = mappedColumns.has(cellIndex);
                 const bgColor = isMissingRequired
-                  ? 'red.100'
+                  ? 'danger.100'
                   : isSelectedColumn
                     ? SELECTED_BG_SUBTLE
                     : isMappedColumn
