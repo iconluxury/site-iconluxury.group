@@ -40,7 +40,7 @@ import useCustomToast from '../hooks/useCustomToast';
 type ColumnType = 'style' | 'brand' | 'category' | 'colorName' | 'msrp';
 const SERVER_URL = 'https://external.iconluxury.group';
 const MAX_PREVIEW_ROWS = 20;
-const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_MB = 50;
 
 type CellValue = string | number | boolean | null;
 type ExcelData = { headers: string[]; rows: CellValue[][] };

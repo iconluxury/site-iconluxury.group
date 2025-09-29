@@ -49,7 +49,7 @@ export const Route = createFileRoute("/_layout/")({
 // Mock data fetching functions
 const fetchCustomers = async () => {
   return [
-    { id: "1", name: "Theo Lawrence", joined: "2024-10-18" },
+    { id: "1", name: "Theo Lawrence", joined: "2025-8-18" },
     { id: "2", name: "Amy March", joined: "2024-05-24" },
     { id: "3", name: "John Doe", joined: "2024-03-15" },
     { id: "4", name: "Jane Smith", joined: "2024-11-01" },
@@ -62,7 +62,7 @@ const fetchCustomers = async () => {
     { id: "11", name: "Hannah Blue", joined: "2024-01-01" },
     { id: "12", name: "Ian Gray", joined: "2024-12-25" },
     { id: "13", name: "Jack Red", joined: "2024-11-30" },
-    { id: "14", name: "Kathy Yellow", joined: "2024-10-05" },
+    { id: "14", name: "Kathy Yellow", joined: "2025-8-05" },
     { id: "15", name: "Leo Purple", joined: "2024-09-15" },
     { id: "16", name: "Mia Orange", joined: "2024-08-01" },
     { id: "17", name: "Nina Pink", joined: "2024-07-10" },
@@ -74,15 +74,15 @@ const fetchCustomers = async () => {
 
 const fetchOrders = async () => {
   return [
-    { id: "1", customerId: "1", date: "2024-10-18", amount: 50000, source: "Credit Card" },
+    { id: "1", customerId: "1", date: "2025-8-18", amount: 50000, source: "Credit Card" },
     { id: "2", customerId: "2", date: "2024-05-24", amount: 50000, source: "Bank Transfer" },
   ];
 };
 
 const fetchCashFlow = async () => {
   return [
-    { date: "2024-10-18", amount: 5000 },
-    { date: "2024-10-25", amount: 3000 },
+    { date: "2025-8-18", amount: 5000 },
+    { date: "2025-8-25", amount: 3000 },
     { date: "2024-11-02", amount: 4000 },
     { date: "2024-11-09", amount: 2000 },
     { date: "2024-11-18", amount: 3000 },
@@ -91,16 +91,16 @@ const fetchCashFlow = async () => {
 
 const fetchActivity = async () => {
   return [
-    { type: "Order", name: "Theo Lawrence", date: "2024-10-18", amount: 120, currency: "USD" },
+    { type: "Order", name: "Theo Lawrence", date: "2025-8-18", amount: 120, currency: "USD" },
     { type: "Message", name: "Amy March", date: "2024-05-24", amount: 150, currency: "USD" },
-    { type: "Upload", name: "Theo Lawrence", date: "2024-10-19", amount: 0, currency: "USD" },
+    { type: "Upload", name: "Theo Lawrence", date: "2025-8-19", amount: 0, currency: "USD" },
     { type: "Offer", name: "Amy March", date: "2024-05-25", amount: 200, currency: "USD" },
   ];
 };
 
 const fetchMessages = async () => {
   return [
-    { customer: "Theo Lawrence", message: "Can you update my order status?", date: "2024-10-18" },
+    { customer: "Theo Lawrence", message: "Can you update my order status?", date: "2025-8-18" },
     { customer: "Amy March", message: "I need assistance with payment.", date: "2024-05-24" },
   ];
 };
