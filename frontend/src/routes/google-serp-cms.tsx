@@ -476,7 +476,7 @@ const handleSubmit = useCallback(async () => {
                   onChange={handleFileChange}
                   disabled={isLoading}
                   bg="white"
-                  borderColor="gray.300"
+                  borderColor="border"
                   p={1}
                   aria-label="Upload Excel file"
                 />
@@ -522,7 +522,7 @@ const handleSubmit = useCallback(async () => {
                   maxW="200px"
                   isTruncated
                   border={rowIndex === headerIndex ? '2px solid' : '1px solid'}
-                  borderColor={rowIndex === headerIndex ? 'primary.500' : 'gray.200'}
+                  borderColor={rowIndex === headerIndex ? 'brand.600' : 'border'}
                 >
                   {getDisplayValue(cell)}
                 </Td>
@@ -532,7 +532,7 @@ const handleSubmit = useCallback(async () => {
         </Tbody>
       </Table>
       {rawData.length > MAX_PREVIEW_ROWS && (
-        <Text fontSize="sm" color="gray.600" mt={2}>
+  <Text fontSize="sm" color="subtle" mt={2}>
           Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length} total rows
         </Text>
       )}
@@ -542,13 +542,13 @@ const handleSubmit = useCallback(async () => {
 
   {step === 'map' && (
   <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="stretch" maxH="70vh" overflow="auto">
-    <VStack gap={4} align="stretch" bg="gray.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
+  <VStack gap={4} align="stretch" bg="neutral.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
       {!validateForm.isValid && (
         <Text color="red.500" fontSize="sm" fontWeight="medium">
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
         </Text>
       )}
-      <Text fontSize="sm" color="gray.600">
+  <Text fontSize="sm" color="subtle">
         Select a field below, then click a column in the preview grid to map it instantly.
       </Text>
       <Text fontWeight="bold">Required Columns</Text>
@@ -688,7 +688,7 @@ const handleSubmit = useCallback(async () => {
               />
             </Tooltip>
           )}
-          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+          <Box w="150px" fontSize="sm" color="subtle" isTruncated>
             {getColumnPreview(columnMapping[field], excelData.rows)}
           </Box>
         </HStack>
@@ -785,7 +785,7 @@ const handleSubmit = useCallback(async () => {
                 >
                   Output as New Distro
                 </Checkbox>
-                <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
+                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
                   If not selected, results will be populated into the uploaded file.
                 </Text>
               </FormControl>
@@ -798,7 +798,7 @@ const handleSubmit = useCallback(async () => {
                 >
                   Skip Data Warehouse Processing
                 </Checkbox>
-                <Text fontSize="sm" color="gray.600" mt={2} pl={8}>
+                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
                   If selected, data will not be processed for the data warehouse.
                 </Text>
               </FormControl>
@@ -1113,13 +1113,13 @@ const DataWarehouseForm: React.FC = () => {
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
       <VStack spacing={6} align="stretch">
-        <HStack justify="space-between" bg="gray.50" p={2} borderRadius="md" align="center">
+  <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center">
           <HStack spacing={4}>
             {['Upload', 'Header Selection', 'Map', 'Submit'].map((s, i) => (
               <Text
                 key={s}
                 fontWeight={step === s.toLowerCase().replace('header selection', 'preview') ? 'bold' : 'normal'}
-                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'primary.500' : 'gray.500'}
+                color={step === s.toLowerCase().replace('header selection', 'preview') ? 'brand.600' : 'subtle'}
                 cursor={i < ['upload', 'preview', 'map', 'submit'].indexOf(step) ? 'pointer' : 'default'}
                 onClick={() => {
                   if (i < ['upload', 'preview', 'map', 'submit'].indexOf(step)) setStep(s.toLowerCase().replace('header selection', 'preview') as typeof step);
@@ -1176,7 +1176,7 @@ const DataWarehouseForm: React.FC = () => {
                   onChange={handleFileChange}
                   disabled={isLoading}
                   bg="white"
-                  borderColor="gray.300"
+                  borderColor="border"
                   p={1}
                   aria-label="Upload Excel file"
                 />
@@ -1222,7 +1222,7 @@ const DataWarehouseForm: React.FC = () => {
                   maxW="200px"
                   isTruncated
                   border={rowIndex === headerIndex ? '2px solid' : '1px solid'}
-                  borderColor={rowIndex === headerIndex ? 'primary.500' : 'gray.200'}
+                  borderColor={rowIndex === headerIndex ? 'brand.600' : 'border'}
                 >
                   {getDisplayValue(cell)}
                 </Td>
@@ -1232,7 +1232,7 @@ const DataWarehouseForm: React.FC = () => {
         </Tbody>
       </Table>
       {rawData.length > MAX_PREVIEW_ROWS && (
-        <Text fontSize="sm" color="gray.600" mt={2}>
+  <Text fontSize="sm" color="subtle" mt={2}>
           Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length} total rows
         </Text>
       )}
@@ -1242,13 +1242,13 @@ const DataWarehouseForm: React.FC = () => {
 
 {step === 'map' && (
   <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="stretch" maxH="70vh" overflow="auto">
-    <VStack gap={4} align="stretch" bg="gray.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
+  <VStack gap={4} align="stretch" bg="neutral.50" p={4} borderRadius="md" w={{ base: '100%', md: '40%' }} overflowY="auto">
       {!validateForm.isValid && (
         <Text color="red.500" fontSize="sm" fontWeight="medium">
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
         </Text>
       )}
-      <Text fontSize="sm" color="gray.600">
+  <Text fontSize="sm" color="subtle">
         Select a field below, then click a column in the preview grid to map it instantly.
       </Text>
       <Text fontWeight="bold">Required Columns</Text>
@@ -1300,7 +1300,7 @@ const DataWarehouseForm: React.FC = () => {
               />
             </Tooltip>
           )}
-          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+          <Box w="150px" fontSize="sm" color="subtle" isTruncated>
             {getColumnPreview(columnMapping[field], excelData.rows)}
           </Box>
         </HStack>
@@ -1354,7 +1354,7 @@ const DataWarehouseForm: React.FC = () => {
               />
             </Tooltip>
           )}
-          <Box w="150px" fontSize="sm" color="gray.600" isTruncated>
+          <Box w="150px" fontSize="sm" color="subtle" isTruncated>
             {getColumnPreview(columnMapping[field], excelData.rows)}
           </Box>
         </HStack>
@@ -1412,7 +1412,7 @@ const DataWarehouseForm: React.FC = () => {
               return (
                 <Th
                   key={index}
-                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'gray.100'}
+                  bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : 'neutral.100'}
                   position="sticky"
                   top={0}
                   border={(isSelected || isMapped) ? '2px solid' : undefined}
