@@ -1,24 +1,42 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Response, Request
 from boto3 import client
-from typing import Optional
+from typing import Optional, List
 import os
 import logging
 from botocore.exceptions import ClientError
+from fastapi import Query
+from pydantic import BaseModel
+import csv
+from io import StringIO
+from datetime import datetime
+import json
+import mimetypes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+# Configure routers for S3 and R2
+s3_router = APIRouter(prefix="/s3", tags=["s3"])
+r2_router = APIRouter(prefix="/r2", tags=["r2"])
 
-# Configure S3 client for Cloudflare R2
+# Configure S3 client (used for both S3 and R2)
 s3_client = client(
     "s3",
     region_name="auto",
-    endpoint_url=os.getenv("R2_ENDPOINT", "https://aa2f6aae69e7fb4bd8e2cd4311c411cb.r2.cloudflarestorage.com"),
-    aws_access_key_id=os.getenv("R2_ACCESS_KEY_ID", "8b5a4a988c474205e0172eab5479d6f2"),
-    aws_secret_access_key=os.getenv("R2_SECRET_ACCESS_KEY", "8ff719bbf2946c1b6a81fcf2121e1a41604a0b6f2890f308871b381e98a8d725")
+    endpoint_url=os.getenv("R2_ENDPOINT", "https://97d91ece470eb7b9aa71ca0c781cfacc.r2.cloudflarestorage.com"),
+    aws_access_key_id=os.getenv("R2_ACCESS_KEY_ID", "5547ff7ffb8f3b16a15d6f38322cd8bd"),
+    aws_secret_access_key=os.getenv("R2_SECRET_ACCESS_KEY", "771014b01093eceb212dfea5eec0673842ca4a39456575ca7ff43f768cf42978")
 )
+
+# Constants
+BUCKET_NAME = "iconluxurygroup"
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
+JSON_STORE_PATH = "file_store/file_store.json"
+
+# Pydantic model for delete request
+class DeleteRequest(BaseModel):
+    paths: List[str]
 
 async def get_folder_count(prefix: str) -> int:
     """
@@ -29,7 +47,7 @@ async def get_folder_count(prefix: str) -> int:
         continuation_token = None
         while True:
             params = {
-                "Bucket": "iconluxurygroup",
+                "Bucket": BUCKET_NAME,
                 "Prefix": prefix,
                 "MaxKeys": 1000,
             }
@@ -45,25 +63,139 @@ async def get_folder_count(prefix: str) -> int:
         logger.error(f"Error counting objects in folder {prefix}: {str(e)}")
         return 0
 
-@router.get("/s3/list", tags=["s3"])
-async def list_s3_objects(prefix: str = "", page: int = 1, page_size: int = 10, continuation_token: Optional[str] = None):
+# Function to read JSON store
+async def read_json_store():
+    try:
+        response = s3_client.get_object(Bucket=BUCKET_NAME, Key=JSON_STORE_PATH)
+        content = response["Body"].read().decode("utf-8")
+        return json.loads(content)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "NoSuchKey":
+            logger.info("JSON store not found, returning empty store")
+            return {"objects": [], "hasMore": False, "nextContinuationToken": None}
+        logger.error(f"Error reading JSON store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to read JSON store: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error reading JSON store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Function to update JSON store
+async def update_json_store(new_objects: List[dict]):
+    try:
+        # Read current JSON store
+        current_store = await read_json_store()
+        current_objects = {obj["path"]: obj for obj in current_store.get("objects", [])}
+
+        # Update with new objects (add or update)
+        for obj in new_objects:
+            current_objects[obj["path"]] = obj
+
+        # Convert back to list
+        updated_objects = list(current_objects.values())
+
+        # Write back to S3
+        json_data = json.dumps({
+            "objects": updated_objects,
+            "hasMore": False,  # Since we're storing all objects
+            "nextContinuationToken": None
+        })
+        s3_client.put_object(
+            Bucket=BUCKET_NAME,
+            Key=JSON_STORE_PATH,
+            Body=json_data.encode("utf-8"),
+            ContentType="application/json"
+        )
+        logger.info(f"Updated JSON store at {JSON_STORE_PATH}")
+    except Exception as e:
+        logger.error(f"Error updating JSON store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update JSON store: {str(e)}")
+
+# One-time function to fetch and add existing records to JSON store
+async def sync_existing_objects(prefix: str = ""):
     """
-    List S3 objects and folders with pagination.
-    Args:
-        prefix: S3 prefix to filter objects.
-        page: Page number (1-based).
-        page_size: Number of items per page.
-        continuation_token: S3 continuation token for pagination (optional).
-    Returns:
-        A JSON object with objects, pagination metadata, and hasMore flag.
+    Fetch all existing objects from S3 and add them to the JSON store.
+    """
+    try:
+        all_objects = []
+        continuation_token = None
+        while True:
+            params = {
+                "Bucket": BUCKET_NAME,
+                "Prefix": prefix,
+                "Delimiter": "/",
+                "MaxKeys": 1000,
+            }
+            if continuation_token:
+                params["ContinuationToken"] = continuation_token
+            response = s3_client.list_objects_v2(**params)
+
+            # Process folders
+            for common_prefix in response.get("CommonPrefixes", []):
+                folder_path = common_prefix["Prefix"]
+                folder_name = folder_path.rstrip("/").split("/")[-1]
+                if folder_name:
+                    count = await get_folder_count(folder_path)
+                    all_objects.append({
+                        "type": "folder",
+                        "name": folder_name,
+                        "path": folder_path,
+                        "count": count,
+                        "lastModified": None
+                    })
+
+            # Process files
+            for obj in response.get("Contents", []):
+                key = obj["Key"]
+                if key != prefix and not key.endswith("/"):
+                    file_name = key.replace(prefix, "", 1).lstrip("/")
+                    if file_name:
+                        all_objects.append({
+                            "type": "file",
+                            "name": file_name,
+                            "path": key,
+                            "size": obj["Size"],
+                            "lastModified": obj["LastModified"].isoformat(),
+                            "count": None
+                        })
+
+            continuation_token = response.get("NextContinuationToken")
+            if not continuation_token:
+                break
+
+        # Update JSON store with all objects
+        await update_json_store(all_objects)
+        logger.info(f"Synced {len(all_objects)} objects to JSON store for prefix: {prefix}")
+        return {
+            "message": f"Successfully synced {len(all_objects)} objects to JSON store",
+            "objects_synced": len(all_objects)
+        }
+    except s3_client.exceptions.NoSuchBucket as e:
+        logger.error(f"Bucket not found: {str(e)}")
+        raise HTTPException(status_code=404, detail="Bucket not found")
+    except s3_client.exceptions.ClientError as e:
+        logger.error(f"Client error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error syncing objects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+def sanitize_path(path: str) -> str:
+    """Sanitize the path to prevent directory traversal and invalid characters."""
+    clean_path = os.path.normpath(path.lstrip("/")).replace("\\", "/")
+    if clean_path.startswith("..") or "/.." in clean_path:
+        raise ValueError("Invalid path: contains parent directory references")
+    return clean_path
+
+async def list_objects(prefix: str = "", page: int = 1, page_size: int = 10, continuation_token: Optional[str] = None):
+    """
+    List objects and folders with pagination.
     """
     try:
         if page < 1 or page_size < 1:
             raise HTTPException(status_code=400, detail="Invalid page or page_size")
 
-        # Prepare parameters for S3 request
         params = {
-            "Bucket": "iconluxurygroup",
+            "Bucket": BUCKET_NAME,
             "Prefix": prefix,
             "Delimiter": "/",
             "MaxKeys": page_size,
@@ -71,10 +203,8 @@ async def list_s3_objects(prefix: str = "", page: int = 1, page_size: int = 10, 
         if page > 1 and continuation_token:
             params["ContinuationToken"] = continuation_token
 
-        # List objects
         response = s3_client.list_objects_v2(**params)
 
-        # Process folders
         folders = []
         for common_prefix in response.get("CommonPrefixes", []):
             folder_path = common_prefix["Prefix"]
@@ -89,7 +219,6 @@ async def list_s3_objects(prefix: str = "", page: int = 1, page_size: int = 10, 
                     "lastModified": None
                 })
 
-        # Process files
         files = []
         for obj in response.get("Contents", []):
             key = obj["Key"]
@@ -105,10 +234,7 @@ async def list_s3_objects(prefix: str = "", page: int = 1, page_size: int = 10, 
                         "count": None
                     })
 
-        # Combine results
         objects = folders + files
-
-        # Pagination metadata
         has_more = response.get("IsTruncated", False)
         next_continuation_token = response.get("NextContinuationToken")
 
@@ -123,21 +249,20 @@ async def list_s3_objects(prefix: str = "", page: int = 1, page_size: int = 10, 
 
     except s3_client.exceptions.NoSuchBucket as e:
         logger.error(f"Bucket not found: {str(e)}")
-        raise HTTPException(status_code=404, detail="S3 bucket not found")
+        raise HTTPException(status_code=404, detail="Bucket not found")
     except s3_client.exceptions.ClientError as e:
-        logger.error(f"S3 client error: {str(e)}")
+        logger.error(f"Client error: {str(e)}")
         error_code = e.response.get("Error", {}).get("Code")
         if error_code == "InvalidToken":
             raise HTTPException(status_code=400, detail="Invalid continuation token")
-        raise HTTPException(status_code=500, detail=f"S3 error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.get("/s3/sign", tags=["s3"])
 async def get_signed_url(key: str, expires_in: int = 3600):
     """
-    Generate a signed URL for an S3 object.
+    Generate a signed URL for an object.
     """
     try:
         if not key:
@@ -148,7 +273,7 @@ async def get_signed_url(key: str, expires_in: int = 3600):
         signed_url = s3_client.generate_presigned_url(
             ClientMethod="get_object",
             Params={
-                "Bucket": "iconluxurygroup",
+                "Bucket": BUCKET_NAME,
                 "Key": key
             },
             ExpiresIn=expires_in
@@ -161,7 +286,333 @@ async def get_signed_url(key: str, expires_in: int = 3600):
             raise HTTPException(status_code=404, detail="Object not found")
         elif error_code == "AccessDenied":
             raise HTTPException(status_code=403, detail="Access denied to the object")
-        raise HTTPException(status_code=500, detail=f"S3 error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
     except Exception as e:
         logger.error(f"Unexpected error generating signed URL: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+async def upload_file(file: UploadFile, path: str):
+    """
+    Upload a file to S3 with robust error handling and validation, and update JSON store.
+    """
+    try:
+        if not file.filename:
+            logger.error("No filename provided for upload")
+            raise HTTPException(status_code=400, detail="No filename provided")
+            
+        if not path:
+            logger.error("No destination path provided")
+            raise HTTPException(status_code=400, detail="No destination path provided")
+            
+        MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
+        file_size = 0
+        file.file.seek(0, os.SEEK_END)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        if file_size > MAX_FILE_SIZE:
+            logger.error(f"File size {file_size} exceeds maximum {MAX_FILE_SIZE}")
+            raise HTTPException(status_code=400, detail=f"File size exceeds {MAX_FILE_SIZE} bytes")
+        if file_size == 0:
+            logger.error("Empty file provided")
+            raise HTTPException(status_code=400, detail="Empty file provided")
+            
+        sanitized_path = sanitize_path(path)
+        
+        content_type = file.content_type
+        if not content_type or content_type == "application/octet-stream":
+            content_type, _ = mimetypes.guess_type(file.filename)
+            content_type = content_type or "application/octet-stream"
+        
+        extra_args = {
+            "ContentType": content_type,
+            "Metadata": {
+                "original_filename": file.filename,
+                "upload_timestamp": str(int(os.times().elapsed))
+            }
+        }
+        
+        logger.info(f"Uploading file {file.filename} to s3://{BUCKET_NAME}/{sanitized_path}")
+        
+        response = s3_client.upload_fileobj(
+            Fileobj=file.file,
+            Bucket=BUCKET_NAME,
+            Key=sanitized_path,
+            ExtraArgs=extra_args
+        )
+        
+        try:
+            head_response = s3_client.head_object(Bucket=BUCKET_NAME, Key=sanitized_path)
+            # Update JSON store
+            new_object = {
+                "type": "file",
+                "name": file.filename,
+                "path": sanitized_path,
+                "size": file_size,
+                "lastModified": head_response["LastModified"].isoformat(),
+                "count": None
+            }
+            await update_json_store([new_object])
+        except ClientError as e:
+            logger.error(f"Verification failed for {sanitized_path}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Upload verification failed")
+            
+        logger.info(f"Successfully uploaded {file.filename} to {sanitized_path}")
+        return {
+            "message": f"File uploaded successfully to {sanitized_path}",
+            "filename": file.filename,
+            "content_type": content_type,
+            "size": file_size
+        }
+        
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "Unknown")
+        error_message = e.response.get("Error", {}).get("Message", str(e))
+        logger.error(f"S3 error uploading to {path}: {error_code} - {error_message}")
+        if error_code == "NoSuchBucket":
+            raise HTTPException(status_code=500, detail="Storage bucket does not exist")
+        elif error_code in ("AccessDenied", "Forbidden"):
+            raise HTTPException(status_code=403, detail="Insufficient permissions to upload file")
+        else:
+            raise HTTPException(status_code=500, detail=f"Storage error: {error_message}")
+            
+    except ValueError as e:
+        logger.error(f"Path validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid path: {str(e)}")
+        
+    except Exception as e:
+        logger.error(f"Unexpected error uploading file to {path}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+async def delete_objects(paths: List[str]):
+    try:
+        if not paths:
+            raise HTTPException(status_code=400, detail="No paths provided")
+        
+        sanitized_paths = [sanitize_path(path) for path in paths]
+        objects_to_delete = []
+        for path in sanitized_paths:
+            if path.endswith("/"):
+                continuation_token = None
+                while True:
+                    response = s3_client.list_objects_v2(
+                        Bucket=BUCKET_NAME,
+                        Prefix=path,
+                        MaxKeys=1000,
+                        ContinuationToken=continuation_token
+                    )
+                    for obj in response.get("Contents", []):
+                        objects_to_delete.append({"Key": obj["Key"]})
+                    continuation_token = response.get("NextContinuationToken")
+                    if not continuation_token:
+                        break
+            else:
+                objects_to_delete.append({"Key": path})
+        
+        if not objects_to_delete:
+            return {"message": "No objects to delete"}
+        
+        # Perform the deletion
+        response = s3_client.delete_objects(
+            Bucket=BUCKET_NAME,
+            Delete={"Objects": objects_to_delete, "Quiet": True}
+        )
+        
+        errors = response.get("Errors", [])
+        if errors:
+            error_details = ", ".join([f"{err['Key']}: {err['Message']}" for err in errors])
+            raise HTTPException(status_code=500, detail=f"Failed to delete some objects: {error_details}")
+        
+        # Sync JSON store: Remove deleted objects
+        try:
+            # Read current JSON store
+            current_store = await read_json_store()
+            current_objects = current_store.get("objects", [])
+            
+            # Filter out deleted objects
+            deleted_keys = {obj["Key"] for obj in objects_to_delete}
+            updated_objects = [obj for obj in current_objects if obj["path"] not in deleted_keys]
+            
+            # Write updated JSON store
+            json_data = json.dumps({
+                "objects": updated_objects,
+                "hasMore": False,
+                "nextContinuationToken": None
+            })
+            s3_client.put_object(
+                Bucket=BUCKET_NAME,
+                Key=JSON_STORE_PATH,
+                Body=json_data.encode("utf-8"),
+                ContentType="application/json"
+            )
+            logger.info(f"Synced JSON store after deleting {len(objects_to_delete)} objects")
+        except Exception as e:
+            logger.error(f"Error syncing JSON store after deletion: {str(e)}")
+            # Note: We don't raise an exception here to avoid failing the deletion
+            # The deletion was successful, so we log the sync error but proceed
+            
+        return {"message": f"Successfully deleted {len(objects_to_delete)} objects"}
+    
+    except ClientError as e:
+        logger.error(f"Error deleting objects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error deleting objects: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+async def export_to_csv(prefix: str = ""):
+    """
+    Export object list to CSV.
+    """
+    try:
+        # Fetch all objects
+        objects = []
+        continuation_token = None
+        while True:
+            params = {
+                "Bucket": BUCKET_NAME,
+                "Prefix": prefix,
+                "Delimiter": "/",
+                "MaxKeys": 1000,
+            }
+            if continuation_token:
+                params["ContinuationToken"] = continuation_token
+            response = s3_client.list_objects_v2(**params)
+
+            # Process folders
+            for common_prefix in response.get("CommonPrefixes", []):
+                folder_path = common_prefix["Prefix"]
+                folder_name = folder_path.rstrip("/").split("/")[-1]
+                if folder_name:
+                    count = await get_folder_count(folder_path)
+                    objects.append({
+                        "type": "folder",
+                        "name": folder_name,
+                        "path": folder_path,
+                        "size": None,
+                        "lastModified": None,
+                        "count": count
+                    })
+
+            # Process files
+            for obj in response.get("Contents", []):
+                key = obj["Key"]
+                if key != prefix and not key.endswith("/"):
+                    file_name = key.replace(prefix, "", 1).lstrip("/")
+                    if file_name:
+                        objects.append({
+                            "type": "file",
+                            "name": file_name,
+                            "path": key,
+                            "size": obj["Size"],
+                            "lastModified": obj["LastModified"].isoformat(),
+                            "count": None
+                        })
+
+            continuation_token = response.get("NextContinuationToken")
+            if not continuation_token:
+                break
+
+        # Create CSV
+        output = StringIO()
+        writer = csv.DictWriter(output, fieldnames=["type", "name", "path", "size", "lastModified", "count"])
+        writer.writeheader()
+        for obj in objects:
+            writer.writerow({
+                "type": obj["type"],
+                "name": obj["name"],
+                "path": obj["path"],
+                "size": obj["size"] if obj["size"] is not None else "",
+                "lastModified": obj["lastModified"] if obj["lastModified"] is not None else "",
+                "count": obj["count"] if obj["count"] is not None else ""
+            })
+
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=file_list_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"}
+        )
+
+    except s3_client.exceptions.NoSuchBucket as e:
+        logger.error(f"Bucket not found: {str(e)}")
+        raise HTTPException(status_code=404, detail="Bucket not found")
+    except s3_client.exceptions.ClientError as e:
+        logger.error(f"Client error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error exporting CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# S3 Endpoints
+@s3_router.get("/list")
+async def s3_list_objects(
+    prefix: str = "",
+    page: int = 1,
+    page_size: int = 10,
+    continuation_token: Optional[str] = None
+):
+    return await list_objects(prefix, page, page_size, continuation_token)
+
+@s3_router.get("/sign")
+async def s3_get_signed_url(key: str, expires_in: int = 3600):
+    return await get_signed_url(key, expires_in)
+
+@s3_router.post("/upload")
+async def s3_upload_file(
+    file: UploadFile = File(...),
+    path: str = Query(...)
+):
+    return await upload_file(file, path)
+
+@s3_router.post("/delete")
+async def s3_delete_objects(request: DeleteRequest):
+    return await delete_objects(request.paths)
+
+@s3_router.get("/export-csv")
+async def s3_export_to_csv(prefix: str = ""):
+    return await export_to_csv(prefix)
+
+@s3_router.get("/json-store")
+async def get_json_store():
+    return await read_json_store()
+
+@s3_router.post("/sync-json-store")
+async def sync_json_store(prefix: str = ""):
+    """
+    One-time endpoint to sync existing S3 objects to the JSON store.
+    """
+    return await sync_existing_objects(prefix)
+
+# R2 Endpoints
+@r2_router.get("/list")
+async def r2_list_objects(
+    prefix: str = "",
+    page: int = 1,
+    page_size: int = 10,
+    continuation_token: Optional[str] = None
+):
+    return await list_objects(prefix, page, page_size, continuation_token)
+
+@r2_router.get("/sign")
+async def r2_get_signed_url(key: str, expires_in: int = 3600):
+    return await get_signed_url(key, expires_in)
+
+@r2_router.post("/upload")
+async def r2_upload_file(request: Request, file: UploadFile = File(...)):
+    path = request.query_params.get("path")
+    if not path:
+        raise HTTPException(status_code=400, detail="Query parameter 'path' is required")
+    return await upload_file(file, path)
+
+@r2_router.post("/delete")
+async def r2_delete_objects(request: DeleteRequest):
+    return await delete_objects(request.paths)
+
+@r2_router.get("/export-csv")
+async def r2_export_to_csv(prefix: str = ""):
+    return await export_to_csv(prefix)
+
+
+# Backwards-compatible router export
+router = APIRouter()
+router.include_router(s3_router)
+router.include_router(r2_router)
