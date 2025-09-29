@@ -1405,37 +1405,65 @@ const DataWarehouseForm: React.FC = () => {
       <Table size="sm">
         <Thead>
           <Tr>
-            {excelData.headers.map((header, index) => (
-              <Th
-                key={index}
-                bg="gray.100"
-                position="sticky"
-                top={0}
-                border={Object.values(columnMapping).includes(index) ? '2px solid' : undefined}
-                borderColor="primary.500"
-              >
-                {header || `Column ${indexToColumnLetter(index)}`}
-              </Th>
-            ))}
+            {excelData.headers.map((header, index) => {
+              const isMapped = mappedColumns.has(index);
+              const isSelected = selectedColumnIndex === index;
+              return (
+                <Th
+                  key={index}
+                  bg={isSelected ? 'primary.100' : isMapped ? 'gray.200' : 'gray.100'}
+                  position="sticky"
+                  top={0}
+                  border={isMapped ? '2px solid' : undefined}
+                  borderColor="primary.500"
+                  cursor={activeMappingField ? 'pointer' : 'default'}
+                  onClick={() => handleColumnMapFromGrid(index)}
+                  tabIndex={activeMappingField ? 0 : undefined}
+                  onKeyDown={event => {
+                    if (!activeMappingField) return;
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleColumnMapFromGrid(index);
+                    }
+                  }}
+                  role={activeMappingField ? 'button' : undefined}
+                  aria-pressed={isSelected}
+                  _hover={activeMappingField ? { bg: isSelected ? 'primary.200' : 'primary.100' } : undefined}
+                >
+                  {header || `Column ${indexToColumnLetter(index)}`}
+                </Th>
+              );
+            })}
           </Tr>
         </Thead>
         <Tbody>
           {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
             <Tr key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <Td
-                  key={cellIndex}
-                  maxW="200px"
-                  isTruncated
-                  bg={
-                    (columnMapping.style === cellIndex || columnMapping.msrp === cellIndex) && !cell
-                      ? 'red.100'
-                      : undefined
-                  }
-                >
-                  {getDisplayValue(cell)}
-                </Td>
-              ))}
+              {row.map((cell, cellIndex) => {
+                const isMissingRequired =
+                  (columnMapping.style === cellIndex || columnMapping.msrp === cellIndex) && !cell;
+                const isSelectedColumn = selectedColumnIndex === cellIndex;
+                const isMappedColumn = mappedColumns.has(cellIndex);
+                const bgColor = isMissingRequired
+                  ? 'red.100'
+                  : isSelectedColumn
+                    ? 'primary.50'
+                    : isMappedColumn
+                      ? 'gray.50'
+                      : undefined;
+                return (
+                  <Td
+                    key={cellIndex}
+                    maxW="200px"
+                    isTruncated
+                    bg={bgColor}
+                    cursor={activeMappingField ? 'pointer' : 'default'}
+                    onClick={() => handleColumnMapFromGrid(cellIndex)}
+                  >
+                    {getDisplayValue(cell)}
+                  </Td>
+                );
+              })}
             </Tr>
           ))}
         </Tbody>
