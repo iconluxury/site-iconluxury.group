@@ -72,31 +72,31 @@ const chartOptions = [
   {
     key: "requestsOverTime",
     label: "Requests Over Time",
-    color: "#805AD5",
+    color: "#6366F1",
     yAxisLabel: "Requests",
   },
   {
     key: "categoryDistribution",
     label: "Category Distribution",
-    color: "#38A169",
+    color: "#34D399",
     yAxisLabel: "Total Queries",
   },
   {
     key: "topQueries",
     label: "Top Queries",
-    color: "#DD6B20",
+    color: "#F59E0B",
     yAxisLabel: "Query Count",
   },
   {
     key: "successRate",
     label: "Success Rate",
-    color: "#C53030",
+    color: "#EF4444",
     yAxisLabel: "Percentage (%)",
   },
   {
     key: "keyMetrics",
     label: "Key Metrics",
-    color: "#D69E2E",
+    color: "#0EA5E9",
     yAxisLabel: "Value",
   },
 ]
@@ -106,49 +106,49 @@ const compareOptions: {
   [key: string]: { value: string; label: string; color: string }[]
 } = {
   requestsOverTime: [
-    { value: "totalRequests", label: "Total Requests", color: "#805AD5" },
-    { value: "avgHourly", label: "Avg Hourly Requests", color: "#9F7AEA" },
-    { value: "maxHourly", label: "Max Hourly Requests", color: "#B794F4" },
-    { value: "minHourly", label: "Min Hourly Requests", color: "#D6BCFA" },
+    { value: "totalRequests", label: "Total Requests", color: "#6366F1" },
+    { value: "avgHourly", label: "Avg Hourly Requests", color: "#8B5CF6" },
+    { value: "maxHourly", label: "Max Hourly Requests", color: "#A855F7" },
+    { value: "minHourly", label: "Min Hourly Requests", color: "#C4B5FD" },
   ],
   categoryDistribution: [
-    { value: "totalQueries", label: "Total Queries", color: "#38A169" },
-    { value: "avgPerCategory", label: "Avg Per Category", color: "#68D391" },
-    { value: "maxCategory", label: "Max Category Count", color: "#9AE6B4" },
-    { value: "uniqueCategories", label: "Unique Categories", color: "#C6F6D5" },
+    { value: "totalQueries", label: "Total Queries", color: "#34D399" },
+    { value: "avgPerCategory", label: "Avg Per Category", color: "#10B981" },
+    { value: "maxCategory", label: "Max Category Count", color: "#6EE7B7" },
+    { value: "uniqueCategories", label: "Unique Categories", color: "#A7F3D0" },
   ],
   topQueries: [
-    { value: "queryCount", label: "Query Count", color: "#DD6B20" },
-    { value: "avgQueryCount", label: "Avg Query Count", color: "#F6AD55" },
-    { value: "maxQuery", label: "Max Query Count", color: "#FBD38D" },
-    { value: "featuredQueries", label: "Featured Queries", color: "#FEEBC8" },
+    { value: "queryCount", label: "Query Count", color: "#F59E0B" },
+    { value: "avgQueryCount", label: "Avg Query Count", color: "#F97316" },
+    { value: "maxQuery", label: "Max Query Count", color: "#FDBA74" },
+    { value: "featuredQueries", label: "Featured Queries", color: "#FED7AA" },
   ],
   successRate: [
-    { value: "successRate", label: "Success Rate", color: "#C53030" },
-    { value: "errorRate", label: "Error Rate", color: "#F56565" },
-    { value: "avgSuccess", label: "Avg Success Rate", color: "#FC8181" },
-    { value: "variance", label: "Success Variance", color: "#FEB2B2" },
+    { value: "successRate", label: "Success Rate", color: "#EF4444" },
+    { value: "errorRate", label: "Error Rate", color: "#F87171" },
+    { value: "avgSuccess", label: "Avg Success Rate", color: "#FB7185" },
+    { value: "variance", label: "Success Variance", color: "#FCA5A5" },
   ],
   keyMetrics: [
-    { value: "totalRequests", label: "Total Requests", color: "#D69E2E" },
-    { value: "successRate", label: "Success Rate", color: "#ECC94B" },
-    { value: "endpoints", label: "Endpoints", color: "#F6E05E" },
-    { value: "avgRequests", label: "Avg Requests", color: "#FAF089" },
+    { value: "totalRequests", label: "Total Requests", color: "#0EA5E9" },
+    { value: "successRate", label: "Success Rate", color: "#38BDF8" },
+    { value: "endpoints", label: "Endpoints", color: "#7DD3FC" },
+    { value: "avgRequests", label: "Avg Requests", color: "#BAE6FD" },
   ],
 }
 
 // Color palette for bar charts
 const BAR_COLORS = [
-  "#805AD5",
-  "#38A169",
-  "#DD6B20",
-  "#C53030",
-  "#D69E2E",
-  "#9F7AEA",
-  "#68D391",
-  "#F6AD55",
-  "#F56565",
-  "#ECC94B",
+  "#6366F1",
+  "#34D399",
+  "#F59E0B",
+  "#EF4444",
+  "#0EA5E9",
+  "#8B5CF6",
+  "#10B981",
+  "#F97316",
+  "#F87171",
+  "#38BDF8",
 ]
 
 const OverviewGSerp: React.FC = () => {
@@ -590,7 +590,7 @@ const OverviewGSerp: React.FC = () => {
       <Grid templateColumns="repeat(4, 1fr)" gap={4}>
         {stats.map((stat, index) => (
           <Stat key={index}>
-            <StatLabel color="gray.400">{stat.label}</StatLabel>
+            <StatLabel color="subtle">{stat.label}</StatLabel>
             <StatNumber fontSize="xl">{stat.value}</StatNumber>
           </Stat>
         ))}
@@ -755,7 +755,7 @@ const OverviewGSerp: React.FC = () => {
                       tick={{ fill: "#FFFFFF", fontSize: 12, dy: -10 }}
                       tickMargin={10}
                       interval="preserveStartEnd"
-                      label={
+                            <Card bg="surface" borderRadius="lg" border="1px solid" borderColor="border">
                         showLabels
                           ? {
                               value:
