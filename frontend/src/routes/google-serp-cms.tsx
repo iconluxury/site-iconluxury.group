@@ -1017,6 +1017,7 @@ const DataWarehouseForm: React.FC = () => {
     });
     showToast('Success', `Manual brand "${manualBrand.trim()}" applied`, 'success');
     setManualBrand('');
+    setActiveMappingField(null);
   }, [manualBrand, showToast]);
 
   const removeManualBrand = useCallback(() => {
@@ -1027,6 +1028,7 @@ const DataWarehouseForm: React.FC = () => {
     setColumnMapping(prev => ({ ...prev, brand: null }));
     setIsManualBrandApplied(false);
     showToast('Success', 'Manual brand removed', 'success');
+    setActiveMappingField(null);
   }, [showToast]);
 
   const validateForm = useMemo(() => {
@@ -1208,6 +1210,10 @@ const DataWarehouseForm: React.FC = () => {
               key={rowIndex}
               bg={rowIndex === headerIndex ? 'primary.100' : undefined}
               fontWeight={rowIndex === headerIndex ? 'bold' : 'normal'}
+              cursor="pointer"
+              onClick={() => handleHeaderChange(rowIndex)}
+              role="button"
+              _hover={{ bg: rowIndex === headerIndex ? 'primary.200' : 'primary.50' }}
             >
               {row.map((cell, cellIndex) => (
                 <Td
@@ -1241,14 +1247,32 @@ const DataWarehouseForm: React.FC = () => {
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
         </Text>
       )}
+      <Text fontSize="sm" color="gray.600">
+        Select a field below, then click a column in the preview grid to map it instantly.
+      </Text>
       <Text fontWeight="bold">Required Columns</Text>
       {REQUIRED_COLUMNS.map(field => (
-        <HStack key={field} gap={2} align="center">
-          <Text w="120px">{field}:</Text>
+        <HStack
+          key={field}
+          gap={2}
+          align="center"
+          p={2}
+          borderRadius="md"
+          borderWidth={activeMappingField === field ? '2px' : '1px'}
+          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
+          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          cursor="pointer"
+          onClick={() => setActiveMappingField(field)}
+        >
+          <Text w="120px" fontWeight="semibold">
+            {field}:
+          </Text>
           <Tooltip label={`Select Excel column for ${field}`}>
             <Select
               value={columnMapping[field] !== null ? columnMapping[field]! : ''}
               onChange={e => handleColumnMap(Number(e.target.value), field)}
+              onFocus={() => setActiveMappingField(field)}
+              onClick={() => setActiveMappingField(field)}
               placeholder="Unmapped"
               aria-label={`Map ${field} column`}
               flex="1"
@@ -1258,7 +1282,7 @@ const DataWarehouseForm: React.FC = () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -1282,12 +1306,27 @@ const DataWarehouseForm: React.FC = () => {
       ))}
       <Text fontWeight="bold" mt={4}>Optional Columns</Text>
       {OPTIONAL_COLUMNS.map(field => (
-        <HStack key={field} gap={2} align="center">
-          <Text w="120px">{field}:</Text>
+        <HStack
+          key={field}
+          gap={2}
+          align="center"
+          p={2}
+          borderRadius="md"
+          borderWidth={activeMappingField === field ? '2px' : '1px'}
+          borderColor={activeMappingField === field ? 'primary.500' : 'transparent'}
+          bg={activeMappingField === field ? 'primary.50' : 'transparent'}
+          cursor="pointer"
+          onClick={() => setActiveMappingField(field)}
+        >
+          <Text w="120px" fontWeight="semibold">
+            {field}:
+          </Text>
           <Tooltip label={`Select Excel column for ${field}`}>
             <Select
               value={columnMapping[field] !== null ? columnMapping[field]! : ''}
               onChange={e => handleColumnMap(Number(e.target.value), field)}
+              onFocus={() => setActiveMappingField(field)}
+              onClick={() => setActiveMappingField(field)}
               placeholder="Unmapped"
               aria-label={`Map ${field} column`}
               flex="1"
@@ -1297,7 +1336,7 @@ const DataWarehouseForm: React.FC = () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={Object.values(columnMapping).includes(index) && columnMapping[field] !== index}
+                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
