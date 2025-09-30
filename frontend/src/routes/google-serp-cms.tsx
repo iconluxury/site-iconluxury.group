@@ -46,6 +46,8 @@ type ColumnMapping = Record<ColumnType | 'readImage' | 'imageAdd', number | null
 type ToastFunction = (title: string, description: string, status: 'error' | 'warning' | 'success') => void;
 
 // Shared Helper Functions
+const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i;
+
 const getDisplayValue = (value: any): string => {
   if (value == null) return '';
   if (value instanceof Date) return value.toLocaleString();
@@ -139,6 +141,32 @@ const SELECTED_BG_STRONG = 'brand.100';
 const SELECTED_BG_SUBTLE = 'brand.50';
 const MAPPED_BG = 'neutral.100';
 const SELECTED_BORDER_COLOR = 'brand.600';
+
+const looksLikeUrl = (value: CellValue | undefined): boolean => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
+
+const getFirstNonEmptyValue = (rows: CellValue[][], columnIndex: number): CellValue | undefined => {
+  for (const row of rows) {
+    const value = row[columnIndex];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const determineFallbackImageColumnIndex = (headers: string[], rows: CellValue[][]): number | null => {
+  if (headers.length === 0) return null;
+  const firstHeader = headers[0];
+  if (firstHeader && IMAGE_HEADER_PATTERN.test(firstHeader)) {
+    return 0;
+  }
+  if (rows.length === 0) return null;
+  const sampleValue = getFirstNonEmptyValue(rows, 0);
+  if (looksLikeUrl(sampleValue)) {
+    return 0;
+  }
+  return null;
+};
 
 // Google Images Form Component
 const GoogleImagesForm: React.FC = () => {
@@ -365,10 +393,11 @@ const handleSubmit = useCallback(async () => {
       formData.append('brandColImage', indexToColumnLetter(columnMapping.brand));
     }
 
+    const fallbackImageColumnIndex = determineFallbackImageColumnIndex(excelData.headers, excelData.rows);
     const imageColumnIndex =
       columnMapping.readImage ??
       columnMapping.imageAdd ??
-      (excelData.headers.length > 0 ? 0 : null);
+      fallbackImageColumnIndex;
 
     if (imageColumnIndex !== null) {
       formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
@@ -1068,10 +1097,11 @@ const DataWarehouseForm: React.FC = () => {
       formData.append('brandColImage', indexToColumnLetter(columnMapping.brand));
     }
 
+    const fallbackImageColumnIndex = determineFallbackImageColumnIndex(excelData.headers, excelData.rows);
     const imageColumnIndex =
       columnMapping.readImage ??
       columnMapping.imageAdd ??
-      (excelData.headers.length > 0 ? 0 : null);
+      fallbackImageColumnIndex;
 
     if (imageColumnIndex !== null) {
       formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
