@@ -365,8 +365,13 @@ const handleSubmit = useCallback(async () => {
       formData.append('brandColImage', indexToColumnLetter(columnMapping.brand));
     }
 
-    if (columnMapping.readImage || columnMapping.imageAdd) {
-      formData.append('imageColumnImage', indexToColumnLetter(columnMapping.readImage || columnMapping.imageAdd!));
+    const imageColumnIndex =
+      columnMapping.readImage ??
+      columnMapping.imageAdd ??
+      (excelData.headers.length > 0 ? 0 : null);
+
+    if (imageColumnIndex !== null) {
+      formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
     }
     if (columnMapping.colorName !== null) {
       formData.append('ColorColImage', indexToColumnLetter(columnMapping.colorName));
@@ -1063,8 +1068,13 @@ const DataWarehouseForm: React.FC = () => {
       formData.append('brandColImage', indexToColumnLetter(columnMapping.brand));
     }
 
-    if (columnMapping.readImage || columnMapping.imageAdd) {
-      formData.append('imageColumnImage', indexToColumnLetter(columnMapping.readImage || columnMapping.imageAdd!));
+    const imageColumnIndex =
+      columnMapping.readImage ??
+      columnMapping.imageAdd ??
+      (excelData.headers.length > 0 ? 0 : null);
+
+    if (imageColumnIndex !== null) {
+      formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
     }
     if (columnMapping.colorName !== null) {
       formData.append('ColorColImage', indexToColumnLetter(columnMapping.colorName));
