@@ -322,13 +322,21 @@ const GoogleImagesForm: React.FC = () => {
     []
   );
 
-  const mappedColumns = useMemo(
-    () =>
-      new Set(
-        (Object.values(columnMapping).filter((value): value is number => typeof value === 'number') as number[])
-      ),
-    [columnMapping]
-  );
+  const mappedDataColumns = useMemo(() => {
+    const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
+    return new Set(
+      keys
+        .map(key => columnMapping[key])
+        .filter((value): value is number => typeof value === 'number')
+    );
+  }, [columnMapping, OPTIONAL_COLUMNS, REQUIRED_COLUMNS]);
+
+  const mappedColumnsForHighlight = useMemo(() => {
+    const set = new Set(mappedDataColumns);
+    if (typeof columnMapping.readImage === 'number') set.add(columnMapping.readImage);
+    if (typeof columnMapping.imageAdd === 'number') set.add(columnMapping.imageAdd);
+    return set;
+  }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns]);
 
   const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null;
 
@@ -401,6 +409,8 @@ const handleSubmit = useCallback(async () => {
 
     if (imageColumnIndex !== null) {
       formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
+    } else {
+      formData.append('imageColumnImage', '');
     }
     if (columnMapping.colorName !== null) {
       formData.append('ColorColImage', indexToColumnLetter(columnMapping.colorName));
@@ -617,7 +627,7 @@ const handleSubmit = useCallback(async () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
+                  disabled={mappedDataColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -705,7 +715,7 @@ const handleSubmit = useCallback(async () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
+                  disabled={mappedDataColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -741,7 +751,7 @@ const handleSubmit = useCallback(async () => {
         <Thead>
           <Tr>
             {excelData.headers.map((header, index) => {
-              const isMapped = mappedColumns.has(index);
+              const isMapped = mappedColumnsForHighlight.has(index);
               const isSelected = selectedColumnIndex === index;
               return (
                 <Th
@@ -778,7 +788,7 @@ const handleSubmit = useCallback(async () => {
                 const isMissingRequired =
                   (columnMapping.style === cellIndex || columnMapping.brand === cellIndex) && !cell;
                 const isSelectedColumn = selectedColumnIndex === cellIndex;
-                const isMappedColumn = mappedColumns.has(cellIndex);
+                const isMappedColumn = mappedColumnsForHighlight.has(cellIndex);
                 const bgColor = isMissingRequired
                   ? 'danger.100'
                   : isSelectedColumn
@@ -1025,13 +1035,21 @@ const DataWarehouseForm: React.FC = () => {
     []
   );
 
-  const mappedColumns = useMemo(
-    () =>
-      new Set(
-        (Object.values(columnMapping).filter((value): value is number => typeof value === 'number') as number[])
-      ),
-    [columnMapping]
-  );
+  const mappedDataColumns = useMemo(() => {
+    const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
+    return new Set(
+      keys
+        .map(key => columnMapping[key])
+        .filter((value): value is number => typeof value === 'number')
+    );
+  }, [columnMapping, OPTIONAL_COLUMNS, REQUIRED_COLUMNS]);
+
+  const mappedColumnsForHighlight = useMemo(() => {
+    const set = new Set(mappedDataColumns);
+    if (typeof columnMapping.readImage === 'number') set.add(columnMapping.readImage);
+    if (typeof columnMapping.imageAdd === 'number') set.add(columnMapping.imageAdd);
+    return set;
+  }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns]);
 
   const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null;
 
@@ -1105,6 +1123,8 @@ const DataWarehouseForm: React.FC = () => {
 
     if (imageColumnIndex !== null) {
       formData.append('imageColumnImage', indexToColumnLetter(imageColumnIndex));
+    } else {
+      formData.append('imageColumnImage', '');
     }
     if (columnMapping.colorName !== null) {
       formData.append('ColorColImage', indexToColumnLetter(columnMapping.colorName));
@@ -1323,7 +1343,7 @@ const DataWarehouseForm: React.FC = () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
+                  disabled={mappedDataColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -1377,7 +1397,7 @@ const DataWarehouseForm: React.FC = () => {
                 <option
                   key={index}
                   value={index}
-                  disabled={mappedColumns.has(index) && columnMapping[field] !== index}
+                  disabled={mappedDataColumns.has(index) && columnMapping[field] !== index}
                 >
                   {header || `Column ${indexToColumnLetter(index)}`}
                 </option>
@@ -1447,7 +1467,7 @@ const DataWarehouseForm: React.FC = () => {
         <Thead>
           <Tr>
             {excelData.headers.map((header, index) => {
-              const isMapped = mappedColumns.has(index);
+              const isMapped = mappedColumnsForHighlight.has(index);
               const isSelected = selectedColumnIndex === index;
               return (
                 <Th
@@ -1484,7 +1504,7 @@ const DataWarehouseForm: React.FC = () => {
                 const isMissingRequired =
                   (columnMapping.style === cellIndex || columnMapping.msrp === cellIndex) && !cell;
                 const isSelectedColumn = selectedColumnIndex === cellIndex;
-                const isMappedColumn = mappedColumns.has(cellIndex);
+                const isMappedColumn = mappedColumnsForHighlight.has(cellIndex);
                 const bgColor = isMissingRequired
                   ? 'red.100'
                   : isSelectedColumn
