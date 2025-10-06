@@ -36,7 +36,8 @@ import useCustomToast from '../hooks/useCustomToast';
 
 // Shared Constants and Types
 type ColumnType = 'style' | 'brand' | 'category' | 'colorName' | 'msrp';
-const SERVER_URL = 'https://external.iconluxury.group';
+const SERVER_URL = 'https://icon5-8005.iconluxury.today';
+
 const MAX_PREVIEW_ROWS = 20;
 const MAX_FILE_SIZE_MB = 50;
 
@@ -339,6 +340,10 @@ const GoogleImagesForm: React.FC = () => {
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns]);
 
   const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null;
+  const headersAreValid = useMemo(
+    () => excelData.headers.some(header => String(header).trim() !== ''),
+    [excelData.headers]
+  );
 
   const applyManualBrand = useCallback(() => {
     if (!manualBrand.trim()) {
@@ -376,14 +381,18 @@ const GoogleImagesForm: React.FC = () => {
       col => columnMapping[col] === null && !(col === 'brand' && isManualBrandApplied)
     );
     return {
-      isValid: missing.length === 0 && file && excelData.rows.length > 0,
+      isValid: missing.length === 0 && file && excelData.rows.length > 0 && headersAreValid,
       missing,
     };
-  }, [columnMapping, isManualBrandApplied, file, excelData.rows.length]);
+  }, [columnMapping, isManualBrandApplied, file, excelData.rows.length, headersAreValid]);
 
 const handleSubmit = useCallback(async () => {
     if (!validateForm.isValid) {
       showToast('Validation Error', `Missing required columns: ${validateForm.missing.join(', ')}`, 'warning');
+      return;
+    }
+    if (!headersAreValid) {
+      showToast('Header Error', 'Selected header row has no values. Please choose a different header row.', 'warning');
       return;
     }
 
@@ -454,6 +463,7 @@ const handleSubmit = useCallback(async () => {
     skipDataWarehouse, // Add to dependencies
     showToast,
     excelData,
+    headersAreValid,
   ]);
 
   return (
@@ -590,6 +600,11 @@ const handleSubmit = useCallback(async () => {
       {!validateForm.isValid && (
         <Text color="red.500" fontSize="sm" fontWeight="medium">
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
+        </Text>
+      )}
+      {!headersAreValid && (
+        <Text color="red.500" fontSize="sm" fontWeight="medium">
+          Selected header row is empty. Choose a different header row before mapping.
         </Text>
       )}
   <Text fontSize="sm" color="subtle">
@@ -903,6 +918,10 @@ const DataWarehouseForm: React.FC = () => {
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false);
   const [isNewDistro, setIsNewDistro] = useState(false);
   const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
+  const dataHeadersAreValid = useMemo(
+    () => excelData.headers.some(header => String(header).trim() !== ''),
+    [excelData.headers]
+  );
   const showToast: ToastFunction = useCustomToast();
 
   const REQUIRED_COLUMNS: ColumnType[] = ['style', 'msrp'];
@@ -1089,14 +1108,18 @@ const DataWarehouseForm: React.FC = () => {
       col => columnMapping[col] === null
     );
     return {
-      isValid: missing.length === 0 && file && excelData.rows.length > 0,
+      isValid: missing.length === 0 && file && excelData.rows.length > 0 && dataHeadersAreValid,
       missing,
     };
-  }, [columnMapping, file, excelData.rows.length]);
+  }, [columnMapping, file, excelData.rows.length, dataHeadersAreValid]);
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm.isValid) {
       showToast('Validation Error', `Missing required columns: ${validateForm.missing.join(', ')}`, 'warning');
+      return;
+    }
+    if (!dataHeadersAreValid) {
+      showToast('Header Error', 'Selected header row has no values. Please choose a different header row.', 'warning');
       return;
     }
 
@@ -1168,6 +1191,7 @@ const DataWarehouseForm: React.FC = () => {
     currency,
     showToast,
     excelData,
+    dataHeadersAreValid,
   ]);
 
   return (
@@ -1306,6 +1330,11 @@ const DataWarehouseForm: React.FC = () => {
       {!validateForm.isValid && (
         <Text color="red.500" fontSize="sm" fontWeight="medium">
           Missing required columns: {validateForm.missing.join(', ')}. Please map all required columns.
+        </Text>
+      )}
+      {!dataHeadersAreValid && (
+        <Text color="red.500" fontSize="sm" fontWeight="medium">
+          Selected header row is empty. Choose a different header row before mapping.
         </Text>
       )}
   <Text fontSize="sm" color="subtle">
