@@ -13,7 +13,9 @@ api_router.include_router(users.router)
 api_router.include_router(utils.router)
 api_router.include_router(items.router)
 api_router.include_router(subscription.router)  # <-- Include your user_agent routes
-api_router.include_router(s3.router)  # Include S3 routes
+api_router.include_router(s3.s3_router)  # Include S3 routes
+api_router.include_router(s3.r2_router)  # Include S3 routes
+
 
 # New user_agent routes
 api_router.include_router(
