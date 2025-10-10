@@ -54,6 +54,24 @@ type ToastFunction = (
   status: "error" | "warning" | "success",
 ) => void
 
+const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style", "brand"]
+const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
+  "category",
+  "colorName",
+  "msrp",
+]
+const GOOGLE_IMAGES_ALL_COLUMNS: ColumnType[] = [
+  ...GOOGLE_IMAGES_REQUIRED_COLUMNS,
+  ...GOOGLE_IMAGES_OPTIONAL_COLUMNS,
+]
+
+const DATA_WAREHOUSE_REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
+const DATA_WAREHOUSE_OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
+const DATA_WAREHOUSE_ALL_COLUMNS: ColumnType[] = [
+  ...DATA_WAREHOUSE_REQUIRED_COLUMNS,
+  ...DATA_WAREHOUSE_OPTIONAL_COLUMNS,
+]
+
 // Shared Helper Functions
 const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i
 
@@ -201,15 +219,16 @@ const determineFallbackImageColumnIndex = (
   return null
 }
 
+const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"]
+
 const getIframeEmailParameter = (): string | null => {
   if (typeof window === "undefined") return null
   const params = new URLSearchParams(window.location.search)
-  const candidateKeys = ["sendToEmail", "email", "userEmail"]
-  for (const key of candidateKeys) {
-    const value = params.get(key)?.trim()
-    if (value) {
-      return value
-    }
+  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((key) => key.toLowerCase()))
+  for (const [rawKey, rawValue] of params.entries()) {
+    if (!candidateKeys.has(rawKey.toLowerCase())) continue
+    const value = rawValue.trim()
+    if (value) return value
   }
   return null
 }
@@ -256,22 +275,16 @@ const GoogleImagesForm: React.FC = () => {
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
-  const [sendToEmail, setSendToEmail] = useState("")
   const iframeEmail = useIframeEmail()
+  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
-
-  useEffect(() => {
-    if (iframeEmail && !sendToEmail) {
-      setSendToEmail(iframeEmail)
-    }
-  }, [iframeEmail, sendToEmail])
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style", "brand"]
   const OPTIONAL_COLUMNS: ColumnType[] = ["category", "colorName", "msrp"]
   const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
 
   const isEmailValid = useMemo(() => {
-    const trimmed = sendToEmail.trim()
+    const trimmed = sendToEmail
     if (!trimmed) return false
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
   }, [sendToEmail])
@@ -549,10 +562,10 @@ const GoogleImagesForm: React.FC = () => {
       )
       return
     }
-    if (!sendToEmail.trim()) {
+    if (!sendToEmail) {
       showToast(
         "Recipient Email Required",
-        "Please enter the email address that should receive the results.",
+        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
         "warning",
       )
       return
@@ -560,7 +573,7 @@ const GoogleImagesForm: React.FC = () => {
     if (!isEmailValid) {
       showToast(
         "Invalid Email",
-        "Please enter a valid email address before submitting.",
+        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
         "warning",
       )
       return
@@ -608,7 +621,7 @@ const GoogleImagesForm: React.FC = () => {
       )
     }
     formData.append("header_index", String(headerIndex + 1))
-    formData.append("sendToEmail", sendToEmail.trim())
+    formData.append("sendToEmail", sendToEmail)
     formData.append("isIconDistro", String(isIconDistro))
     formData.append("skipDataWarehouse", String(skipDataWarehouse)) // Add new parameter
 
@@ -648,7 +661,6 @@ const GoogleImagesForm: React.FC = () => {
     showToast,
     excelData,
     headersAreValid,
-    sendToEmail,
     isEmailValid,
   ])
 
@@ -748,6 +760,9 @@ const GoogleImagesForm: React.FC = () => {
                   onClick={handleSubmit}
                   isLoading={isLoading}
                   size="sm"
+                  isDisabled={
+                    !validateForm.isValid || !sendToEmail || !isEmailValid
+                  }
                 >
                   Submit
                 </Button>
@@ -1176,21 +1191,19 @@ const GoogleImagesForm: React.FC = () => {
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl isRequired>
                 <FormLabel>Send results to email</FormLabel>
-                <Input
-                  type="email"
-                  value={sendToEmail}
-                  onChange={(e) => setSendToEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  aria-label="Send results to email"
-                />
-                {!isEmailValid && sendToEmail.trim() !== "" && (
-                  <Text fontSize="sm" color="red.500" mt={1}>
-                    Enter a valid email address.
+                {sendToEmail ? (
+                  <Text fontWeight="medium">{sendToEmail}</Text>
+                ) : (
+                  <Text fontSize="sm" color="red.500">
+                    No email parameter detected. Add
+                    ?sendToEmail=example@domain.com (or email/userEmail) to the
+                    iframe URL.
                   </Text>
                 )}
-                {sendToEmail.trim() === "" && (
-                  <Text fontSize="sm" color="subtle" mt={1}>
-                    This email will receive a copy of the scrape results.
+                {!isEmailValid && sendToEmail && (
+                  <Text fontSize="sm" color="red.500" mt={1}>
+                    The email supplied via the URL looks invalid. Update the
+                    iframe query parameter before submitting.
                   </Text>
                 )}
               </FormControl>
@@ -1297,12 +1310,16 @@ const DataWarehouseForm: React.FC = () => {
   const [isNewDistro, setIsNewDistro] = useState(false)
   const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
   const iframeEmail = useIframeEmail()
+  const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const dataHeadersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
     [excelData.headers],
   )
   const showToast: ToastFunction = useCustomToast()
-  const emailRecipient = iframeEmail ?? "nik@luxurymarket.com"
+  const isEmailValid = useMemo(() => {
+    if (!emailRecipient) return false
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient)
+  }, [emailRecipient])
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
   const OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
@@ -1569,6 +1586,22 @@ const DataWarehouseForm: React.FC = () => {
       )
       return
     }
+    if (!emailRecipient) {
+      showToast(
+        "Recipient Email Required",
+        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
+        "warning",
+      )
+      return
+    }
+    if (!isEmailValid) {
+      showToast(
+        "Invalid Email",
+        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
+        "warning",
+      )
+      return
+    }
 
     setIsLoading(true)
     const formData = new FormData()
@@ -1651,6 +1684,7 @@ const DataWarehouseForm: React.FC = () => {
     isNewDistro,
     currency,
     emailRecipient,
+    isEmailValid,
     showToast,
     excelData,
     dataHeadersAreValid,
@@ -1755,7 +1789,9 @@ const DataWarehouseForm: React.FC = () => {
                   onClick={handleSubmit}
                   isLoading={isLoading}
                   size="sm"
-                  isDisabled={!validateForm.isValid}
+                  isDisabled={
+                    !validateForm.isValid || !emailRecipient || !isEmailValid
+                  }
                 >
                   Submit
                 </Button>
@@ -2182,6 +2218,24 @@ const DataWarehouseForm: React.FC = () => {
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
+              <FormControl isRequired>
+                <FormLabel>Send results to email</FormLabel>
+                {emailRecipient ? (
+                  <Text fontWeight="medium">{emailRecipient}</Text>
+                ) : (
+                  <Text fontSize="sm" color="red.500">
+                    No email parameter detected. Add
+                    ?sendToEmail=example@domain.com (or email/userEmail) to the
+                    iframe URL.
+                  </Text>
+                )}
+                {!isEmailValid && emailRecipient && (
+                  <Text fontSize="sm" color="red.500" mt={1}>
+                    The email supplied via the URL looks invalid. Update the
+                    iframe query parameter before submitting.
+                  </Text>
+                )}
+              </FormControl>
               <HStack>
                 <Text>Currency:</Text>
                 <Select
