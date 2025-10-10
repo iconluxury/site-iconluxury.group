@@ -242,7 +242,10 @@ const OverviewGSerp: React.FC = () => {
 
       const queryMap = new Map<string, number>()
       for (const query of enhancedData.flatMap((ep) => ep.queries)) {
-        queryMap.set(query.query, (queryMap.get(query.query) || 0) + query.count)
+        queryMap.set(
+          query.query,
+          (queryMap.get(query.query) || 0) + query.count,
+        )
       }
       const topQueriesChart = Array.from(queryMap.entries())
         .sort((a, b) => b[1] - a[1])
@@ -288,7 +291,7 @@ const OverviewGSerp: React.FC = () => {
 
   const updateChartData = useMemo(() => {
     const updatedData = { ...chartData }
-    Object.keys(compares).forEach((chartKey) => {
+    for (const chartKey of Object.keys(compares)) {
       const selectedCompares = compares[chartKey]
       const baseData = chartData[chartKey] || []
       const additionalData: ChartDataItem[] = []
@@ -296,7 +299,7 @@ const OverviewGSerp: React.FC = () => {
         const avgHourly = baseData.reduce((sum, d) => sum + d.value, 0) / 24
         const maxHourly = Math.max(...baseData.map((d) => d.value))
         const minHourly = Math.min(...baseData.map((d) => d.value))
-        selectedCompares.forEach((compare) => {
+        for (const compare of selectedCompares) {
           additionalData.push({
             name: compareOptions[chartKey].find((opt) => opt.value === compare)!
               .label,
@@ -309,7 +312,7 @@ const OverviewGSerp: React.FC = () => {
                     ? maxHourly
                     : minHourly,
           })
-        })
+        }
         updatedData[chartKey] = selectedCompares.length
           ? additionalData
           : baseData
@@ -318,7 +321,7 @@ const OverviewGSerp: React.FC = () => {
         const avgPerCategory = totalQueries / baseData.length
         const maxCategory = Math.max(...baseData.map((d) => d.value))
         const uniqueCategories = baseData.length
-        selectedCompares.forEach((compare) => {
+        for (const compare of selectedCompares) {
           additionalData.push({
             name: compareOptions[chartKey].find((opt) => opt.value === compare)!
               .label,
@@ -331,7 +334,7 @@ const OverviewGSerp: React.FC = () => {
                     ? maxCategory
                     : uniqueCategories,
           })
-        })
+        }
         updatedData[chartKey] = [...baseData, ...additionalData]
       } else if (chartKey === "topQueries") {
         const totalQueryCount = baseData.reduce((sum, d) => sum + d.value, 0)
@@ -340,7 +343,7 @@ const OverviewGSerp: React.FC = () => {
         const featuredQueries = endpointData
           .flatMap((ep) => ep.queries)
           .filter((q) => q.featured).length
-        selectedCompares.forEach((compare) => {
+        for (const compare of selectedCompares) {
           additionalData.push({
             name: compareOptions[chartKey].find((opt) => opt.value === compare)!
               .label,
@@ -353,7 +356,7 @@ const OverviewGSerp: React.FC = () => {
                     ? maxQuery
                     : featuredQueries,
           })
-        })
+        }
         updatedData[chartKey] = [...baseData, ...additionalData]
       } else if (chartKey === "successRate") {
         const overallSuccessRate =
@@ -371,7 +374,7 @@ const OverviewGSerp: React.FC = () => {
           baseData.reduce((sum, d) => sum + (d.value - avgSuccess) ** 2, 0) /
             baseData.length,
         )
-        selectedCompares.forEach((compare) => {
+        for (const compare of selectedCompares) {
           additionalData.push({
             name: compareOptions[chartKey].find((opt) => opt.value === compare)!
               .label,
@@ -384,11 +387,11 @@ const OverviewGSerp: React.FC = () => {
                     ? avgSuccess
                     : variance,
           })
-        })
+        }
         updatedData[chartKey] = [...baseData, ...additionalData]
       } else if (chartKey === "keyMetrics") {
         const avgRequests = totalRequests / endpointData.length
-        selectedCompares.forEach((compare) => {
+        for (const compare of selectedCompares) {
           additionalData.push({
             name: compareOptions[chartKey].find((opt) => opt.value === compare)!
               .label,
@@ -401,10 +404,10 @@ const OverviewGSerp: React.FC = () => {
                     ? endpointData.length
                     : avgRequests,
           })
-        })
+        }
         updatedData[chartKey] = [...baseData, ...additionalData]
       }
-    })
+    }
     return updatedData
   }, [chartData, compares, endpointData, totalRequests])
 
