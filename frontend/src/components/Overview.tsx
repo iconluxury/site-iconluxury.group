@@ -205,7 +205,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   if (error) {
     return (
       <Box>
-  <Text color="danger.600">{error}</Text>
+        <Text color="danger.600">{error}</Text>
         <Button mt={2} onClick={fetchData}>
           Retry
         </Button>

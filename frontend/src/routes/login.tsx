@@ -116,87 +116,79 @@ function Login() {
         flexDir="column"
         gap={6}
       >
-      <Link
-        href="https://iconluxury.group"
-        target="_blank"
-        rel="noopener noreferrer"
-        alignSelf="center"
-      >
-        <Image
-          src={Logo}
-          alt="iconluxurygroup logo"
-          height="auto"
-          maxW="180px"
-        />
-      </Link>
-      <FormControl id="username" isInvalid={!!errors.username || !!error}>
-        <Input
-          id="username"
-          {...register("username", {
-            required: "Username is required",
-            pattern: emailPattern,
-          })}
-          placeholder="Email"
-          type="email"
-          required
-        />
-        {errors.username && (
-          <FormErrorMessage>{errors.username.message}</FormErrorMessage>
-        )}
-      </FormControl>
-
-      <FormControl id="password" isInvalid={!!error}>
-        <InputGroup>
+        <Link
+          href="https://iconluxury.group"
+          target="_blank"
+          rel="noopener noreferrer"
+          alignSelf="center"
+        >
+          <Image
+            src={Logo}
+            alt="iconluxurygroup logo"
+            height="auto"
+            maxW="180px"
+          />
+        </Link>
+        <FormControl id="username" isInvalid={!!errors.username || !!error}>
           <Input
-            {...register("password", { required: "Password is required" })}
-            type={show ? "text" : "password"}
-            placeholder="Password"
+            id="username"
+            {...register("username", {
+              required: "Username is required",
+              pattern: emailPattern,
+            })}
+            placeholder="Email"
+            type="email"
             required
           />
-          <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
-            <Icon
-              as={show ? ViewOffIcon : ViewIcon}
-              onClick={setShow.toggle}
-              aria-label={show ? "Hide password" : "Show password"}
+          {errors.username && (
+            <FormErrorMessage>{errors.username.message}</FormErrorMessage>
+          )}
+        </FormControl>
+
+        <FormControl id="password" isInvalid={!!error}>
+          <InputGroup>
+            <Input
+              {...register("password", { required: "Password is required" })}
+              type={show ? "text" : "password"}
+              placeholder="Password"
+              required
             />
-          </InputRightElement>
-        </InputGroup>
-        {error && <FormErrorMessage>{error}</FormErrorMessage>}
-      </FormControl>
+            <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
+              <Icon
+                as={show ? ViewOffIcon : ViewIcon}
+                onClick={setShow.toggle}
+                aria-label={show ? "Hide password" : "Show password"}
+              />
+            </InputRightElement>
+          </InputGroup>
+          {error && <FormErrorMessage>{error}</FormErrorMessage>}
+        </FormControl>
 
-      <Link
-        as={RouterLink}
-        to="/recover-password"
-        fontWeight="600"
-        alignSelf="flex-end"
-      >
-        Forgot password?
-      </Link>
-
-      <Button
-        type="submit"
-        isLoading={isSubmitting}
-        w="full"
-      >
-        Log In
-      </Button>
-
-      <Text color="subtle" textAlign="center">
-        Don't have an account?{" "}
         <Link
           as={RouterLink}
-          to="/signup"
+          to="/recover-password"
           fontWeight="600"
+          alignSelf="flex-end"
         >
-          Sign up
+          Forgot password?
         </Link>
-      </Text>
 
-      <Flex direction="row" justify="center" align="center" gap={4} mt={8}>
-        <GitHubLogo />
-        <LinkedInLogo />
-        <XLogo />
-      </Flex>
+        <Button type="submit" isLoading={isSubmitting} w="full">
+          Log In
+        </Button>
+
+        <Text color="subtle" textAlign="center">
+          Don't have an account?{" "}
+          <Link as={RouterLink} to="/signup" fontWeight="600">
+            Sign up
+          </Link>
+        </Text>
+
+        <Flex direction="row" justify="center" align="center" gap={4} mt={8}>
+          <GitHubLogo />
+          <LinkedInLogo />
+          <XLogo />
+        </Flex>
       </Container>
     </Flex>
   )
