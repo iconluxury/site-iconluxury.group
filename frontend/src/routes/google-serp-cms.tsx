@@ -1718,7 +1718,7 @@ const DataWarehouseForm: React.FC = () => {
                   onClick={handleSubmit}
                   isLoading={isLoading}
                   size="sm"
-                  isDisabled={!validateForm.isValid || !isEmailValid}
+                  isDisabled={!validateForm.isValid}
                 >
                   Submit
                 </Button>
