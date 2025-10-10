@@ -54,8 +54,9 @@ type ToastFunction = (
   status: "error" | "warning" | "success",
 ) => void
 
-const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style", "brand"]
+const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style"]
 const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
+  "brand",
   "category",
   "colorName",
   "msrp",
@@ -224,7 +225,9 @@ const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"]
 const getIframeEmailParameter = (): string | null => {
   if (typeof window === "undefined") return null
   const params = new URLSearchParams(window.location.search)
-  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((key) => key.toLowerCase()))
+  const candidateKeys = new Set(
+    EMAIL_QUERY_KEYS.map((key) => key.toLowerCase()),
+  )
   for (const [rawKey, rawValue] of params.entries()) {
     if (!candidateKeys.has(rawKey.toLowerCase())) continue
     const value = rawValue.trim()
@@ -279,8 +282,13 @@ const GoogleImagesForm: React.FC = () => {
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
 
-  const REQUIRED_COLUMNS: ColumnType[] = ["style", "brand"]
-  const OPTIONAL_COLUMNS: ColumnType[] = ["category", "colorName", "msrp"]
+  const REQUIRED_COLUMNS: ColumnType[] = ["style"]
+  const OPTIONAL_COLUMNS: ColumnType[] = [
+    "brand",
+    "category",
+    "colorName",
+    "msrp",
+  ]
   const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
 
   const isEmailValid = useMemo(() => {
@@ -525,9 +533,7 @@ const GoogleImagesForm: React.FC = () => {
 
   const validateForm = useMemo(() => {
     const missing = REQUIRED_COLUMNS.filter(
-      (col) =>
-        columnMapping[col] === null &&
-        !(col === "brand" && isManualBrandApplied),
+      (col) => columnMapping[col] === null,
     )
     return {
       isValid:
@@ -539,7 +545,6 @@ const GoogleImagesForm: React.FC = () => {
     }
   }, [
     columnMapping,
-    isManualBrandApplied,
     file,
     excelData.rows.length,
     headersAreValid,
@@ -1148,10 +1153,11 @@ const GoogleImagesForm: React.FC = () => {
                     .map((row, rowIndex) => (
                       <Tr key={rowIndex}>
                         {row.map((cell, cellIndex) => {
-                          const isMissingRequired =
-                            (columnMapping.style === cellIndex ||
-                              columnMapping.brand === cellIndex) &&
-                            !cell
+                          const isMissingRequired = REQUIRED_COLUMNS.some(
+                            (requiredField) =>
+                              columnMapping[requiredField] === cellIndex &&
+                              !cell,
+                          )
                           const isSelectedColumn =
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
