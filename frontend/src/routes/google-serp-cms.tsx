@@ -30,7 +30,7 @@ import {
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { FaWarehouse } from "react-icons/fa"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
@@ -201,6 +201,33 @@ const determineFallbackImageColumnIndex = (
   return null
 }
 
+const getIframeEmailParameter = (): string | null => {
+  if (typeof window === "undefined") return null
+  const params = new URLSearchParams(window.location.search)
+  const candidateKeys = ["sendToEmail", "email", "userEmail"]
+  for (const key of candidateKeys) {
+    const value = params.get(key)?.trim()
+    if (value) {
+      return value
+    }
+  }
+  return null
+}
+
+const useIframeEmail = (): string | null => {
+  const [iframeEmail, setIframeEmail] = useState<string | null>(() =>
+    getIframeEmailParameter(),
+  )
+
+  useEffect(() => {
+    if (iframeEmail) return
+    const email = getIframeEmailParameter()
+    if (email) setIframeEmail(email)
+  }, [iframeEmail])
+
+  return iframeEmail
+}
+
 // Google Images Form Component
 const GoogleImagesForm: React.FC = () => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
@@ -230,7 +257,14 @@ const GoogleImagesForm: React.FC = () => {
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [sendToEmail, setSendToEmail] = useState("")
+  const iframeEmail = useIframeEmail()
   const showToast: ToastFunction = useCustomToast()
+
+  useEffect(() => {
+    if (iframeEmail && !sendToEmail) {
+      setSendToEmail(iframeEmail)
+    }
+  }, [iframeEmail, sendToEmail])
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style", "brand"]
   const OPTIONAL_COLUMNS: ColumnType[] = ["category", "colorName", "msrp"]
@@ -1262,11 +1296,13 @@ const DataWarehouseForm: React.FC = () => {
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
   const [isNewDistro, setIsNewDistro] = useState(false)
   const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
+  const iframeEmail = useIframeEmail()
   const dataHeadersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
     [excelData.headers],
   )
   const showToast: ToastFunction = useCustomToast()
+  const emailRecipient = iframeEmail ?? "nik@luxurymarket.com"
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
   const OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
@@ -1577,7 +1613,7 @@ const DataWarehouseForm: React.FC = () => {
       )
     }
     formData.append("header_index", String(headerIndex + 1))
-    formData.append("sendToEmail", "nik@luxurymarket.com")
+    formData.append("sendToEmail", emailRecipient)
     formData.append("isNewDistro", String(isNewDistro))
     formData.append("currency", currency)
 
@@ -1614,6 +1650,7 @@ const DataWarehouseForm: React.FC = () => {
     headerIndex,
     isNewDistro,
     currency,
+    emailRecipient,
     showToast,
     excelData,
     dataHeadersAreValid,
