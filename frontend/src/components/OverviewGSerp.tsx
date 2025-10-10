@@ -227,14 +227,12 @@ const OverviewGSerp: React.FC = () => {
       })
 
       const categoryMap = new Map<string, number>()
-      enhancedData
-        .flatMap((ep) => ep.queries)
-        .forEach((q) => {
-          categoryMap.set(
-            q.category,
-            (categoryMap.get(q.category) || 0) + q.count,
-          )
-        })
+      for (const query of enhancedData.flatMap((ep) => ep.queries)) {
+        categoryMap.set(
+          query.category,
+          (categoryMap.get(query.category) || 0) + query.count,
+        )
+      }
       const categoryDistribution = Array.from(categoryMap.entries()).map(
         ([category, count]) => ({
           name: category,
@@ -243,11 +241,9 @@ const OverviewGSerp: React.FC = () => {
       )
 
       const queryMap = new Map<string, number>()
-      enhancedData
-        .flatMap((ep) => ep.queries)
-        .forEach((q) => {
-          queryMap.set(q.query, (queryMap.get(q.query) || 0) + q.count)
-        })
+      for (const query of enhancedData.flatMap((ep) => ep.queries)) {
+        queryMap.set(query.query, (queryMap.get(query.query) || 0) + query.count)
+      }
       const topQueriesChart = Array.from(queryMap.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
