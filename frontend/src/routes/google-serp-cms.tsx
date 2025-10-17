@@ -440,6 +440,7 @@ const GoogleImagesForm: React.FC = () => {
     [activeSheetIndex, sheetConfigs],
   )
 
+
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
     "brand",
@@ -803,6 +804,80 @@ const GoogleImagesForm: React.FC = () => {
     [REQUIRED_COLUMNS, sheetConfigs, useSharedMapping],
   )
 
+  const renderSheetButtons = useCallback(
+    (size: "xs" | "sm" | "md" = "sm") => (
+      <Wrap spacing={2} shouldWrapChildren>
+        {sheetConfigs.map((sheet, index) => {
+          const isActive = index === activeSheetIndex
+          const validation = sheetValidationResults[index]
+          const isComplete = validation?.isValid
+          const hasMissing = (validation?.missing ?? []).length > 0
+          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const sheetLabel = sheet.name || `Sheet ${index + 1}`
+          const isLocked = useSharedMapping && index !== activeSheetIndex
+          const tooltipLabel = isComplete
+            ? "Mapping ready"
+            : hasMissing
+              ? `Missing: ${(validation?.missing ?? []).join(", ")}`
+              : "Map required columns"
+          return (
+            <WrapItem key={sheet.name || index}>
+              <Tooltip label={tooltipLabel} placement="top" hasArrow>
+                <Button
+                  size={size}
+                  variant={isActive ? "solid" : "ghost"}
+                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
+                  rightIcon={icon}
+                  onClick={() => {
+                    if (isLocked) return
+                    handleActiveSheetChange(index)
+                  }}
+                  cursor={isLocked ? "not-allowed" : "pointer"}
+                  opacity={isLocked && !isActive ? 0.7 : 1}
+                  bg={
+                    isActive
+                      ? undefined
+                      : isComplete
+                        ? sheetInactiveBg
+                        : sheetWarningHover
+                  }
+                  _hover={
+                    isLocked
+                      ? undefined
+                      : {
+                          bg: isActive
+                            ? undefined
+                            : isComplete
+                              ? sheetInactiveHover
+                              : sheetWarningHover,
+                        }
+                  }
+                  transition="all 0.2s ease"
+                  fontWeight={isActive ? "bold" : "semibold"}
+                  borderWidth={isActive ? "1px" : "0px"}
+                  borderColor={isActive ? "brand.500" : "transparent"}
+                  aria-pressed={isActive}
+                >
+                  {sheetLabel}
+                </Button>
+              </Tooltip>
+            </WrapItem>
+          )
+        })}
+      </Wrap>
+    ),
+    [
+      activeSheetIndex,
+      handleActiveSheetChange,
+      sheetConfigs,
+      sheetInactiveBg,
+      sheetInactiveHover,
+      sheetValidationResults,
+      sheetWarningHover,
+      useSharedMapping,
+    ],
+  )
+
   const handleSubmit = useCallback(async () => {
     if (sheetConfigs.length === 0) {
       showToast(
@@ -1116,23 +1191,27 @@ const GoogleImagesForm: React.FC = () => {
         {step === "preview" && (
           <VStack spacing={4} align="stretch">
             {hasMultipleSheets && (
-              <HStack>
-                <Text>Select Sheet:</Text>
-                <Select
-                  value={activeSheetIndex}
-                  onChange={(event) =>
-                    handleActiveSheetChange(Number(event.target.value))
-                  }
-                  w="250px"
-                  aria-label="Select sheet"
-                >
-                  {sheetConfigs.map((sheet, index) => (
-                    <option key={sheet.name || index} value={index}>
-                      {sheet.name || `Sheet ${index + 1}`}
-                    </option>
-                  ))}
-                </Select>
-              </HStack>
+              <Card
+                variant="outline"
+                bg={mappingPanelBg}
+                borderColor={mappingPanelBorder}
+              >
+                <CardBody py={3} px={4}>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between" align="center">
+                      <Text fontWeight="semibold">Sheets</Text>
+                      <Text fontSize="xs" color="subtle">
+                        Viewing {sheetConfigs[activeSheetIndex]?.name ||
+                          `Sheet ${activeSheetIndex + 1}`}
+                      </Text>
+                    </HStack>
+                    {renderSheetButtons("xs")}
+                    <Text fontSize="xs" color="subtle">
+                      Select a sheet to preview its header row and sample data.
+                    </Text>
+                  </VStack>
+                </CardBody>
+              </Card>
             )}
             <HStack>
               <Text>Select Header Row:</Text>
@@ -1207,73 +1286,68 @@ const GoogleImagesForm: React.FC = () => {
             <VStack
               gap={4}
               align="stretch"
-              bg="neutral.50"
+              bg="transparent"
               p={4}
               borderRadius="md"
+              borderWidth="1px"
+              borderColor={mappingPanelBorder}
               w={{ base: "100%", md: "40%" }}
               overflowY="auto"
             >
               {hasMultipleSheets && (
-                <VStack align="stretch" spacing={2}>
-                  <HStack align="center" justify="space-between">
-                    <Text fontWeight="semibold">Sheet:</Text>
-                    <Select
-                      value={activeSheetIndex}
-                      onChange={(event) =>
-                        handleActiveSheetChange(Number(event.target.value))
-                      }
-                      isDisabled={useSharedMapping}
-                      aria-label="Select sheet to map"
-                      w="60%"
-                    >
-                      {sheetConfigs.map((sheet, index) => {
-                        const status = sheetValidationResults[index]?.isValid
-                        const label = sheet.name || `Sheet ${index + 1}`
-                        return (
-                          <option key={sheet.name || index} value={index}>
-                            {label}
-                            {status ? " (Complete)" : " (Needs mapping)"}
-                          </option>
-                        )
-                      })}
-                    </Select>
-                  </HStack>
-                  <Checkbox
-                    isChecked={useSharedMapping}
-                    onChange={(event) =>
-                      handleSharedMappingToggle(event.target.checked)
-                    }
-                  >
-                    Use same mapping for all sheets
-                  </Checkbox>
-                  {useSharedMapping ? (
-                    <Text fontSize="xs" color="subtle">
-                      Mapping from {sheetConfigs[activeSheetIndex]?.name ||
-                        `Sheet ${activeSheetIndex + 1}`} will be reused for
-                      every sheet.
-                    </Text>
-                  ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={1}>
-                      {sheetConfigs.map((sheet, index) => {
-                        const validation = sheetValidationResults[index]
-                        const statusLabel = validation?.isValid
-                          ? "Complete"
-                          : "Needs mapping"
-                        const colorScheme = validation?.isValid
-                          ? "green"
-                          : "yellow"
-                        return (
-                          <HStack key={sheet.name || index} spacing={2}>
-                            <Badge colorScheme={colorScheme}>{statusLabel}</Badge>
-                            <Text fontSize="xs">
-                              {sheet.name || `Sheet ${index + 1}`}
-                            </Text>
+                <Card
+                  variant="outline"
+                  bg={mappingPanelBg}
+                  borderColor={mappingPanelBorder}
+                  shadow="xs"
+                >
+                  <CardBody p={4}>
+                    <VStack align="stretch" spacing={3}>
+                      <Flex
+                        direction={{ base: "column", md: "row" }}
+                        justify="space-between"
+                        align={{ base: "flex-start", md: "center" }}
+                        gap={3}
+                      >
+                        <Box>
+                          <Text fontWeight="semibold">Sheets</Text>
+                          <Text fontSize="xs" color="subtle">
+                            {useSharedMapping
+                              ? "Mapping from the active sheet updates all sheets."
+                              : "Pick a sheet to adjust its column mapping."
+                            }
+                          </Text>
+                        </Box>
+                        <Checkbox
+                          isChecked={useSharedMapping}
+                          onChange={(event) =>
+                            handleSharedMappingToggle(event.target.checked)
+                          }
+                        >
+                          Use same mapping for every sheet
+                        </Checkbox>
+                      </Flex>
+                      {renderSheetButtons("sm")}
+                      {useSharedMapping ? (
+                        <Text fontSize="xs" color="subtle">
+                          Currently sharing mapping from {sheetConfigs[activeSheetIndex]?.name ||
+                            `Sheet ${activeSheetIndex + 1}`}.
+                        </Text>
+                      ) : (
+                        <HStack spacing={4} fontSize="xs" color="subtle" align="center">
+                          <HStack spacing={1} align="center">
+                            <Icon as={CheckIcon} boxSize={3} color="green.400" />
+                            <Text>Ready</Text>
                           </HStack>
-                        )
-                      })}
-                    </SimpleGrid>
-                  )}
-                </VStack>
+                          <HStack spacing={1} align="center">
+                            <Icon as={WarningIcon} boxSize={3} color="yellow.400" />
+                            <Text>Needs mapping</Text>
+                          </HStack>
+                        </HStack>
+                      )}
+                    </VStack>
+                  </CardBody>
+                </Card>
               )}
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
