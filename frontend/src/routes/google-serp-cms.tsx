@@ -1208,7 +1208,7 @@ const GoogleImagesForm: React.FC = () => {
                 )}
                 {!isEmailValid && sendToEmail && (
                   <Text fontSize="sm" color="red.500" mt={1}>
-                    The email supplied via the URL looks invalid. Update the
+                    The email supplied the URL looks invalid. Update the
                     iframe query parameter before submitting.
                   </Text>
                 )}
