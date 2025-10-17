@@ -170,20 +170,6 @@ const withManualBrandValue = (
   }
 }
 
-const syncSheetWithSharedMapping = (
-  sheet: SheetConfig,
-  template: SheetConfig,
-): SheetConfig => {
-  let syncedSheet = sheet
-  if (template.manualBrandValue || sheet.manualBrandValue) {
-    syncedSheet = withManualBrandValue(sheet, template.manualBrandValue)
-  }
-  return {
-    ...syncedSheet,
-    columnMapping: cloneColumnMapping(template.columnMapping),
-  }
-}
-
 // Shared Helper Functions
 const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i
 
@@ -370,7 +356,6 @@ const GoogleImagesForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
-  const [useSharedMapping, setUseSharedMapping] = useState(false)
   const [activeMappingField, setActiveMappingField] =
     useState<ColumnType | null>(null)
   const [manualBrand, setManualBrand] = useState("")
@@ -400,17 +385,10 @@ const GoogleImagesForm: React.FC = () => {
         const next = [...prev]
         const updatedSheet = transform(prev[index])
         next[index] = updatedSheet
-        if (useSharedMapping && index === activeSheetIndex) {
-          return next.map((sheet, idx) =>
-            idx === index
-              ? updatedSheet
-              : syncSheetWithSharedMapping(sheet, updatedSheet),
-          )
-        }
         return next
       })
     },
-    [activeSheetIndex, useSharedMapping],
+    [],
   )
 
   const handleActiveSheetChange = useCallback(
@@ -421,23 +399,6 @@ const GoogleImagesForm: React.FC = () => {
       setManualBrand("")
     },
     [sheetConfigs.length],
-  )
-
-  const handleSharedMappingToggle = useCallback(
-    (checked: boolean) => {
-      setUseSharedMapping(checked)
-      if (!checked) return
-      const referenceSheet = sheetConfigs[activeSheetIndex]
-      if (!referenceSheet) return
-      setSheetConfigs((prev) =>
-        prev.map((sheet, idx) =>
-          idx === activeSheetIndex
-            ? sheet
-            : syncSheetWithSharedMapping(sheet, referenceSheet),
-        ),
-      )
-    },
-    [activeSheetIndex, sheetConfigs],
   )
 
 
@@ -559,7 +520,6 @@ const GoogleImagesForm: React.FC = () => {
 
         setSheetConfigs(newSheetConfigs)
         setActiveSheetIndex(0)
-        setUseSharedMapping(false)
         setStep("preview")
         if (newSheetConfigs.length > 1) {
           showToast(
@@ -656,8 +616,12 @@ const GoogleImagesForm: React.FC = () => {
     (index: number) => {
       if (!activeSheet) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        let workingSheet = sheet
-        let workingMapping = cloneColumnMapping(workingSheet.columnMapping)
+        const shouldClearManualBrand =
+          sheet.manualBrandValue && sheet.columnMapping.brand === index
+        const workingSheet = shouldClearManualBrand
+          ? withManualBrandValue(sheet, null)
+          : sheet
+        const workingMapping = cloneColumnMapping(workingSheet.columnMapping)
         ;(Object.keys(workingMapping) as (keyof ColumnMapping)[]).forEach(
           (key) => {
             if (
@@ -666,12 +630,6 @@ const GoogleImagesForm: React.FC = () => {
               key !== "imageAdd"
             ) {
               workingMapping[key] = null
-              if (key === "brand" && workingSheet.manualBrandValue) {
-                workingSheet = withManualBrandValue(workingSheet, null)
-                workingMapping = cloneColumnMapping(
-                  workingSheet.columnMapping,
-                )
-              }
             }
           },
         )
@@ -682,13 +640,12 @@ const GoogleImagesForm: React.FC = () => {
       })
       if (
         columnMapping.brand !== null &&
-        columnMapping.brand === index &&
-        manualBrand
+        columnMapping.brand === index
       ) {
         setManualBrand("")
       }
     },
-    [activeSheet, activeSheetIndex, columnMapping.brand, manualBrand, updateSheetConfig],
+    [activeSheet, activeSheetIndex, columnMapping.brand, updateSheetConfig],
   )
 
   const mappedDataColumns = useMemo(() => {
@@ -782,10 +739,7 @@ const GoogleImagesForm: React.FC = () => {
   const sheetValidationResults = useMemo(
     () =>
       sheetConfigs.map((sheet, index) => {
-        const mappingReference = useSharedMapping
-          ? sheetConfigs[0]?.columnMapping
-          : sheet.columnMapping
-        const mapping = mappingReference ?? createEmptyColumnMapping()
+        const mapping = sheet.columnMapping ?? createEmptyColumnMapping()
         const missing = REQUIRED_COLUMNS.filter(
           (col) => mapping[col] === null,
         )
@@ -801,8 +755,23 @@ const GoogleImagesForm: React.FC = () => {
             headersValid,
         }
       }),
-    [REQUIRED_COLUMNS, sheetConfigs, useSharedMapping],
+    [REQUIRED_COLUMNS, sheetConfigs],
   )
+
+  const activeSheetValidation =
+    sheetValidationResults[activeSheetIndex] ?? null
+  const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
+  const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
+  const activeSheetStatusLabel = activeSheetIsReady
+    ? "Ready"
+    : "Needs mapping"
+  const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
+  const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
+  const activeSheetStatusTooltip = activeSheetIsReady
+    ? "All required columns are mapped."
+    : activeSheetMissingColumns.length > 0
+      ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
+      : "Map all required columns before submitting."
 
   const renderSheetButtons = useCallback(
     (size: "xs" | "sm" | "md" = "sm") => (
@@ -814,7 +783,6 @@ const GoogleImagesForm: React.FC = () => {
           const hasMissing = (validation?.missing ?? []).length > 0
           const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
-          const isLocked = useSharedMapping && index !== activeSheetIndex
           const tooltipLabel = isComplete
             ? "Mapping ready"
             : hasMissing
@@ -828,12 +796,8 @@ const GoogleImagesForm: React.FC = () => {
                   variant={isActive ? "solid" : "ghost"}
                   colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
                   rightIcon={icon}
-                  onClick={() => {
-                    if (isLocked) return
-                    handleActiveSheetChange(index)
-                  }}
-                  cursor={isLocked ? "not-allowed" : "pointer"}
-                  opacity={isLocked && !isActive ? 0.7 : 1}
+                  onClick={() => handleActiveSheetChange(index)}
+                  cursor="pointer"
                   bg={
                     isActive
                       ? undefined
@@ -841,17 +805,13 @@ const GoogleImagesForm: React.FC = () => {
                         ? sheetInactiveBg
                         : sheetWarningHover
                   }
-                  _hover={
-                    isLocked
+                  _hover={{
+                    bg: isActive
                       ? undefined
-                      : {
-                          bg: isActive
-                            ? undefined
-                            : isComplete
-                              ? sheetInactiveHover
-                              : sheetWarningHover,
-                        }
-                  }
+                      : isComplete
+                        ? sheetInactiveHover
+                        : sheetWarningHover,
+                  }}
                   transition="all 0.2s ease"
                   fontWeight={isActive ? "bold" : "semibold"}
                   borderWidth={isActive ? "1px" : "0px"}
@@ -874,7 +834,6 @@ const GoogleImagesForm: React.FC = () => {
       sheetInactiveHover,
       sheetValidationResults,
       sheetWarningHover,
-      useSharedMapping,
     ],
   )
 
@@ -897,10 +856,8 @@ const GoogleImagesForm: React.FC = () => {
         `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
         "warning",
       )
-      if (!useSharedMapping) {
-        setActiveSheetIndex(invalidSheet.sheetIndex)
-        setStep("map")
-      }
+      setActiveSheetIndex(invalidSheet.sheetIndex)
+      setStep("map")
       return
     }
     if (!sendToEmail) {
@@ -921,42 +878,36 @@ const GoogleImagesForm: React.FC = () => {
     }
 
     setIsLoading(true)
-    const templateSheet = sheetConfigs[0]
-
     try {
       for (const [index, sheet] of sheetConfigs.entries()) {
-        const effectiveSheet =
-          useSharedMapping && templateSheet
-            ? syncSheetWithSharedMapping(sheet, templateSheet)
-            : sheet
-        const mapping = effectiveSheet.columnMapping
+        const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${effectiveSheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
           )
         }
 
-        const prefixRows = effectiveSheet.rawData.slice(
+        const prefixRows = sheet.rawData.slice(
           0,
-          effectiveSheet.headerIndex,
+          sheet.headerIndex,
         )
         const aoa: CellValue[][] = [
           ...prefixRows,
-          effectiveSheet.excelData.headers,
-          ...effectiveSheet.excelData.rows,
+          sheet.excelData.headers,
+          ...sheet.excelData.rows,
         ]
         const worksheet = XLSX.utils.aoa_to_sheet(aoa)
         const workbook = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(
           workbook,
           worksheet,
-          effectiveSheet.name || `Sheet${index + 1}`,
+          sheet.name || `Sheet${index + 1}`,
         )
         const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
         const baseName = uploadedFile?.name
           ? uploadedFile.name.replace(/\.xlsx?$/i, "")
           : "google-images"
-        const sheetLabel = (effectiveSheet.name || `sheet-${index + 1}`)
+        const sheetLabel = (sheet.name || `sheet-${index + 1}`)
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
@@ -973,16 +924,16 @@ const GoogleImagesForm: React.FC = () => {
           indexToColumnLetter(mapping.style),
         )
 
-        if (effectiveSheet.manualBrandValue) {
+        if (sheet.manualBrandValue) {
           formData.append("brandColImage", "MANUAL")
-          formData.append("manualBrand", effectiveSheet.manualBrandValue)
+          formData.append("manualBrand", sheet.manualBrandValue)
         } else if (mapping.brand !== null) {
           formData.append("brandColImage", indexToColumnLetter(mapping.brand))
         }
 
         const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
-          effectiveSheet.excelData.headers,
-          effectiveSheet.excelData.rows,
+          sheet.excelData.headers,
+          sheet.excelData.rows,
         )
         const imageColumnIndex =
           mapping.readImage ?? mapping.imageAdd ?? fallbackImageColumnIndex
@@ -1008,7 +959,7 @@ const GoogleImagesForm: React.FC = () => {
         }
         formData.append(
           "header_index",
-          String(effectiveSheet.headerIndex + 1),
+          String(sheet.headerIndex + 1),
         )
         formData.append("sendToEmail", sendToEmail)
         formData.append("isIconDistro", String(isIconDistro))
@@ -1022,7 +973,7 @@ const GoogleImagesForm: React.FC = () => {
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${effectiveSheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
+            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
               errorText || response.statusText
             }`,
           )
@@ -1055,7 +1006,6 @@ const GoogleImagesForm: React.FC = () => {
     showToast,
     skipDataWarehouse,
     uploadedFile,
-    useSharedMapping,
   ])
 
   return (
@@ -1206,6 +1156,25 @@ const GoogleImagesForm: React.FC = () => {
                       </Text>
                     </HStack>
                     {renderSheetButtons("xs")}
+                    <Tooltip
+                      label={activeSheetStatusTooltip}
+                      placement="top"
+                      hasArrow
+                    >
+                      <HStack
+                        spacing={2}
+                        fontSize="xs"
+                        color="subtle"
+                        align="center"
+                      >
+                        <Icon
+                          as={ActiveSheetStatusIcon}
+                          boxSize={3}
+                          color={activeSheetStatusColor}
+                        />
+                        <Text>{activeSheetStatusLabel}</Text>
+                      </HStack>
+                    </Tooltip>
                     <Text fontSize="xs" color="subtle">
                       Select a sheet to preview its header row and sample data.
                     </Text>
@@ -1312,39 +1281,36 @@ const GoogleImagesForm: React.FC = () => {
                         <Box>
                           <Text fontWeight="semibold">Sheets</Text>
                           <Text fontSize="xs" color="subtle">
-                            {useSharedMapping
-                              ? "Mapping from the active sheet updates all sheets."
-                              : "Pick a sheet to adjust its column mapping."
-                            }
+                            Pick a sheet to adjust its column mapping.
                           </Text>
                         </Box>
-                        <Checkbox
-                          isChecked={useSharedMapping}
-                          onChange={(event) =>
-                            handleSharedMappingToggle(event.target.checked)
-                          }
-                        >
-                          Use same mapping for every sheet
-                        </Checkbox>
                       </Flex>
                       {renderSheetButtons("sm")}
-                      {useSharedMapping ? (
-                        <Text fontSize="xs" color="subtle">
-                          Currently sharing mapping from {sheetConfigs[activeSheetIndex]?.name ||
-                            `Sheet ${activeSheetIndex + 1}`}.
-                        </Text>
-                      ) : (
-                        <HStack spacing={4} fontSize="xs" color="subtle" align="center">
-                          <HStack spacing={1} align="center">
-                            <Icon as={CheckIcon} boxSize={3} color="green.400" />
-                            <Text>Ready</Text>
-                          </HStack>
-                          <HStack spacing={1} align="center">
-                            <Icon as={WarningIcon} boxSize={3} color="yellow.400" />
-                            <Text>Needs mapping</Text>
-                          </HStack>
+                      <Tooltip
+                        label={activeSheetStatusTooltip}
+                        placement="top"
+                        hasArrow
+                      >
+                        <HStack
+                          spacing={2}
+                          fontSize="xs"
+                          color="subtle"
+                          align="center"
+                        >
+                          <Icon
+                            as={ActiveSheetStatusIcon}
+                            boxSize={3}
+                            color={activeSheetStatusColor}
+                          />
+                          <Text>{activeSheetStatusLabel}</Text>
                         </HStack>
-                      )}
+                      </Tooltip>
+                      <Text fontSize="xs" color="subtle">
+                        {`Currently editing: ${
+                          sheetConfigs[activeSheetIndex]?.name ||
+                          `Sheet ${activeSheetIndex + 1}`
+                        }`}
+                      </Text>
                     </VStack>
                   </CardBody>
                 </Card>
