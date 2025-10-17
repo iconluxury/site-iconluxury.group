@@ -1196,7 +1196,7 @@ const GoogleImagesForm: React.FC = () => {
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl isRequired>
-                <FormLabel>Send results to email</FormLabel>
+                <FormLabel>User:</FormLabel>
                 {sendToEmail ? (
                   <Text fontWeight="medium">{sendToEmail}</Text>
                 ) : (
