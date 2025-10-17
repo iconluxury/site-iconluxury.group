@@ -48,6 +48,15 @@ type ColumnMapping = Record<
   ColumnType | "readImage" | "imageAdd",
   number | null
 >
+
+type SheetConfig = {
+  name: string
+  rawData: CellValue[][]
+  headerIndex: number
+  excelData: ExcelData
+  columnMapping: ColumnMapping
+  manualBrandValue: string | null
+}
 type ToastFunction = (
   title: string,
   description: string,
@@ -72,6 +81,105 @@ const DATA_WAREHOUSE_ALL_COLUMNS: ColumnType[] = [
   ...DATA_WAREHOUSE_REQUIRED_COLUMNS,
   ...DATA_WAREHOUSE_OPTIONAL_COLUMNS,
 ]
+
+const MANUAL_BRAND_HEADER = "BRAND (Manual)"
+
+const createEmptyColumnMapping = (): ColumnMapping => ({
+  style: null,
+  brand: null,
+  category: null,
+  colorName: null,
+  msrp: null,
+  readImage: null,
+  imageAdd: null,
+})
+
+const EMPTY_EXCEL_DATA: ExcelData = { headers: [], rows: [] }
+const EMPTY_COLUMN_MAPPING: ColumnMapping = Object.freeze(
+  createEmptyColumnMapping(),
+)
+
+const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
+  style: mapping.style,
+  brand: mapping.brand,
+  category: mapping.category,
+  colorName: mapping.colorName,
+  msrp: mapping.msrp,
+  readImage: mapping.readImage,
+  imageAdd: mapping.imageAdd,
+})
+
+const withManualBrandValue = (
+  sheet: SheetConfig,
+  manualBrandValue: string | null,
+): SheetConfig => {
+  const hasManualColumn =
+    sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
+    MANUAL_BRAND_HEADER
+
+  if (manualBrandValue && manualBrandValue.trim()) {
+    const trimmed = manualBrandValue.trim()
+    if (hasManualColumn) {
+      const updatedRows = sheet.excelData.rows.map((row) => {
+        const nextRow = [...row]
+        if (nextRow.length < sheet.excelData.headers.length) {
+          nextRow.length = sheet.excelData.headers.length
+        }
+        nextRow[nextRow.length - 1] = trimmed
+        return nextRow
+      })
+      return {
+        ...sheet,
+        excelData: {
+          headers: [...sheet.excelData.headers],
+          rows: updatedRows,
+        },
+        manualBrandValue: trimmed,
+      }
+    }
+    const newHeaders = [...sheet.excelData.headers, MANUAL_BRAND_HEADER]
+    const newRows = sheet.excelData.rows.map((row) => [...row, trimmed])
+    return {
+      ...sheet,
+      excelData: { headers: newHeaders, rows: newRows },
+      manualBrandValue: trimmed,
+    }
+  }
+
+  if (!manualBrandValue && hasManualColumn) {
+    const newHeaders = sheet.excelData.headers.slice(0, -1)
+    const newRows = sheet.excelData.rows.map((row) => row.slice(0, -1))
+    const newMapping = cloneColumnMapping(sheet.columnMapping)
+    if (newMapping.brand === newHeaders.length) {
+      newMapping.brand = null
+    }
+    return {
+      ...sheet,
+      excelData: { headers: newHeaders, rows: newRows },
+      columnMapping: newMapping,
+      manualBrandValue: null,
+    }
+  }
+
+  return {
+    ...sheet,
+    manualBrandValue: manualBrandValue ? manualBrandValue.trim() : null,
+  }
+}
+
+const syncSheetWithSharedMapping = (
+  sheet: SheetConfig,
+  template: SheetConfig,
+): SheetConfig => {
+  let syncedSheet = sheet
+  if (template.manualBrandValue || sheet.manualBrandValue) {
+    syncedSheet = withManualBrandValue(sheet, template.manualBrandValue)
+  }
+  return {
+    ...syncedSheet,
+    columnMapping: cloneColumnMapping(template.columnMapping),
+  }
+}
 
 // Shared Helper Functions
 const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i
@@ -255,32 +363,74 @@ const GoogleImagesForm: React.FC = () => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
-  const [file, setFile] = useState<File | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [excelData, setExcelData] = useState<ExcelData>({
-    headers: [],
-    rows: [],
-  })
-  const [rawData, setRawData] = useState<CellValue[][]>([])
-  const [headerIndex, setHeaderIndex] = useState<number>(1)
-  const [columnMapping, setColumnMapping] = useState<ColumnMapping>({
-    style: null,
-    brand: null,
-    category: null,
-    colorName: null,
-    msrp: null,
-    readImage: null,
-    imageAdd: null,
-  })
+  const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
+  const [activeSheetIndex, setActiveSheetIndex] = useState(0)
+  const [useSharedMapping, setUseSharedMapping] = useState(false)
   const [activeMappingField, setActiveMappingField] =
     useState<ColumnType | null>(null)
   const [manualBrand, setManualBrand] = useState("")
-  const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
+
+  const activeSheet = sheetConfigs[activeSheetIndex] ?? null
+  const excelData = activeSheet?.excelData ?? EMPTY_EXCEL_DATA
+  const rawData = activeSheet?.rawData ?? []
+  const headerIndex = activeSheet?.headerIndex ?? 0
+  const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
+  const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
+  const hasMultipleSheets = sheetConfigs.length > 1
+
+  const updateSheetConfig = useCallback(
+    (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
+      setSheetConfigs((prev) => {
+        if (!prev[index]) return prev
+        const next = [...prev]
+        const updatedSheet = transform(prev[index])
+        next[index] = updatedSheet
+        if (useSharedMapping && index === activeSheetIndex) {
+          return next.map((sheet, idx) =>
+            idx === index
+              ? updatedSheet
+              : syncSheetWithSharedMapping(sheet, updatedSheet),
+          )
+        }
+        return next
+      })
+    },
+    [activeSheetIndex, useSharedMapping],
+  )
+
+  const handleActiveSheetChange = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= sheetConfigs.length) return
+      setActiveSheetIndex(index)
+      setActiveMappingField(null)
+      setManualBrand("")
+    },
+    [sheetConfigs.length],
+  )
+
+  const handleSharedMappingToggle = useCallback(
+    (checked: boolean) => {
+      setUseSharedMapping(checked)
+      if (!checked) return
+      const referenceSheet = sheetConfigs[activeSheetIndex]
+      if (!referenceSheet) return
+      setSheetConfigs((prev) =>
+        prev.map((sheet, idx) =>
+          idx === activeSheetIndex
+            ? sheet
+            : syncSheetWithSharedMapping(sheet, referenceSheet),
+        ),
+      )
+    },
+    [activeSheetIndex, sheetConfigs],
+  )
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
@@ -302,6 +452,8 @@ const GoogleImagesForm: React.FC = () => {
       const selectedFile = event.target.files?.[0]
       if (!selectedFile) {
         showToast("File Error", "No file selected", "error")
+        setSheetConfigs([])
+        setUploadedFile(null)
         return
       }
       if (
@@ -326,71 +478,99 @@ const GoogleImagesForm: React.FC = () => {
         return
       }
 
-      setFile(selectedFile)
+      setUploadedFile(selectedFile)
       setIsLoading(true)
+      setStep("upload")
+      setActiveMappingField(null)
+      setManualBrand("")
       try {
         const data = await selectedFile.arrayBuffer()
         const workbook = XLSX.read(data, { type: "array" })
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-        if (!worksheet) throw new Error("No worksheet found")
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-          header: 1,
-          blankrows: true,
-          defval: "",
-        })
-        if (jsonData.length === 0) throw new Error("Excel file is empty")
-
-        const detectedHeaderIndex = detectHeaderRow(jsonData as CellValue[][])
-        const patterns = {
+        const newSheetConfigs: SheetConfig[] = []
+        const headerWarningPattern = {
           style:
             /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
           brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
         }
-        const firstRow: string[] = (jsonData[0] as any[]).map((cell) =>
-          String(cell ?? "").trim(),
-        )
-        if (
-          detectedHeaderIndex === 0 &&
-          !firstRow.some(
-            (cell) => patterns.style.test(cell) || patterns.brand.test(cell),
+
+        workbook.SheetNames.forEach((sheetName) => {
+          const worksheet = workbook.Sheets[sheetName]
+          if (!worksheet) return
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+            blankrows: true,
+            defval: "",
+          }) as CellValue[][]
+          if (jsonData.length === 0) return
+
+          const detectedHeaderIndex = detectHeaderRow(jsonData)
+          if (
+            detectedHeaderIndex < 0 ||
+            detectedHeaderIndex >= jsonData.length
+          ) {
+            showToast(
+              "File Error",
+              `Invalid header row detected in sheet "${sheetName}". Please adjust the spreadsheet and re-upload.`,
+              "error",
+            )
+            return
+          }
+
+          const headers = (jsonData[detectedHeaderIndex] as any[]).map((cell) =>
+            String(cell ?? ""),
           )
-        ) {
-          showToast(
-            "Warning",
-            "No clear header row detected; using first row. Please verify in the Header Selection step.",
-            "warning",
-          )
+          if (
+            detectedHeaderIndex === 0 &&
+            !headers.some(
+              (cell) =>
+                headerWarningPattern.style.test(cell) ||
+                headerWarningPattern.brand.test(cell),
+            )
+          ) {
+            showToast(
+              "Warning",
+              `Sheet "${sheetName}" has no clear header row detected; using first row. Please verify in the Header Selection step.`,
+              "warning",
+            )
+          }
+          const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][]
+          newSheetConfigs.push({
+            name: sheetName,
+            rawData: jsonData,
+            headerIndex: detectedHeaderIndex,
+            excelData: { headers, rows },
+            columnMapping: autoMapColumns(headers),
+            manualBrandValue: null,
+          })
+        })
+
+        if (newSheetConfigs.length === 0) {
+          throw new Error("Excel file is empty")
         }
-        setRawData(jsonData as CellValue[][])
-        if (jsonData.length <= detectedHeaderIndex || detectedHeaderIndex < 0) {
-          showToast(
-            "File Error",
-            "Invalid header row detected. Please select a header row in the Header Selection step.",
-            "error",
-          )
-          setHeaderIndex(0)
-          setExcelData({ headers: [], rows: [] })
-          setFile(null)
-          setStep("upload")
-          return
-        }
-        setHeaderIndex(detectedHeaderIndex)
-        const headers = (jsonData[detectedHeaderIndex] as any[]).map((cell) =>
-          String(cell ?? ""),
-        )
-        const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][]
-        setExcelData({ headers, rows })
-        setColumnMapping(autoMapColumns(headers))
+
+        setSheetConfigs(newSheetConfigs)
+        setActiveSheetIndex(0)
+        setUseSharedMapping(false)
         setStep("preview")
+        if (newSheetConfigs.length > 1) {
+          showToast(
+            "Multiple Sheets Detected",
+            `Detected ${newSheetConfigs.length} sheets. Each will be processed as an individual job.`,
+            "success",
+          )
+        }
       } catch (error) {
         showToast(
           "File Processing Error",
           error instanceof Error ? error.message : "Unknown error",
           "error",
         )
-        setFile(null)
+        setSheetConfigs([])
+        setUploadedFile(null)
+        setStep("upload")
       } finally {
         setIsLoading(false)
+        event.target.value = ""
       }
     },
     [showToast],
@@ -398,42 +578,61 @@ const GoogleImagesForm: React.FC = () => {
 
   const handleHeaderChange = useCallback(
     (newHeaderIndex: number) => {
-      if (newHeaderIndex < 0 || newHeaderIndex >= rawData.length) return
-      setHeaderIndex(newHeaderIndex)
-      const headers = rawData[newHeaderIndex].map((cell) => String(cell ?? ""))
-      const rows = rawData.slice(newHeaderIndex + 1) as CellValue[][]
-      setExcelData({ headers, rows })
-      setColumnMapping(autoMapColumns(headers))
-      setIsManualBrandApplied(false)
+      if (!activeSheet) return
+      if (newHeaderIndex < 0 || newHeaderIndex >= activeSheet.rawData.length)
+        return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
+          String(cell ?? ""),
+        )
+        const rows = sheet.rawData.slice(newHeaderIndex + 1) as CellValue[][]
+        return {
+          ...sheet,
+          headerIndex: newHeaderIndex,
+          excelData: { headers, rows },
+          columnMapping: autoMapColumns(headers),
+          manualBrandValue: null,
+        }
+      })
       setManualBrand("")
       setActiveMappingField(null)
     },
-    [rawData],
+    [activeSheet, activeSheetIndex, updateSheetConfig],
   )
 
-  const handleColumnMap = useCallback((index: number, field: string) => {
-    if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
-    setColumnMapping((prev) => {
-      const newMapping = { ...prev }
-      ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-        if (
-          newMapping[key] === index &&
-          key !== "readImage" &&
-          key !== "imageAdd"
-        ) {
-          newMapping[key] = null
+  const handleColumnMap = useCallback(
+    (index: number, field: string) => {
+      if (!activeSheet) return
+      if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        let workingSheet = sheet
+        if (field === "brand" && sheet.manualBrandValue) {
+          workingSheet = withManualBrandValue(sheet, null)
+        }
+        let newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+          if (
+            newMapping[key] === index &&
+            key !== "readImage" &&
+            key !== "imageAdd"
+          ) {
+            newMapping[key] = null
+          }
+        })
+        if (field && ALL_COLUMNS.includes(field as ColumnType)) {
+          newMapping[field as keyof ColumnMapping] = index
+        }
+        return {
+          ...workingSheet,
+          columnMapping: newMapping,
         }
       })
-      if (field && ALL_COLUMNS.includes(field as ColumnType)) {
-        newMapping[field as keyof ColumnMapping] = index
-        if (field === "brand") {
-          setManualBrand("")
-          setIsManualBrandApplied(false)
-        }
+      if (field === "brand") {
+        setManualBrand("")
       }
-      return newMapping
-    })
-  }, [])
+    },
+    [ALL_COLUMNS, activeSheet, activeSheetIndex, updateSheetConfig],
+  )
 
   const handleColumnMapFromGrid = useCallback(
     (index: number) => {
@@ -444,25 +643,44 @@ const GoogleImagesForm: React.FC = () => {
     [activeMappingField, handleColumnMap],
   )
 
-  const handleClearMapping = useCallback((index: number) => {
-    setColumnMapping((prev) => {
-      const newMapping = { ...prev }
-      ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-        if (
-          newMapping[key] === index &&
-          key !== "readImage" &&
-          key !== "imageAdd"
-        ) {
-          newMapping[key] = null
-          if (key === "brand") {
-            setManualBrand("")
-            setIsManualBrandApplied(false)
-          }
+  const handleClearMapping = useCallback(
+    (index: number) => {
+      if (!activeSheet) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        let workingSheet = sheet
+        let workingMapping = cloneColumnMapping(workingSheet.columnMapping)
+        ;(Object.keys(workingMapping) as (keyof ColumnMapping)[]).forEach(
+          (key) => {
+            if (
+              workingMapping[key] === index &&
+              key !== "readImage" &&
+              key !== "imageAdd"
+            ) {
+              workingMapping[key] = null
+              if (key === "brand" && workingSheet.manualBrandValue) {
+                workingSheet = withManualBrandValue(workingSheet, null)
+                workingMapping = cloneColumnMapping(
+                  workingSheet.columnMapping,
+                )
+              }
+            }
+          },
+        )
+        return {
+          ...workingSheet,
+          columnMapping: workingMapping,
         }
       })
-      return newMapping
-    })
-  }, [])
+      if (
+        columnMapping.brand !== null &&
+        columnMapping.brand === index &&
+        manualBrand
+      ) {
+        setManualBrand("")
+      }
+    },
+    [activeSheet, activeSheetIndex, columnMapping.brand, manualBrand, updateSheetConfig],
+  )
 
   const mappedDataColumns = useMemo(() => {
     const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
@@ -490,7 +708,8 @@ const GoogleImagesForm: React.FC = () => {
   )
 
   const applyManualBrand = useCallback(() => {
-    if (!manualBrand.trim()) {
+    const trimmed = manualBrand.trim()
+    if (!trimmed) {
       showToast(
         "Manual Brand Error",
         "Please enter a non-empty brand name",
@@ -498,73 +717,107 @@ const GoogleImagesForm: React.FC = () => {
       )
       return
     }
-    setColumnMapping((prev) => ({ ...prev, brand: null }))
-    setExcelData((prev) => {
-      const newHeaders = [...prev.headers, "BRAND (Manual)"]
-      setColumnMapping((prevMapping) => ({
-        ...prevMapping,
-        brand: newHeaders.length - 1,
-      }))
-      setIsManualBrandApplied(true)
+    if (!activeSheet) return
+    updateSheetConfig(activeSheetIndex, (sheet) => {
+      const updatedSheet = withManualBrandValue(sheet, trimmed)
+      const brandIndex = updatedSheet.excelData.headers.length - 1
       return {
-        headers: newHeaders,
-        rows: prev.rows.map((row) => [...row, manualBrand.trim()]),
+        ...updatedSheet,
+        columnMapping: {
+          ...updatedSheet.columnMapping,
+          brand: brandIndex,
+        },
+        manualBrandValue: trimmed,
       }
     })
-    showToast(
-      "Success",
-      `Manual brand "${manualBrand.trim()}" applied`,
-      "success",
-    )
+    showToast("Success", `Manual brand "${trimmed}" applied`, "success")
     setManualBrand("")
     setActiveMappingField(null)
-  }, [manualBrand, showToast])
+  }, [activeSheet, activeSheetIndex, manualBrand, showToast, updateSheetConfig])
 
   const removeManualBrand = useCallback(() => {
-    setExcelData((prev) => ({
-      headers: prev.headers.filter((header) => header !== "BRAND (Manual)"),
-      rows: prev.rows.map((row) => row.slice(0, -1)),
-    }))
-    setColumnMapping((prev) => ({ ...prev, brand: null }))
-    setIsManualBrandApplied(false)
+    if (!activeSheet?.manualBrandValue) return
+    updateSheetConfig(activeSheetIndex, (sheet) =>
+      withManualBrandValue(sheet, null),
+    )
     showToast("Success", "Manual brand removed", "success")
+    setManualBrand("")
     setActiveMappingField(null)
-  }, [showToast])
+  }, [activeSheet, activeSheetIndex, showToast, updateSheetConfig])
 
   const validateForm = useMemo(() => {
+    if (!activeSheet) {
+      return {
+        isValid: false,
+        missing: REQUIRED_COLUMNS,
+      }
+    }
     const missing = REQUIRED_COLUMNS.filter(
       (col) => columnMapping[col] === null,
     )
     return {
       isValid:
         missing.length === 0 &&
-        file &&
         excelData.rows.length > 0 &&
         headersAreValid,
       missing,
     }
   }, [
+    activeSheet,
     columnMapping,
-    file,
     excelData.rows.length,
     headersAreValid,
+    REQUIRED_COLUMNS,
   ])
 
+  const sheetValidationResults = useMemo(
+    () =>
+      sheetConfigs.map((sheet, index) => {
+        const mappingReference = useSharedMapping
+          ? sheetConfigs[0]?.columnMapping
+          : sheet.columnMapping
+        const mapping = mappingReference ?? createEmptyColumnMapping()
+        const missing = REQUIRED_COLUMNS.filter(
+          (col) => mapping[col] === null,
+        )
+        const headersValid = sheet.excelData.headers.some(
+          (header) => String(header).trim() !== "",
+        )
+        return {
+          sheetIndex: index,
+          missing,
+          isValid:
+            missing.length === 0 &&
+            sheet.excelData.rows.length > 0 &&
+            headersValid,
+        }
+      }),
+    [REQUIRED_COLUMNS, sheetConfigs, useSharedMapping],
+  )
+
   const handleSubmit = useCallback(async () => {
-    if (!validateForm.isValid) {
+    if (sheetConfigs.length === 0) {
       showToast(
-        "Validation Error",
-        `Missing required columns: ${validateForm.missing.join(", ")}`,
+        "No Data",
+        "Upload an Excel workbook before submitting.",
         "warning",
       )
       return
     }
-    if (!headersAreValid) {
+    const invalidSheet = sheetValidationResults.find((result) => !result.isValid)
+    if (invalidSheet) {
+      const sheetName =
+        sheetConfigs[invalidSheet.sheetIndex]?.name ||
+        `Sheet ${invalidSheet.sheetIndex + 1}`
       showToast(
-        "Header Error",
-        "Selected header row has no values. Please choose a different header row.",
+        "Validation Error",
+        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
         "warning",
       )
+      if (!useSharedMapping) {
+        setActiveSheetIndex(invalidSheet.sheetIndex)
+        setStep("map")
+      }
       return
     }
     if (!sendToEmail) {
@@ -585,67 +838,122 @@ const GoogleImagesForm: React.FC = () => {
     }
 
     setIsLoading(true)
-    const formData = new FormData()
-
-    formData.append("fileUploadImage", file!)
-    formData.append("searchColImage", indexToColumnLetter(columnMapping.style!))
-
-    if (isManualBrandApplied) {
-      formData.append("brandColImage", "MANUAL")
-      const manualBrandValue =
-        (excelData.rows[0]?.[excelData.headers.length - 1] as string) || ""
-      formData.append("manualBrand", manualBrandValue)
-    } else if (columnMapping.brand !== null) {
-      formData.append("brandColImage", indexToColumnLetter(columnMapping.brand))
-    }
-
-    const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
-      excelData.headers,
-      excelData.rows,
-    )
-    const imageColumnIndex =
-      columnMapping.readImage ??
-      columnMapping.imageAdd ??
-      fallbackImageColumnIndex
-
-    if (imageColumnIndex !== null) {
-      formData.append("imageColumnImage", indexToColumnLetter(imageColumnIndex))
-    } else {
-      formData.append("imageColumnImage", "")
-    }
-    if (columnMapping.colorName !== null) {
-      formData.append(
-        "ColorColImage",
-        indexToColumnLetter(columnMapping.colorName),
-      )
-    }
-    if (columnMapping.category !== null) {
-      formData.append(
-        "CategoryColImage",
-        indexToColumnLetter(columnMapping.category),
-      )
-    }
-    formData.append("header_index", String(headerIndex + 1))
-    formData.append("sendToEmail", sendToEmail)
-    formData.append("isIconDistro", String(isIconDistro))
-    formData.append("skipDataWarehouse", String(skipDataWarehouse)) // Add new parameter
+    const templateSheet = sheetConfigs[0]
 
     try {
-      const response = await fetch(`${SERVER_URL}/submitImage`, {
-        method: "POST",
-        body: formData,
-      })
+      for (const [index, sheet] of sheetConfigs.entries()) {
+        const effectiveSheet =
+          useSharedMapping && templateSheet
+            ? syncSheetWithSharedMapping(sheet, templateSheet)
+            : sheet
+        const mapping = effectiveSheet.columnMapping
+        if (mapping.style === null) {
+          throw new Error(
+            `Sheet "${effectiveSheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+          )
+        }
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("Server Response:", response.status, errorText)
-        throw new Error(`Server error: ${errorText || response.statusText}`)
+        const prefixRows = effectiveSheet.rawData.slice(
+          0,
+          effectiveSheet.headerIndex,
+        )
+        const aoa: CellValue[][] = [
+          ...prefixRows,
+          effectiveSheet.excelData.headers,
+          ...effectiveSheet.excelData.rows,
+        ]
+        const worksheet = XLSX.utils.aoa_to_sheet(aoa)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          effectiveSheet.name || `Sheet${index + 1}`,
+        )
+        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
+        const baseName = uploadedFile?.name
+          ? uploadedFile.name.replace(/\.xlsx?$/i, "")
+          : "google-images"
+        const sheetLabel = (effectiveSheet.name || `sheet-${index + 1}`)
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+        const fileName = `${baseName}-${sheetLabel}.xlsx`
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+        const formData = new FormData()
+        formData.append(
+          "fileUploadImage",
+          new File([blob], fileName, { type: blob.type }),
+        )
+        formData.append(
+          "searchColImage",
+          indexToColumnLetter(mapping.style),
+        )
+
+        if (effectiveSheet.manualBrandValue) {
+          formData.append("brandColImage", "MANUAL")
+          formData.append("manualBrand", effectiveSheet.manualBrandValue)
+        } else if (mapping.brand !== null) {
+          formData.append("brandColImage", indexToColumnLetter(mapping.brand))
+        }
+
+        const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
+          effectiveSheet.excelData.headers,
+          effectiveSheet.excelData.rows,
+        )
+        const imageColumnIndex =
+          mapping.readImage ?? mapping.imageAdd ?? fallbackImageColumnIndex
+        if (imageColumnIndex !== null) {
+          formData.append(
+            "imageColumnImage",
+            indexToColumnLetter(imageColumnIndex),
+          )
+        } else {
+          formData.append("imageColumnImage", "")
+        }
+        if (mapping.colorName !== null) {
+          formData.append(
+            "ColorColImage",
+            indexToColumnLetter(mapping.colorName),
+          )
+        }
+        if (mapping.category !== null) {
+          formData.append(
+            "CategoryColImage",
+            indexToColumnLetter(mapping.category),
+          )
+        }
+        formData.append(
+          "header_index",
+          String(effectiveSheet.headerIndex + 1),
+        )
+        formData.append("sendToEmail", sendToEmail)
+        formData.append("isIconDistro", String(isIconDistro))
+        formData.append("skipDataWarehouse", String(skipDataWarehouse))
+
+        const response = await fetch(`${SERVER_URL}/submitImage`, {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(
+            `Server error for sheet "${effectiveSheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
+              errorText || response.statusText
+            }`,
+          )
+        }
       }
 
-      showToast("Success", "Form submitted successfully", "success")
+      showToast(
+        "Success",
+        `${sheetConfigs.length} job(s) submitted successfully`,
+        "success",
+      )
       setTimeout(() => window.location.reload(), 1000)
     } catch (error) {
-      console.error("Fetch Error:", error)
+      console.error("Submission Error:", error)
       showToast(
         "Submission Error",
         error instanceof Error ? error.message : "Failed to submit",
@@ -656,17 +964,15 @@ const GoogleImagesForm: React.FC = () => {
       setIsLoading(false)
     }
   }, [
-    validateForm,
-    file,
-    columnMapping,
-    isManualBrandApplied,
-    headerIndex,
-    isIconDistro,
-    skipDataWarehouse, // Add to dependencies
-    showToast,
-    excelData,
-    headersAreValid,
     isEmailValid,
+    isIconDistro,
+    sendToEmail,
+    sheetConfigs,
+    sheetValidationResults,
+    showToast,
+    skipDataWarehouse,
+    uploadedFile,
+    useSharedMapping,
   ])
 
   return (
@@ -801,6 +1107,25 @@ const GoogleImagesForm: React.FC = () => {
 
         {step === "preview" && (
           <VStack spacing={4} align="stretch">
+            {hasMultipleSheets && (
+              <HStack>
+                <Text>Select Sheet:</Text>
+                <Select
+                  value={activeSheetIndex}
+                  onChange={(event) =>
+                    handleActiveSheetChange(Number(event.target.value))
+                  }
+                  w="250px"
+                  aria-label="Select sheet"
+                >
+                  {sheetConfigs.map((sheet, index) => (
+                    <option key={sheet.name || index} value={index}>
+                      {sheet.name || `Sheet ${index + 1}`}
+                    </option>
+                  ))}
+                </Select>
+              </HStack>
+            )}
             <HStack>
               <Text>Select Header Row:</Text>
               <Select
@@ -880,6 +1205,68 @@ const GoogleImagesForm: React.FC = () => {
               w={{ base: "100%", md: "40%" }}
               overflowY="auto"
             >
+              {hasMultipleSheets && (
+                <VStack align="stretch" spacing={2}>
+                  <HStack align="center" justify="space-between">
+                    <Text fontWeight="semibold">Sheet:</Text>
+                    <Select
+                      value={activeSheetIndex}
+                      onChange={(event) =>
+                        handleActiveSheetChange(Number(event.target.value))
+                      }
+                      isDisabled={useSharedMapping}
+                      aria-label="Select sheet to map"
+                      w="60%"
+                    >
+                      {sheetConfigs.map((sheet, index) => {
+                        const status = sheetValidationResults[index]?.isValid
+                        const label = sheet.name || `Sheet ${index + 1}`
+                        return (
+                          <option key={sheet.name || index} value={index}>
+                            {label}
+                            {status ? " (Complete)" : " (Needs mapping)"}
+                          </option>
+                        )
+                      })}
+                    </Select>
+                  </HStack>
+                  <Checkbox
+                    isChecked={useSharedMapping}
+                    onChange={(event) =>
+                      handleSharedMappingToggle(event.target.checked)
+                    }
+                  >
+                    Use same mapping for all sheets
+                  </Checkbox>
+                  {useSharedMapping ? (
+                    <Text fontSize="xs" color="subtle">
+                      Mapping from {sheetConfigs[activeSheetIndex]?.name ||
+                        `Sheet ${activeSheetIndex + 1}`} will be reused for
+                      every sheet.
+                    </Text>
+                  ) : (
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={1}>
+                      {sheetConfigs.map((sheet, index) => {
+                        const validation = sheetValidationResults[index]
+                        const statusLabel = validation?.isValid
+                          ? "Complete"
+                          : "Needs mapping"
+                        const colorScheme = validation?.isValid
+                          ? "green"
+                          : "yellow"
+                        return (
+                          <HStack key={sheet.name || index} spacing={2}>
+                            <Badge colorScheme={colorScheme}>{statusLabel}</Badge>
+                            <Text fontSize="xs">
+                              {sheet.name || `Sheet ${index + 1}`}
+                            </Text>
+                          </HStack>
+                        )
+                      })}
+                    </SimpleGrid>
+                  )}
+                </VStack>
+              )}
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
                   Missing required columns: {validateForm.missing.join(", ")}.
