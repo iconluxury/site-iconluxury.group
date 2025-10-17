@@ -1,4 +1,4 @@
-import { CloseIcon, SearchIcon } from "@chakra-ui/icons"
+import { CheckIcon, CloseIcon, SearchIcon, WarningIcon } from "@chakra-ui/icons"
 import {
   Badge,
   Box,
@@ -27,6 +27,9 @@ import {
   Tooltip,
   Tr,
   VStack,
+  Wrap,
+  WrapItem,
+  useColorModeValue,
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
@@ -384,6 +387,11 @@ const GoogleImagesForm: React.FC = () => {
   const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
   const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
   const hasMultipleSheets = sheetConfigs.length > 1
+  const mappingPanelBg = useColorModeValue("white", "gray.800")
+  const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
+  const sheetInactiveBg = useColorModeValue("gray.100", "gray.700")
+  const sheetInactiveHover = useColorModeValue("gray.200", "gray.600")
+  const sheetWarningHover = useColorModeValue("yellow.100", "yellow.400")
 
   const updateSheetConfig = useCallback(
     (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
