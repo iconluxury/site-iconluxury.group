@@ -1420,108 +1420,92 @@ const ReformatExcelForm: React.FC = () => {
 
                 if (field === "brand") {
                   return (
-                    <VStack key={field} align="stretch" spacing={2}>
-                      <HStack
-                        gap={2}
-                        align="center"
-                        p={2}
-                        borderRadius="md"
-                        borderWidth={
-                          activeMappingField === field ? "2px" : "1px"
-                        }
-                        borderColor={
-                          activeMappingField === field
-                            ? SELECTED_BORDER_COLOR
-                            : "transparent"
-                        }
-                        bg={
-                          activeMappingField === field
-                            ? SELECTED_BG_SUBTLE
-                            : "transparent"
-                        }
-                        cursor="pointer"
-                        onClick={() =>
-                          setActiveMappingField(field as ColumnType | null)
-                        }
-                      >
-                        <Text w="120px" fontWeight="semibold">
-                          {label}:
-                        </Text>
-                        <Tooltip label={`Select Excel column for ${label}`}>
-                          <Select
-                            value={
-                              columnMapping.brand !== null
-                                ? columnMapping.brand
-                                : ""
-                            }
-                            onChange={(e) =>
-                              handleColumnMap(Number(e.target.value), field)
-                            }
-                            onFocus={() =>
-                              setActiveMappingField(field as ColumnType | null)
-                            }
-                            onClick={() =>
-                              setActiveMappingField(field as ColumnType | null)
-                            }
-                            placeholder="Unmapped"
-                            aria-label={`Map ${label} column`}
-                            flex="1"
-                            isDisabled={isManualBrandApplied}
-                          >
-                            <option value="">Unmapped</option>
-                            {excelData.headers.map((header, index) => (
-                              <option
-                                key={index}
-                                value={index}
-                                disabled={
-                                  mappedDataColumns.has(index) &&
-                                  columnMapping.brand !== index
-                                }
-                              >
-                                {header ||
-                                  `Column ${indexToColumnLetter(index)}`}
-                              </option>
-                            ))}
-                          </Select>
-                        </Tooltip>
-                        {columnMapping.brand !== null && (
-                          <Tooltip label="Clear mapping">
-                            <IconButton
-                              aria-label={`Clear ${label} mapping`}
-                              icon={<CloseIcon />}
-                              size="sm"
-                              onClick={() =>
-                                handleClearMapping(columnMapping.brand!)
+                    <HStack
+                      key={field}
+                      gap={2}
+                      align="center"
+                      p={2}
+                      borderRadius="md"
+                      borderWidth={activeMappingField === field ? "2px" : "1px"}
+                      borderColor={
+                        activeMappingField === field
+                          ? SELECTED_BORDER_COLOR
+                          : "transparent"
+                      }
+                      bg={
+                        activeMappingField === field
+                          ? SELECTED_BG_SUBTLE
+                          : "transparent"
+                      }
+                      cursor="pointer"
+                      onClick={() =>
+                        setActiveMappingField(field as ColumnType | null)
+                      }
+                    >
+                      <Text w="120px" fontWeight="semibold">
+                        {label}:
+                      </Text>
+                      <Tooltip label={`Select Excel column for ${label}`}>
+                        <Select
+                          value={
+                            columnMapping.brand !== null
+                              ? columnMapping.brand
+                              : ""
+                          }
+                          onChange={(e) =>
+                            handleColumnMap(Number(e.target.value), field)
+                          }
+                          onFocus={() =>
+                            setActiveMappingField(field as ColumnType | null)
+                          }
+                          onClick={() =>
+                            setActiveMappingField(field as ColumnType | null)
+                          }
+                          placeholder="Unmapped"
+                          aria-label={`Map ${label} column`}
+                          flex="1"
+                          isDisabled={isManualBrandApplied}
+                        >
+                          <option value="">Unmapped</option>
+                          {excelData.headers.map((header, index) => (
+                            <option
+                              key={index}
+                              value={index}
+                              disabled={
+                                mappedDataColumns.has(index) &&
+                                columnMapping.brand !== index
                               }
-                            />
-                          </Tooltip>
-                        )}
-                      </HStack>
-                      {columnMapping.brand === null && (
-                        <FormControl>
-                          <HStack gap={2} pl={2}>
-                            <Input
-                              placeholder="Or Add Manual Brand"
-                              value={manualBrand}
-                              onChange={(e) => setManualBrand(e.target.value)}
-                              aria-label="Manual brand input"
-                              flex="1"
-                              size="sm"
-                            />
-                            <Button
-                              colorScheme="brand"
-                              size="sm"
-                              onClick={applyManualBrand}
-                              isDisabled={!manualBrand.trim()}
                             >
-                              Apply
-                            </Button>
-                          </HStack>
-                        </FormControl>
+                              {header || `Column ${indexToColumnLetter(index)}`}
+                            </option>
+                          ))}
+                        </Select>
+                      </Tooltip>
+                      {columnMapping.brand === null && !isManualBrandApplied && (
+                        <>
+                          <Text fontSize="sm" color="subtle">
+                            Or
+                          </Text>
+                          <Input
+                            placeholder="Add Manual Brand"
+                            value={manualBrand}
+                            onChange={(e) => setManualBrand(e.target.value)}
+                            aria-label="Manual brand input"
+                            size="sm"
+                          />
+                          <Button
+                            colorScheme="brand"
+                            size="sm"
+                            onClick={applyManualBrand}
+                            isDisabled={!manualBrand.trim()}
+                          >
+                            Apply
+                          </Button>
+                        </>
                       )}
                       {isManualBrandApplied && (
-                        <HStack pl={2} justify="space-between">
-                          <Badge colorScheme="green">
+                        <>
+                          <Badge colorScheme="green" noOfLines={1}>
                             Manual: {activeSheet.manualBrandValue}
                           </Badge>
                           <Button
@@ -1532,9 +1516,21 @@ const ReformatExcelForm: React.FC = () => {
                           >
                             Remove
                           </Button>
-                        </HStack>
+                        </>
                       )}
-                    </VStack>
+                      {columnMapping.brand !== null && !isManualBrandApplied && (
+                        <Tooltip label="Clear mapping">
+                          <IconButton
+                            aria-label={`Clear ${label} mapping`}
+                            icon={<CloseIcon />}
+                            size="sm"
+                            onClick={() =>
+                              handleClearMapping(columnMapping.brand!)
+                            }
+                          />
+                        </Tooltip>
+                      )}
+                    </HStack>
                   )
                 }
 
