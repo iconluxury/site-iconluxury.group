@@ -246,11 +246,11 @@ const MappedColumnSummary: React.FC<{
 
 const SubmitStep: React.FC<{
   sheetConfigs: SheetConfig[]
-  onSubmit: () => void
+  onSubmit: (sheetIndex: number) => void
   onBack: () => void
   sendToEmail: string
   isEmailValid: boolean
-  isSubmitting: boolean
+  submittingSheetIndex: number | null
   ALL_COLUMNS: (ColumnType | "readImage")[]
   currency: "USD" | "EUR"
   onCurrencyChange: (value: "USD" | "EUR") => void
@@ -265,14 +265,13 @@ const SubmitStep: React.FC<{
   onBack,
   sendToEmail,
   isEmailValid,
-  isSubmitting,
+  submittingSheetIndex,
   ALL_COLUMNS,
   currency,
   onCurrencyChange,
   sheetValidationResults,
 }) => {
   const cardBg = useColorModeValue("white", "gray.700")
-  const hasSheets = sheetConfigs.length > 0
   const tableHeadBg = useColorModeValue("gray.50", "gray.800")
 
   return (
@@ -318,6 +317,7 @@ const SubmitStep: React.FC<{
                     <Th>Sheet Name</Th>
                     <Th>Status</Th>
                     <Th>Mapped Columns</Th>
+                    <Th>Actions</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -351,6 +351,20 @@ const SubmitStep: React.FC<{
                             ALL_COLUMNS={ALL_COLUMNS}
                           />
                         </Td>
+                        <Td>
+                          <Button
+                            colorScheme="brand"
+                            onClick={() => onSubmit(index)}
+                            isLoading={submittingSheetIndex === index}
+                            isDisabled={
+                              !isReady ||
+                              !isEmailValid ||
+                              submittingSheetIndex !== null
+                            }
+                          >
+                            Submit
+                          </Button>
+                        </Td>
                       </Tr>
                     )
                   })}
@@ -361,16 +375,12 @@ const SubmitStep: React.FC<{
         </Card>
 
         <HStack justifyContent="space-between" mt={4}>
-          <Button onClick={onBack} disabled={isSubmitting} variant="outline">
-            Back
-          </Button>
           <Button
-            colorScheme="brand"
-            onClick={onSubmit}
-            isLoading={isSubmitting}
-            isDisabled={!isEmailValid || !hasSheets}
+            onClick={onBack}
+            disabled={submittingSheetIndex !== null}
+            variant="outline"
           >
-            {isSubmitting ? "Submitting..." : "Submit All Sheets"}
+            Back
           </Button>
         </HStack>
       </VStack>
@@ -570,6 +580,9 @@ const ReformatExcelForm: React.FC = () => {
     Partial<Record<"brand" | "gender" | "category", string>>
   >({})
   const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
+  const [submittingSheetIndex, setSubmittingSheetIndex] = useState<
+    number | null
+  >(null)
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
@@ -1083,60 +1096,46 @@ const ReformatExcelForm: React.FC = () => {
     ],
   )
 
-  const handleSubmit = useCallback(async () => {
-    if (sheetConfigs.length === 0) {
-      showToast(
-        "No Data",
-        "Upload an Excel workbook before submitting.",
-        "warning",
-      )
-      return
-    }
-    const invalidSheet = sheetValidationResults.find((result) => !result.isValid)
-    if (invalidSheet) {
-      const sheetName =
-        sheetConfigs[invalidSheet.sheetIndex]?.name ||
-        `Sheet ${invalidSheet.sheetIndex + 1}`
-      showToast(
-        "Validation Error",
-        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
-        "warning",
-      )
-      setActiveSheetIndex(invalidSheet.sheetIndex)
-      setStep("map")
-      return
-    }
-    if (!sendToEmail) {
-      showToast(
-        "Recipient Email Required",
-        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
-        "warning",
-      )
-      return
-    }
-    if (!isEmailValid) {
-      showToast(
-        "Invalid Email",
-        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
-        "warning",
-      )
-      return
-    }
+  const handleSubmit = useCallback(
+    async (sheetIndex: number) => {
+      const sheet = sheetConfigs[sheetIndex]
+      if (!sheet) {
+        showToast("Error", "Sheet not found.", "error")
+        return
+      }
 
-    setIsLoading(true)
-    try {
-      for (const [index, sheet] of sheetConfigs.entries()) {
+      const validation = sheetValidationResults[sheetIndex]
+      if (!validation?.isValid) {
+        const sheetName = sheet.name || `Sheet ${sheetIndex + 1}`
+        showToast(
+          "Validation Error",
+          `Missing required columns in ${sheetName}: ${validation.missing.join(", ")}`,
+          "warning",
+        )
+        setActiveSheetIndex(sheetIndex)
+        setStep("map")
+        return
+      }
+
+      if (!sendToEmail || !isEmailValid) {
+        showToast(
+          "Recipient Email Required",
+          "A valid recipient email is required. Please check the iframe URL parameters.",
+          "warning",
+        )
+        return
+      }
+
+      setSubmittingSheetIndex(sheetIndex)
+      try {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+            `Sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" is missing a mapped style column.`,
           )
         }
 
-        const prefixRows = sheet.rawData.slice(
-          0,
-          sheet.headerIndex,
-        )
+        const prefixRows = sheet.rawData.slice(0, sheet.headerIndex)
         const aoa: CellValue[][] = [
           ...prefixRows,
           sheet.excelData.headers,
@@ -1147,13 +1146,16 @@ const ReformatExcelForm: React.FC = () => {
         XLSX.utils.book_append_sheet(
           workbook,
           worksheet,
-          sheet.name || `Sheet${index + 1}`,
+          sheet.name || `Sheet${sheetIndex + 1}`,
         )
-        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
+        const buffer = XLSX.write(workbook, {
+          type: "array",
+          bookType: "xlsx",
+        })
         const baseName = uploadedFile?.name
           ? uploadedFile.name.replace(/\.xlsx?$/i, "")
           : "google-images"
-        const sheetLabel = (sheet.name || `sheet-${index + 1}`)
+        const sheetLabel = (sheet.name || `sheet-${sheetIndex + 1}`)
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
@@ -1165,10 +1167,7 @@ const ReformatExcelForm: React.FC = () => {
           "fileUploadImage",
           new File([blob], fileName, { type: blob.type }),
         )
-        formData.append(
-          "searchColImage",
-          indexToColumnLetter(mapping.style),
-        )
+        formData.append("searchColImage", indexToColumnLetter(mapping.style))
 
         if (sheet.manualValues.brand) {
           formData.append("brandColImage", "MANUAL")
@@ -1192,10 +1191,7 @@ const ReformatExcelForm: React.FC = () => {
           formData.append("imageColumnImage", "")
         }
         if (mapping.color !== null) {
-          formData.append(
-            "ColorColImage",
-            indexToColumnLetter(mapping.color),
-          )
+          formData.append("ColorColImage", indexToColumnLetter(mapping.color))
         }
         if (mapping.category !== null) {
           formData.append(
@@ -1203,10 +1199,7 @@ const ReformatExcelForm: React.FC = () => {
             indexToColumnLetter(mapping.category),
           )
         }
-        formData.append(
-          "header_index",
-          String(sheet.headerIndex + 1),
-        )
+        formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
         formData.append("currency", currency)
 
@@ -1218,39 +1211,39 @@ const ReformatExcelForm: React.FC = () => {
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
+            `Server error for sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" (${response.status}): ${
               errorText || response.statusText
             }`,
           )
         }
-      }
 
-      showToast(
-        "Success",
-        `${sheetConfigs.length} job(s) submitted successfully`,
-        "success",
-      )
-      setTimeout(() => window.location.reload(), 1000)
-    } catch (error) {
-      console.error("Submission Error:", error)
-      showToast(
-        "Submission Error",
-        error instanceof Error ? error.message : "Failed to submit",
-        "error",
-      )
-      setStep("map")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [
-    currency,
-    isEmailValid,
-    sendToEmail,
-    sheetConfigs,
-    sheetValidationResults,
-    showToast,
-    uploadedFile,
-  ])
+        showToast(
+          "Success",
+          `Sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" submitted successfully.`,
+          "success",
+        )
+        // Optionally, you might want to update the UI to show this sheet is done
+      } catch (error) {
+        console.error("Submission Error:", error)
+        showToast(
+          "Submission Error",
+          error instanceof Error ? error.message : "Failed to submit",
+          "error",
+        )
+      } finally {
+        setSubmittingSheetIndex(null)
+      }
+    },
+    [
+      currency,
+      isEmailValid,
+      sendToEmail,
+      sheetConfigs,
+      sheetValidationResults,
+      showToast,
+      uploadedFile,
+    ],
+  )
 
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
@@ -1340,19 +1333,6 @@ const ReformatExcelForm: React.FC = () => {
                       ["upload", "preview", "map"].indexOf(step)
                     ]
                   }
-                </Button>
-              )}
-              {step === "submit" && (
-                <Button
-                  colorScheme="brand"
-                  onClick={handleSubmit}
-                  isLoading={isLoading}
-                  size="sm"
-                  isDisabled={
-                    !validateForm.isValid || !sendToEmail || !isEmailValid
-                  }
-                >
-                  Submit
                 </Button>
               )}
             </HStack>
@@ -1911,7 +1891,7 @@ const ReformatExcelForm: React.FC = () => {
             onBack={() => setStep("map")}
             sendToEmail={sendToEmail}
             isEmailValid={isEmailValid}
-            isSubmitting={isLoading}
+            submittingSheetIndex={submittingSheetIndex}
             ALL_COLUMNS={[...ALL_COLUMNS, "readImage"]}
             currency={currency}
             onCurrencyChange={setCurrency}
