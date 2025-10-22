@@ -361,6 +361,7 @@ const GoogleImagesForm: React.FC = () => {
   const [manualBrand, setManualBrand] = useState("")
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
+  const [isAiMode, setIsAiMode] = useState(false)
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
@@ -964,6 +965,7 @@ const GoogleImagesForm: React.FC = () => {
         formData.append("sendToEmail", sendToEmail)
         formData.append("isIconDistro", String(isIconDistro))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
+        formData.append("isAiMode", String(isAiMode))
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
@@ -1000,6 +1002,7 @@ const GoogleImagesForm: React.FC = () => {
   }, [
     isEmailValid,
     isIconDistro,
+    isAiMode,
     sendToEmail,
     sheetConfigs,
     sheetValidationResults,
@@ -1674,6 +1677,19 @@ const GoogleImagesForm: React.FC = () => {
                 <Text fontSize="sm" color="subtle" mt={2} pl={8}>
                   If selected, data will not be processed for the data
                   warehouse.
+                </Text>
+              </FormControl>
+              <FormControl>
+                <Checkbox
+                  colorScheme="brand"
+                  size="lg"
+                  isChecked={isAiMode}
+                  onChange={(e) => setIsAiMode(e.target.checked)}
+                >
+                  AI Mode
+                </Checkbox>
+                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
+                  If selected, will submit with AI mode enabled.
                 </Text>
               </FormControl>
               <Text>Mapped Columns:</Text>
