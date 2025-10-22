@@ -16,6 +16,8 @@ import {
   Icon,
   IconButton,
   Input,
+  Radio,
+  RadioGroup,
   Select,
   SimpleGrid,
   Spinner,
@@ -250,6 +252,8 @@ const SubmitStep: React.FC<{
   isEmailValid: boolean
   isSubmitting: boolean
   ALL_COLUMNS: (ColumnType | "readImage")[]
+  currency: "USD" | "EUR"
+  onCurrencyChange: (value: "USD" | "EUR") => void
 }> = ({
   sheetConfigs,
   onSubmit,
@@ -258,6 +262,8 @@ const SubmitStep: React.FC<{
   isEmailValid,
   isSubmitting,
   ALL_COLUMNS,
+  currency,
+  onCurrencyChange,
 }) => {
   const cardBg = useColorModeValue("white", "gray.700")
   const hasSheets = sheetConfigs.length > 0
@@ -276,6 +282,16 @@ const SubmitStep: React.FC<{
             </Text>
           </CardBody>
         </Card>
+
+        <FormControl as="fieldset">
+          <FormLabel as="legend">Select Currency</FormLabel>
+          <RadioGroup onChange={onCurrencyChange} value={currency}>
+            <HStack spacing="24px">
+              <Radio value="USD">USD</Radio>
+              <Radio value="EUR">EUR</Radio>
+            </HStack>
+          </RadioGroup>
+        </FormControl>
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
           {sheetConfigs.map((sheet, index) => (
@@ -505,6 +521,7 @@ const ReformatExcelForm: React.FC = () => {
   const [manualInputs, setManualInputs] = useState<
     Partial<Record<"brand" | "gender" | "category", string>>
   >({})
+  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
@@ -1143,6 +1160,7 @@ const ReformatExcelForm: React.FC = () => {
           String(sheet.headerIndex + 1),
         )
         formData.append("sendToEmail", sendToEmail)
+        formData.append("currency", currency)
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
@@ -1177,6 +1195,7 @@ const ReformatExcelForm: React.FC = () => {
       setIsLoading(false)
     }
   }, [
+    currency,
     isEmailValid,
     sendToEmail,
     sheetConfigs,
@@ -1846,6 +1865,8 @@ const ReformatExcelForm: React.FC = () => {
             isEmailValid={isEmailValid}
             isSubmitting={isLoading}
             ALL_COLUMNS={[...ALL_COLUMNS, "readImage"]}
+            currency={currency}
+            onCurrencyChange={setCurrency}
           />
         )}
       </VStack>
