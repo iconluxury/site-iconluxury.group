@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as SignupImport } from './routes/signup'
 import { Route as ResetPasswordImport } from './routes/reset-password'
+import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
 import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
@@ -48,6 +49,12 @@ const SignupRoute = SignupImport.update({
 const ResetPasswordRoute = ResetPasswordImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ReformatExcelRoute = ReformatExcelImport.update({
+  id: '/reformat-excel',
+  path: '/reformat-excel',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -222,6 +229,13 @@ declare module '@tanstack/react-router' {
       path: '/recover-password'
       fullPath: '/recover-password'
       preLoaderRoute: typeof RecoverPasswordImport
+      parentRoute: typeof rootRoute
+    }
+    '/reformat-excel': {
+      id: '/reformat-excel'
+      path: '/reformat-excel'
+      fullPath: '/reformat-excel'
+      preLoaderRoute: typeof ReformatExcelImport
       parentRoute: typeof rootRoute
     }
     '/reset-password': {
@@ -428,6 +442,7 @@ export interface FileRoutesByFullPath {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
@@ -455,6 +470,7 @@ export interface FileRoutesByTo {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
@@ -484,6 +500,7 @@ export interface FileRoutesById {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
@@ -514,6 +531,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/admin'
@@ -540,6 +558,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/admin'
@@ -567,6 +586,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
@@ -596,6 +616,7 @@ export interface RootRouteChildren {
   GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
+  ReformatExcelRoute: typeof ReformatExcelRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   ProgressJobIdRoute: typeof ProgressJobIdRoute
@@ -606,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoogleSerpCmsRoute: GoogleSerpCmsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
+  ReformatExcelRoute: ReformatExcelRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   ProgressJobIdRoute: ProgressJobIdRoute,
@@ -625,6 +647,7 @@ export const routeTree = rootRoute
         "/google-serp-cms",
         "/login",
         "/recover-password",
+        "/reformat-excel",
         "/reset-password",
         "/signup",
         "/progress/$jobId"
@@ -661,6 +684,9 @@ export const routeTree = rootRoute
     },
     "/recover-password": {
       "filePath": "recover-password.tsx"
+    },
+    "/reformat-excel": {
+      "filePath": "reformat-excel.tsx"
     },
     "/reset-password": {
       "filePath": "reset-password.tsx"
