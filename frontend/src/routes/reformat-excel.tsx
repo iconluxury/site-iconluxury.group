@@ -1463,11 +1463,7 @@ const ReformatExcelForm: React.FC = () => {
                       </Text>
                       <Tooltip label={`Select Excel column for ${label}`}>
                         <Select
-                          value={
-                            columnMapping[typedField] !== null
-                              ? columnMapping[typedField]
-                              : ""
-                          }
+                          value={columnMapping[typedField] ?? ""}
                           onChange={(e) =>
                             handleColumnMap(Number(e.target.value), field)
                           }
