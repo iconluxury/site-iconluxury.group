@@ -254,6 +254,11 @@ const SubmitStep: React.FC<{
   ALL_COLUMNS: (ColumnType | "readImage")[]
   currency: "USD" | "EUR"
   onCurrencyChange: (value: "USD" | "EUR") => void
+  sheetValidationResults: {
+    sheetIndex: number
+    missing: ColumnType[]
+    isValid: boolean
+  }[]
 }> = ({
   sheetConfigs,
   onSubmit,
@@ -264,14 +269,16 @@ const SubmitStep: React.FC<{
   ALL_COLUMNS,
   currency,
   onCurrencyChange,
+  sheetValidationResults,
 }) => {
   const cardBg = useColorModeValue("white", "gray.700")
   const hasSheets = sheetConfigs.length > 0
+  const tableHeadBg = useColorModeValue("gray.50", "gray.800")
 
   return (
     <Container maxW="container.xl" py={5}>
       <VStack spacing={6} align="stretch">
-        <Card>
+        <Card variant="outline" bg={cardBg}>
           <CardHeader>
             <Heading size="md">Step 4: Confirm and Submit</Heading>
           </CardHeader>
@@ -283,37 +290,78 @@ const SubmitStep: React.FC<{
           </CardBody>
         </Card>
 
-        <FormControl as="fieldset">
-          <FormLabel as="legend">Select Currency</FormLabel>
-          <RadioGroup onChange={onCurrencyChange} value={currency}>
-            <HStack spacing="24px">
-              <Radio value="USD">USD</Radio>
-              <Radio value="EUR">EUR</Radio>
-            </HStack>
-          </RadioGroup>
-        </FormControl>
+        <Card variant="outline" bg={cardBg}>
+          <CardBody>
+            <FormControl as="fieldset">
+              <FormLabel as="legend" fontWeight="semibold">
+                Select Currency
+              </FormLabel>
+              <RadioGroup onChange={onCurrencyChange} value={currency}>
+                <HStack spacing="24px">
+                  <Radio value="USD">USD</Radio>
+                  <Radio value="EUR">EUR</Radio>
+                </HStack>
+              </RadioGroup>
+            </FormControl>
+          </CardBody>
+        </Card>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
-          {sheetConfigs.map((sheet, index) => (
-            <Card key={index} bg={cardBg} variant="outline">
-              <CardHeader>
-                <Heading size="sm">{sheet.name}</Heading>
-              </CardHeader>
-              <CardBody>
-                <VStack align="start" spacing={3}>
-                  <Text fontWeight="bold">Mapped Columns:</Text>
-                  <MappedColumnSummary
-                    sheetConfig={sheet}
-                    ALL_COLUMNS={ALL_COLUMNS}
-                  />
-                </VStack>
-              </CardBody>
-            </Card>
-          ))}
-        </SimpleGrid>
+        <Card variant="outline" bg={cardBg}>
+          <CardHeader>
+            <Heading size="sm">Submission Summary</Heading>
+          </CardHeader>
+          <CardBody>
+            <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
+              <Table variant="simple">
+                <Thead bg={tableHeadBg}>
+                  <Tr>
+                    <Th>Sheet Name</Th>
+                    <Th>Status</Th>
+                    <Th>Mapped Columns</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {sheetConfigs.map((sheet, index) => {
+                    const validation = sheetValidationResults[index]
+                    const isReady = validation?.isValid ?? false
+                    return (
+                      <Tr key={index}>
+                        <Td fontWeight="medium">{sheet.name}</Td>
+                        <Td>
+                          <Badge
+                            colorScheme={isReady ? "green" : "yellow"}
+                            variant="subtle"
+                          >
+                            <HStack>
+                              <Icon
+                                as={isReady ? CheckIcon : WarningIcon}
+                                boxSize={3}
+                              />
+                              <Text>
+                                {isReady
+                                  ? "Ready"
+                                  : `Missing: ${validation?.missing.join(", ")}`}
+                              </Text>
+                            </HStack>
+                          </Badge>
+                        </Td>
+                        <Td>
+                          <MappedColumnSummary
+                            sheetConfig={sheet}
+                            ALL_COLUMNS={ALL_COLUMNS}
+                          />
+                        </Td>
+                      </Tr>
+                    )
+                  })}
+                </Tbody>
+              </Table>
+            </Box>
+          </CardBody>
+        </Card>
 
         <HStack justifyContent="space-between" mt={4}>
-          <Button onClick={onBack} disabled={isSubmitting}>
+          <Button onClick={onBack} disabled={isSubmitting} variant="outline">
             Back
           </Button>
           <Button
@@ -322,7 +370,7 @@ const SubmitStep: React.FC<{
             isLoading={isSubmitting}
             isDisabled={!isEmailValid || !hasSheets}
           >
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? "Submitting..." : "Submit All Sheets"}
           </Button>
         </HStack>
       </VStack>
@@ -1867,6 +1915,7 @@ const ReformatExcelForm: React.FC = () => {
             ALL_COLUMNS={[...ALL_COLUMNS, "readImage"]}
             currency={currency}
             onCurrencyChange={setCurrency}
+            sheetValidationResults={sheetValidationResults}
           />
         )}
       </VStack>
