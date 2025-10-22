@@ -443,7 +443,19 @@ const ReformatExcelForm: React.FC = () => {
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
     "brand",
+    "category",
+    "colorName",
+    "msrp",
     "gender",
+    "size",
+    "qty",
+    "price",
+  ]
+  const DISPLAY_ORDER: (ColumnType | "readImage")[] = [
+    "readImage",
+    "brand",
+    "gender",
+    "style",
     "colorName",
     "category",
     "size",
@@ -624,30 +636,38 @@ const ReformatExcelForm: React.FC = () => {
   const handleColumnMap = useCallback(
     (index: number, field: string) => {
       if (!activeSheet) return
-      if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
+      const isKnownField =
+        ALL_COLUMNS.includes(field as ColumnType) || field === "readImage"
+      if (field && !isKnownField) return
+
       updateSheetConfig(activeSheetIndex, (sheet) => {
         let workingSheet = sheet
         if (field === "brand" && sheet.manualBrandValue) {
           workingSheet = withManualBrandValue(sheet, null)
         }
-        let newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        const newMapping = cloneColumnMapping(workingSheet.columnMapping)
+
+        // Unmap any other field that is currently mapped to this index
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (
-            newMapping[key] === index &&
-            key !== "readImage" &&
-            key !== "imageAdd"
-          ) {
+          if (newMapping[key] === index) {
             newMapping[key] = null
           }
         })
-        if (field && ALL_COLUMNS.includes(field as ColumnType)) {
+
+        // Set the new mapping
+        if (field) {
           newMapping[field as keyof ColumnMapping] = index
+          if (field === "readImage") {
+            newMapping.imageAdd = index
+          }
         }
+
         return {
           ...workingSheet,
           columnMapping: newMapping,
         }
       })
+
       if (field === "brand") {
         setManualBrand("")
       }
@@ -701,13 +721,15 @@ const ReformatExcelForm: React.FC = () => {
   )
 
   const mappedDataColumns = useMemo(() => {
-    const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
+    const keys: (ColumnType | "readImage")[] = [
+      ...DISPLAY_ORDER,
+    ]
     return new Set(
       keys
-        .map((key) => columnMapping[key])
+        .map((key) => columnMapping[key as keyof ColumnMapping])
         .filter((value): value is number => typeof value === "number"),
     )
-  }, [columnMapping, OPTIONAL_COLUMNS, REQUIRED_COLUMNS])
+  }, [columnMapping, DISPLAY_ORDER])
 
   const mappedColumnsForHighlight = useMemo(() => {
     const set = new Set(mappedDataColumns)
@@ -1385,7 +1407,6 @@ const ReformatExcelForm: React.FC = () => {
                 Select a field below, then click a column in the preview grid to
                 map it instantly.
               </Text>
-              <Text fontWeight="bold">Required Columns</Text>
               {REQUIRED_COLUMNS.map((field) => (
                 <HStack
                   key={field}
@@ -1497,9 +1518,6 @@ const ReformatExcelForm: React.FC = () => {
                   )}
                 </FormControl>
               )}
-              <Text fontWeight="bold" mt={4}>
-                Optional Columns
-              </Text>
               {OPTIONAL_COLUMNS.map((field) => (
                 <HStack
                   key={field}
