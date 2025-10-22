@@ -67,7 +67,7 @@ type SheetConfig = {
   headerIndex: number
   excelData: ExcelData
   columnMapping: ColumnMapping
-  manualBrandValue: string | null
+  manualValues: Partial<Record<"brand" | "gender" | "category", string>>
 }
 type ToastFunction = (
   title: string,
@@ -133,62 +133,69 @@ const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
   imageAdd: mapping.imageAdd,
 })
 
-const withManualBrandValue = (
-  sheet: SheetConfig,
-  manualBrandValue: string | null,
-): SheetConfig => {
-  const hasManualColumn =
-    sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
-    MANUAL_BRAND_HEADER
+const getManualHeaderName = (field: "brand" | "gender" | "category") =>
+  `${field.toUpperCase()} (Manual)`
 
-  if (manualBrandValue && manualBrandValue.trim()) {
-    const trimmed = manualBrandValue.trim()
+const withManualValue = (
+  sheet: SheetConfig,
+  field: "brand" | "gender" | "category",
+  value: string | null,
+): SheetConfig => {
+  const manualHeader = getManualHeaderName(field)
+  const headerIndex = sheet.excelData.headers.findIndex(
+    (h) => h === manualHeader,
+  )
+  const hasManualColumn = headerIndex !== -1
+
+  if (value && value.trim()) {
+    const trimmed = value.trim()
+    let newHeaders = [...sheet.excelData.headers]
+    let newRows = sheet.excelData.rows.map((r) => [...r])
+
     if (hasManualColumn) {
-      const updatedRows = sheet.excelData.rows.map((row) => {
-        const nextRow = [...row]
-        if (nextRow.length < sheet.excelData.headers.length) {
-          nextRow.length = sheet.excelData.headers.length
-        }
-        nextRow[nextRow.length - 1] = trimmed
-        return nextRow
+      newRows.forEach((row) => {
+        row[headerIndex] = trimmed
       })
-      return {
-        ...sheet,
-        excelData: {
-          headers: [...sheet.excelData.headers],
-          rows: updatedRows,
-        },
-        manualBrandValue: trimmed,
-      }
+    } else {
+      newHeaders.push(manualHeader)
+      newRows.forEach((row) => row.push(trimmed))
     }
-    const newHeaders = [...sheet.excelData.headers, MANUAL_BRAND_HEADER]
-    const newRows = sheet.excelData.rows.map((row) => [...row, trimmed])
+
+    const newManualValues = { ...sheet.manualValues, [field]: trimmed }
+    const newMapping = {
+      ...sheet.columnMapping,
+      [field]: hasManualColumn ? headerIndex : newHeaders.length - 1,
+    }
+
     return {
       ...sheet,
       excelData: { headers: newHeaders, rows: newRows },
-      manualBrandValue: trimmed,
+      manualValues: newManualValues,
+      columnMapping: newMapping,
     }
   }
 
-  if (!manualBrandValue && hasManualColumn) {
-    const newHeaders = sheet.excelData.headers.slice(0, -1)
-    const newRows = sheet.excelData.rows.map((row) => row.slice(0, -1))
+  if (!value && hasManualColumn) {
+    const newHeaders = sheet.excelData.headers.filter((_, i) => i !== headerIndex)
+    const newRows = sheet.excelData.rows.map((row) =>
+      row.filter((_, i) => i !== headerIndex),
+    )
+    const newManualValues = { ...sheet.manualValues }
+    delete newManualValues[field]
     const newMapping = cloneColumnMapping(sheet.columnMapping)
-    if (newMapping.brand === newHeaders.length) {
-      newMapping.brand = null
+    if (newMapping[field] === headerIndex) {
+      newMapping[field] = null
     }
+
     return {
       ...sheet,
       excelData: { headers: newHeaders, rows: newRows },
       columnMapping: newMapping,
-      manualBrandValue: null,
+      manualValues: newManualValues,
     }
   }
 
-  return {
-    ...sheet,
-    manualBrandValue: manualBrandValue ? manualBrandValue.trim() : null,
-  }
+  return sheet
 }
 
 // Shared Helper Functions
@@ -395,7 +402,9 @@ const ReformatExcelForm: React.FC = () => {
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
   const [activeMappingField, setActiveMappingField] =
     useState<ColumnType | null>(null)
-  const [manualBrand, setManualBrand] = useState("")
+  const [manualInputs, setManualInputs] = useState<
+    Partial<Record<"brand" | "gender" | "category", string>>
+  >({})
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
@@ -408,7 +417,8 @@ const ReformatExcelForm: React.FC = () => {
   const rawData = activeSheet?.rawData ?? []
   const headerIndex = activeSheet?.headerIndex ?? 0
   const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
-  const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
+  const manualValues = activeSheet?.manualValues ?? {}
+  const isManualBrandApplied = Boolean(manualValues.brand)
   const hasMultipleSheets = sheetConfigs.length > 1
   const mappingPanelBg = useColorModeValue("white", "gray.800")
   const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
@@ -434,7 +444,7 @@ const ReformatExcelForm: React.FC = () => {
       if (index < 0 || index >= sheetConfigs.length) return
       setActiveSheetIndex(index)
       setActiveMappingField(null)
-      setManualBrand("")
+      setManualInputs({})
     },
     [sheetConfigs.length],
   )
@@ -516,7 +526,7 @@ const ReformatExcelForm: React.FC = () => {
       setIsLoading(true)
       setStep("upload")
       setActiveMappingField(null)
-      setManualBrand("")
+      setManualInputs({})
       try {
         const data = await selectedFile.arrayBuffer()
         const workbook = XLSX.read(data, { type: "array" })
@@ -574,7 +584,7 @@ const ReformatExcelForm: React.FC = () => {
             headerIndex: detectedHeaderIndex,
             excelData: { headers, rows },
             columnMapping: autoMapColumns(headers),
-            manualBrandValue: null,
+            manualValues: {},
           })
         })
 
@@ -624,10 +634,10 @@ const ReformatExcelForm: React.FC = () => {
           headerIndex: newHeaderIndex,
           excelData: { headers, rows },
           columnMapping: autoMapColumns(headers),
-          manualBrandValue: null,
+          manualValues: {},
         }
       })
-      setManualBrand("")
+      setManualInputs({})
       setActiveMappingField(null)
     },
     [activeSheet, activeSheetIndex, updateSheetConfig],
@@ -642,8 +652,11 @@ const ReformatExcelForm: React.FC = () => {
 
       updateSheetConfig(activeSheetIndex, (sheet) => {
         let workingSheet = sheet
-        if (field === "brand" && sheet.manualBrandValue) {
-          workingSheet = withManualBrandValue(sheet, null)
+        if (
+          (field === "brand" || field === "gender" || field === "category") &&
+          sheet.manualValues[field]
+        ) {
+          workingSheet = withManualValue(sheet, field, null)
         }
         const newMapping = cloneColumnMapping(workingSheet.columnMapping)
 
@@ -669,7 +682,7 @@ const ReformatExcelForm: React.FC = () => {
       })
 
       if (field === "brand") {
-        setManualBrand("")
+        setManualInputs((prev) => ({ ...prev, brand: "" }))
       }
     },
     [ALL_COLUMNS, activeSheet, activeSheetIndex, updateSheetConfig],
@@ -689,9 +702,9 @@ const ReformatExcelForm: React.FC = () => {
       if (!activeSheet) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
         const shouldClearManualBrand =
-          sheet.manualBrandValue && sheet.columnMapping.brand === index
+          sheet.manualValues.brand && sheet.columnMapping.brand === index
         const workingSheet = shouldClearManualBrand
-          ? withManualBrandValue(sheet, null)
+          ? withManualValue(sheet, "brand", null)
           : sheet
         const workingMapping = cloneColumnMapping(workingSheet.columnMapping)
         ;(Object.keys(workingMapping) as (keyof ColumnMapping)[]).forEach(
@@ -714,7 +727,7 @@ const ReformatExcelForm: React.FC = () => {
         columnMapping.brand !== null &&
         columnMapping.brand === index
       ) {
-        setManualBrand("")
+        setManualInputs((prev) => ({ ...prev, brand: "" }))
       }
     },
     [activeSheet, activeSheetIndex, columnMapping.brand, updateSheetConfig],
@@ -747,43 +760,40 @@ const ReformatExcelForm: React.FC = () => {
     [excelData.headers],
   )
 
-  const applyManualBrand = useCallback(() => {
-    const trimmed = manualBrand.trim()
-    if (!trimmed) {
-      showToast(
-        "Manual Brand Error",
-        "Please enter a non-empty brand name",
-        "warning",
-      )
-      return
-    }
-    if (!activeSheet) return
-    updateSheetConfig(activeSheetIndex, (sheet) => {
-      const updatedSheet = withManualBrandValue(sheet, trimmed)
-      const brandIndex = updatedSheet.excelData.headers.length - 1
-      return {
-        ...updatedSheet,
-        columnMapping: {
-          ...updatedSheet.columnMapping,
-          brand: brandIndex,
-        },
-        manualBrandValue: trimmed,
+  const applyManualValue = useCallback(
+    (field: "brand" | "gender" | "category") => {
+      const trimmed = manualInputs[field]?.trim()
+      if (!trimmed) {
+        showToast(
+          `Manual ${field} Error`,
+          `Please enter a non-empty ${field} name`,
+          "warning",
+        )
+        return
       }
-    })
-    showToast("Success", `Manual brand "${trimmed}" applied`, "success")
-    setManualBrand("")
-    setActiveMappingField(null)
-  }, [activeSheet, activeSheetIndex, manualBrand, showToast, updateSheetConfig])
+      if (!activeSheet) return
+      updateSheetConfig(activeSheetIndex, (sheet) =>
+        withManualValue(sheet, field, trimmed),
+      )
+      showToast("Success", `Manual ${field} "${trimmed}" applied`, "success")
+      setManualInputs((prev) => ({ ...prev, [field]: "" }))
+      setActiveMappingField(null)
+    },
+    [activeSheet, activeSheetIndex, manualInputs, showToast, updateSheetConfig],
+  )
 
-  const removeManualBrand = useCallback(() => {
-    if (!activeSheet?.manualBrandValue) return
-    updateSheetConfig(activeSheetIndex, (sheet) =>
-      withManualBrandValue(sheet, null),
-    )
-    showToast("Success", "Manual brand removed", "success")
-    setManualBrand("")
-    setActiveMappingField(null)
-  }, [activeSheet, activeSheetIndex, showToast, updateSheetConfig])
+  const removeManualValue = useCallback(
+    (field: "brand" | "gender" | "category") => {
+      if (!activeSheet?.manualValues[field]) return
+      updateSheetConfig(activeSheetIndex, (sheet) =>
+        withManualValue(sheet, field, null),
+      )
+      showToast("Success", `Manual ${field} removed`, "success")
+      setManualInputs((prev) => ({ ...prev, [field]: "" }))
+      setActiveMappingField(null)
+    },
+    [activeSheet, activeSheetIndex, showToast, updateSheetConfig],
+  )
 
   const validateForm = useMemo(() => {
     if (!activeSheet) {
@@ -998,9 +1008,9 @@ const ReformatExcelForm: React.FC = () => {
           indexToColumnLetter(mapping.style),
         )
 
-        if (sheet.manualBrandValue) {
+        if (sheet.manualValues.brand) {
           formData.append("brandColImage", "MANUAL")
-          formData.append("manualBrand", sheet.manualBrandValue)
+          formData.append("manualBrand", sheet.manualValues.brand)
         } else if (mapping.brand !== null) {
           formData.append("brandColImage", indexToColumnLetter(mapping.brand))
         }
@@ -1418,7 +1428,13 @@ const ReformatExcelForm: React.FC = () => {
                       ? "Color"
                       : field.charAt(0).toUpperCase() + field.slice(1)
 
-                if (field === "brand") {
+                const isManualField = ["brand", "gender", "category"].includes(
+                  field,
+                )
+
+                if (isManualField) {
+                  const typedField = field as "brand" | "gender" | "category"
+                  const isManualApplied = Boolean(manualValues[typedField])
                   return (
                     <HStack
                       key={field}
@@ -1448,8 +1464,8 @@ const ReformatExcelForm: React.FC = () => {
                       <Tooltip label={`Select Excel column for ${label}`}>
                         <Select
                           value={
-                            columnMapping.brand !== null
-                              ? columnMapping.brand
+                            columnMapping[typedField] !== null
+                              ? columnMapping[typedField]
                               : ""
                           }
                           onChange={(e) =>
@@ -1464,7 +1480,7 @@ const ReformatExcelForm: React.FC = () => {
                           placeholder="Unmapped"
                           aria-label={`Map ${label} column`}
                           flex="1"
-                          isDisabled={isManualBrandApplied}
+                          isDisabled={isManualApplied}
                         >
                           <option value="">Unmapped</option>
                           {excelData.headers.map((header, index) => (
@@ -1473,7 +1489,7 @@ const ReformatExcelForm: React.FC = () => {
                               value={index}
                               disabled={
                                 mappedDataColumns.has(index) &&
-                                columnMapping.brand !== index
+                                columnMapping[typedField] !== index
                               }
                             >
                               {header || `Column ${indexToColumnLetter(index)}`}
@@ -1481,51 +1497,57 @@ const ReformatExcelForm: React.FC = () => {
                           ))}
                         </Select>
                       </Tooltip>
-                      {columnMapping.brand === null && !isManualBrandApplied && (
+                      {columnMapping[typedField] === null && !isManualApplied && (
                         <>
                           <Text fontSize="sm" color="subtle">
                             Or
                           </Text>
                           <Input
-                            placeholder="Add Manual Brand"
-                            value={manualBrand}
-                            onChange={(e) => setManualBrand(e.target.value)}
-                            aria-label="Manual brand input"
+                            w="150px"
+                            placeholder={`Add Manual ${label}`}
+                            value={manualInputs[typedField] || ""}
+                            onChange={(e) =>
+                              setManualInputs((prev) => ({
+                                ...prev,
+                                [typedField]: e.target.value,
+                              }))
+                            }
+                            aria-label={`Manual ${label} input`}
                             size="sm"
                           />
                           <Button
                             colorScheme="brand"
                             size="sm"
-                            onClick={applyManualBrand}
-                            isDisabled={!manualBrand.trim()}
+                            onClick={() => applyManualValue(typedField)}
+                            isDisabled={!manualInputs[typedField]?.trim()}
                           >
                             Apply
                           </Button>
                         </>
                       )}
-                      {isManualBrandApplied && (
+                      {isManualApplied && (
                         <>
                           <Badge colorScheme="green" noOfLines={1}>
-                            Manual: {activeSheet.manualBrandValue}
+                            Manual: {manualValues[typedField]}
                           </Badge>
                           <Button
                             size="xs"
                             variant="ghost"
                             colorScheme="red"
-                            onClick={removeManualBrand}
+                            onClick={() => removeManualValue(typedField)}
                           >
                             Remove
                           </Button>
                         </>
                       )}
-                      {columnMapping.brand !== null && !isManualBrandApplied && (
+                      {columnMapping[typedField] !== null && !isManualApplied && (
                         <Tooltip label="Clear mapping">
                           <IconButton
                             aria-label={`Clear ${label} mapping`}
                             icon={<CloseIcon />}
                             size="sm"
                             onClick={() =>
-                              handleClearMapping(columnMapping.brand!)
+                              handleClearMapping(columnMapping[typedField]!)
                             }
                           />
                         </Tooltip>
@@ -1818,16 +1840,7 @@ const ReformatExcelForm: React.FC = () => {
                         <Td>{getColumnPreview(index, excelData.rows)}</Td>
                       </Tr>
                     ))}
-                  {isManualBrandApplied && (
-                    <Tr>
-                      <Td>Manual Brand</Td>
-                      <Td>BRAND (Manual)</Td>
-                      <Td>
-                        {excelData.rows[0]?.[excelData.headers.length - 1] ||
-                          manualBrand}
-                      </Td>
-                    </Tr>
-                  )}
+
                 </Tbody>
               </Table>
             </VStack>
@@ -1842,4 +1855,4 @@ const ReformatExcelForm: React.FC = () => {
 // Export
 export const Route = createFileRoute("/reformat-excel")({
   component: ReformatExcelForm,
-});
+})
