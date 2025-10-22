@@ -443,15 +443,25 @@ const ReformatExcelForm: React.FC = () => {
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
     "brand",
-    "category",
-    "colorName",
-    "msrp",
     "gender",
+    "colorName",
+    "category",
     "size",
     "qty",
     "price",
+    "msrp",
   ]
-  const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
+  const ALL_COLUMNS: ColumnType[] = [
+    "style",
+    "brand",
+    "gender",
+    "colorName",
+    "category",
+    "size",
+    "qty",
+    "price",
+    "msrp",
+  ]
 
   const isEmailValid = useMemo(() => {
     const trimmed = sendToEmail
