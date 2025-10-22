@@ -11,6 +11,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  Heading,
   HStack,
   Icon,
   IconButton,
@@ -214,6 +215,105 @@ const getDisplayValue = (value: any): string => {
   return String(value)
 }
 
+const MappedColumnSummary: React.FC<{
+  sheetConfig: SheetConfig
+  ALL_COLUMNS: (ColumnType | "readImage")[]
+}> = ({ sheetConfig, ALL_COLUMNS }) => {
+  const mappedColumns = ALL_COLUMNS.filter(
+    (type) =>
+      sheetConfig.columnMapping[type] !== null &&
+      sheetConfig.columnMapping[type] !== undefined,
+  )
+
+  if (mappedColumns.length === 0) {
+    return <Text>No columns mapped.</Text>
+  }
+
+  return (
+    <Wrap>
+      {mappedColumns.map((type) => (
+        <WrapItem key={type}>
+          <Badge colorScheme="blue">
+            {type === "readImage" ? "PICTURE" : type.toUpperCase()}
+          </Badge>
+        </WrapItem>
+      ))}
+    </Wrap>
+  )
+}
+
+const SubmitStep: React.FC<{
+  sheetConfigs: SheetConfig[]
+  onSubmit: () => void
+  onBack: () => void
+  sendToEmail: string
+  isEmailValid: boolean
+  isSubmitting: boolean
+  ALL_COLUMNS: (ColumnType | "readImage")[]
+}> = ({
+  sheetConfigs,
+  onSubmit,
+  onBack,
+  sendToEmail,
+  isEmailValid,
+  isSubmitting,
+  ALL_COLUMNS,
+}) => {
+  const cardBg = useColorModeValue("white", "gray.700")
+  const hasSheets = sheetConfigs.length > 0
+
+  return (
+    <Container maxW="container.xl" py={5}>
+      <VStack spacing={6} align="stretch">
+        <Card>
+          <CardHeader>
+            <Heading size="md">Step 4: Confirm and Submit</Heading>
+          </CardHeader>
+          <CardBody>
+            <Text>
+              Review the mapped columns for each sheet. The processed file will
+              be sent to <strong>{sendToEmail}</strong>.
+            </Text>
+          </CardBody>
+        </Card>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
+          {sheetConfigs.map((sheet, index) => (
+            <Card key={index} bg={cardBg} variant="outline">
+              <CardHeader>
+                <Heading size="sm">{sheet.name}</Heading>
+              </CardHeader>
+              <CardBody>
+                <VStack align="start" spacing={3}>
+                  <Text fontWeight="bold">Mapped Columns:</Text>
+                  <MappedColumnSummary
+                    sheetConfig={sheet}
+                    ALL_COLUMNS={ALL_COLUMNS}
+                  />
+                </VStack>
+              </CardBody>
+            </Card>
+          ))}
+        </SimpleGrid>
+
+        <HStack justifyContent="space-between" mt={4}>
+          <Button onClick={onBack} disabled={isSubmitting}>
+            Back
+          </Button>
+          <Button
+            colorScheme="brand"
+            onClick={onSubmit}
+            isLoading={isSubmitting}
+            isDisabled={!isEmailValid || !hasSheets}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Button>
+        </HStack>
+      </VStack>
+    </Container>
+  )
+}
+
 const indexToColumnLetter = (index: number): string => {
   let column = ""
   let temp = index
@@ -405,9 +505,6 @@ const ReformatExcelForm: React.FC = () => {
   const [manualInputs, setManualInputs] = useState<
     Partial<Record<"brand" | "gender" | "category", string>>
   >({})
-  const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
-  const [isIconDistro, setIsIconDistro] = useState(false)
-  const [isAiMode, setIsAiMode] = useState(false)
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
@@ -1046,9 +1143,6 @@ const ReformatExcelForm: React.FC = () => {
           String(sheet.headerIndex + 1),
         )
         formData.append("sendToEmail", sendToEmail)
-        formData.append("isIconDistro", String(isIconDistro))
-        formData.append("skipDataWarehouse", String(skipDataWarehouse))
-        formData.append("isAiMode", String(isAiMode))
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
@@ -1084,13 +1178,10 @@ const ReformatExcelForm: React.FC = () => {
     }
   }, [
     isEmailValid,
-    isIconDistro,
-    isAiMode,
     sendToEmail,
     sheetConfigs,
     sheetValidationResults,
     showToast,
-    skipDataWarehouse,
     uploadedFile,
   ])
 
@@ -1747,100 +1838,15 @@ const ReformatExcelForm: React.FC = () => {
           </Flex>
         )}
         {step === "submit" && (
-          <VStack spacing={4} align="stretch">
-            <VStack align="start" spacing={4}>
-              <Text>Rows: {excelData.rows.length}</Text>
-              <FormControl isRequired>
-                <FormLabel>User:</FormLabel>
-                {sendToEmail ? (
-                  <Text fontWeight="medium">{sendToEmail}</Text>
-                ) : (
-                  <Text fontSize="sm" color="red.500">
-                    No email parameter detected. Add
-                    ?sendToEmail=example@domain.com (or email/userEmail) to the
-                    iframe URL.
-                  </Text>
-                )}
-                {!isEmailValid && sendToEmail && (
-                  <Text fontSize="sm" color="red.500" mt={1}>
-                    The email supplied the URL looks invalid. Update the
-                    iframe query parameter before submitting.
-                  </Text>
-                )}
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={isIconDistro}
-                  onChange={(e) => setIsIconDistro(e.target.checked)}
-                >
-                  Output as New Distro
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
-                  If not selected, results will be populated into the uploaded
-                  file.
-                </Text>
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={skipDataWarehouse}
-                  onChange={(e) => setSkipDataWarehouse(e.target.checked)}
-                >
-                  Skip Data Warehouse Processing
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
-                  If selected, data will not be processed for the data
-                  warehouse.
-                </Text>
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={isAiMode}
-                  onChange={(e) => setIsAiMode(e.target.checked)}
-                >
-                  AI Mode
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
-                  If selected, will submit with AI mode enabled.
-                </Text>
-              </FormControl>
-              <Text>Mapped Columns:</Text>
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Field</Th>
-                    <Th>Column</Th>
-                    <Th>Preview</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {getColumnMappingEntries(columnMapping)
-                    .filter(
-                      ([col, index]) =>
-                        index !== null &&
-                        col !== "readImage" &&
-                        col !== "imageAdd",
-                    )
-                    .map(([col, index]) => (
-                      <Tr key={col}>
-                        <Td>{col}</Td>
-                        <Td>
-                          {excelData.headers[index!] ||
-                            `Column ${indexToColumnLetter(index!)}`}
-                        </Td>
-                        <Td>{getColumnPreview(index, excelData.rows)}</Td>
-                      </Tr>
-                    ))}
-
-                </Tbody>
-              </Table>
-            </VStack>
-          </VStack>
+          <SubmitStep
+            sheetConfigs={sheetConfigs}
+            onSubmit={handleSubmit}
+            onBack={() => setStep("map")}
+            sendToEmail={sendToEmail}
+            isEmailValid={isEmailValid}
+            isSubmitting={isLoading}
+            ALL_COLUMNS={[...ALL_COLUMNS, "readImage"]}
+          />
         )}
       </VStack>
     </Container>
