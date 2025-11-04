@@ -2788,13 +2788,13 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
-                <Text fontSize="xl" fontWeight="bold" color="primary.500">
+                <Text fontSize="xl" fontWeight="bold">
                   Scrape Data Warehouse
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text color="primary.500">Internal product database</Text>
+              <Text>Internal product database</Text>
             </CardBody>
           </Card>
         </SimpleGrid>
