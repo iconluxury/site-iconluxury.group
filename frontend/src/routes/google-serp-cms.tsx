@@ -2783,7 +2783,8 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Google Images</Text>
             </CardBody>
           </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
+          {/* <Card opacity={0.6} cursor="not-allowed"> */}
+                      <Card cursor="pointer" onClick={() => setSelectedType("data")}>
             <CardHeader>
               <HStack>
                 <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
