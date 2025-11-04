@@ -2783,17 +2783,17 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Google Images</Text>
             </CardBody>
           </Card>
-          <Card>
+          <Card opacity={0.6} cursor="not-allowed">
             <CardHeader>
               <HStack>
-                <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
-                <Text fontSize="xl" fontWeight="bold">
+                <Icon as={FaWarehouse} boxSize={6} color="gray.500" />
+                <Text fontSize="xl" fontWeight="bold" color="gray.500">
                   Scrape Data Warehouse
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Internal product database</Text>
+              <Text color="gray.500">Internal product database</Text>
             </CardBody>
           </Card>
         </SimpleGrid>
