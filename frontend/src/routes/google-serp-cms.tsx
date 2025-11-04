@@ -1678,13 +1678,14 @@ const GoogleImagesForm: React.FC = () => {
                   If selected, data will not be processed for the data
                   warehouse.
                 </Text>
-              </FormControl>
+                   </FormControl>
               <FormControl>
                 <Checkbox
                   colorScheme="brand"
                   size="lg"
                   isChecked={isAiMode}
                   onChange={(e) => setIsAiMode(e.target.checked)}
+                  isDisabled={true}
                 >
                   AI Mode
                 </Checkbox>
@@ -2782,7 +2783,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Google Images</Text>
             </CardBody>
           </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
+          <Card>
             <CardHeader>
               <HStack>
                 <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
@@ -2800,7 +2801,6 @@ const CMSGoogleSerpForm: React.FC = () => {
     </Container>
   )
 }
-
 // Export
 export const Route = createFileRoute("/google-serp-cms")({
   component: () => <CMSGoogleSerpForm />,
