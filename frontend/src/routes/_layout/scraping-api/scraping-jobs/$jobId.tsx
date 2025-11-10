@@ -5,7 +5,9 @@ import {
   Card,
   CardBody,
   Container,
+  Divider,
   Flex,
+  Heading,
   Icon,
   Image,
   Input,
@@ -34,9 +36,10 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react"
+import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { createFileRoute, useParams } from "@tanstack/react-router"
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { FiFileText } from "react-icons/fi"
 import InfiniteScroll from "react-infinite-scroll-component"
 import useCustomToast from "../../../../hooks/useCustomToast"
@@ -1956,9 +1959,6 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           {showFileDetails && (
             <Th
               w="120px"
-              bg="gray.200"
-              color="gray.800"
-              onClick={() => handleSort("productColor")}
               cursor="pointer"
             >
               Color Name{" "}
