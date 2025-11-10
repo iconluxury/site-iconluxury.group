@@ -19,11 +19,18 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+# Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://dashboard.iconluxury.group"],  # Specify your frontend origin
+    allow_origins=[
+        "https://site-iconluxury-group-15582159051.us-east1.run.app",
+        "https://iconluxury.group",
+        "https://www.iconluxury.group",
+        "https://dashboard.iconluxury.group",
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],  # Add PATCH
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 app.include_router(api_router, prefix=settings.API_V1_STR)
