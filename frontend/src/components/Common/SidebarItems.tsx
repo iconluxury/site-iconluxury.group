@@ -29,14 +29,8 @@ interface SidebarItem {
 }
 
 const sidebarStructure: SidebarItem[] = [
-  {
-    title: "Dashboard",
-    icon: FiHome,
-    subItems: [
-      { title: "Dashboard", path: "/", icon: FiHome },
-      { title: "Archive", path: "/explore", icon: FiArchive },
-    ],
-  },
+  { title: "Dashboard", path: "/", icon: FiHome },
+  { title: "Archive", path: "/explore", icon: FiArchive },
   {
     title: "Scraper",
     icon: FiSearch,
