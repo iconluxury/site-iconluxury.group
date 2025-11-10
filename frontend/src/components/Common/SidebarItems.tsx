@@ -29,13 +29,17 @@ interface SidebarItem {
 }
 
 const sidebarStructure: SidebarItem[] = [
-  { title: "Dashboard", icon: FiHome, path: "/" },
-  { title: "Offers", icon: FiCalendar, path: "/offers" },
-  { title: "Orders", icon: FiLayers, path: "/orders" },
-  { title: "Customers", icon: FiUsers, path: "/customers" },
-  { title: "Archive", path: "/explore", icon: FiArchive },
+  {
+    title: "Dashboard",
+    icon: FiHome,
+    subItems: [
+      { title: "Dashboard", path: "/", icon: FiHome },
+      { title: "Archive", path: "/explore", icon: FiArchive },
+    ],
+  },
   {
     title: "Scraper",
+    icon: FiSearch,
     subItems: [
       { title: "Jobs", path: "/scraping-api/explore", icon: FiSearch },
       {
@@ -45,19 +49,6 @@ const sidebarStructure: SidebarItem[] = [
       },
     ],
   },
-  {
-    title: "Logs",
-    subItems: [
-      {
-        title: "Network Logs",
-        path: "/support/network-logs",
-        icon: FiFileText,
-      },
-      { title: "Email Logs", path: "/support/email", icon: FiMessageSquare },
-    ],
-  },
-  { title: "Support", icon: FiHelpCircle, path: "/support" },
-  { title: "VPN", icon: FiShield, path: "/vpn" },
   { title: "Sign out", icon: FiLogOut, action: () => {} },
 ]
 
