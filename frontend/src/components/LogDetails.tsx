@@ -6,6 +6,7 @@ import {
   AccordionPanel,
   Box,
   Button,
+  Checkbox,
   Flex,
   Select,
   Spinner,
@@ -83,6 +84,9 @@ const LogsDetails: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [logFiles, setLogFiles] = useState<LogFile[]>([])
   const [filter, setFilter] = useState<"all" | "success" | "error">("all")
+  const [wrapLongLines, setWrapLongLines] = useState(false)
+  const [reverseChronological, setReverseChronological] = useState(false)
+  const [showTimestamps, setShowTimestamps] = useState(true)
   const showToast = useCustomToast()
 
   const initializeLogFiles = () => {
@@ -154,10 +158,31 @@ const LogsDetails: React.FC = () => {
     initializeLogFiles()
   }, [])
 
-  const getFilteredEntries = (entries: LogEntry[] | null) => {
-    if (!entries) return []
-    return entries.filter((log) => filter === "all" || log.status === filter)
-  }
+  const getDisplayEntries = useCallback(
+    (entries: LogEntry[] | null) => {
+      if (!entries) return []
+      const filtered = entries.filter(
+        (log) => filter === "all" || log.status === filter,
+      )
+
+      if (!reverseChronological) return filtered
+
+      return [...filtered].sort((a, b) => {
+        const timeA = Date.parse(a.timestamp)
+        const timeB = Date.parse(b.timestamp)
+
+        const hasTimeA = !Number.isNaN(timeA)
+        const hasTimeB = !Number.isNaN(timeB)
+
+        if (hasTimeA && hasTimeB) return timeB - timeA
+        if (hasTimeA) return -1
+        if (hasTimeB) return 1
+
+        return b.timestamp.localeCompare(a.timestamp)
+      })
+    },
+    [filter, reverseChronological],
+  )
 
   return (
     <Box p={4} width="100%">
@@ -165,7 +190,7 @@ const LogsDetails: React.FC = () => {
         <Text fontSize="lg" fontWeight="bold">
           Log Details
         </Text>
-        <Flex gap={2}>
+        <Flex gap={2} flexWrap="wrap" justify="flex-end">
           <Select
             size="sm"
             value={filter}
@@ -178,6 +203,27 @@ const LogsDetails: React.FC = () => {
             <option value="success">Success Only</option>
             <option value="error">Errors Only</option>
           </Select>
+          <Checkbox
+            size="sm"
+            isChecked={wrapLongLines}
+            onChange={(event) => setWrapLongLines(event.target.checked)}
+          >
+            Wrap long lines
+          </Checkbox>
+          <Checkbox
+            size="sm"
+            isChecked={reverseChronological}
+            onChange={(event) => setReverseChronological(event.target.checked)}
+          >
+            Reverse order
+          </Checkbox>
+          <Checkbox
+            size="sm"
+            isChecked={showTimestamps}
+            onChange={(event) => setShowTimestamps(event.target.checked)}
+          >
+            Show timestamps
+          </Checkbox>
           <Tooltip label="Refresh log files">
             <Button
               size="sm"
@@ -236,7 +282,7 @@ const LogsDetails: React.FC = () => {
                     <Table variant="simple" size="sm">
                       <Thead>
                         <Tr>
-                          <Th>Timestamp</Th>
+                          {showTimestamps && <Th>Timestamp</Th>}
                           <Th>Endpoint</Th>
                           <Th>Query</Th>
                           <Th>Status</Th>
@@ -244,23 +290,33 @@ const LogsDetails: React.FC = () => {
                         </Tr>
                       </Thead>
                       <Tbody>
-                        {getFilteredEntries(file.entries).map((log, index) => (
+                        {getDisplayEntries(file.entries).map((log, index) => (
                           <Tr
                             key={index}
                             bg={
                               log.status === "error" ? "red.900" : "transparent"
                             }
                           >
-                            <Td>{new Date(log.timestamp).toLocaleString()}</Td>
+                            {showTimestamps && (
+                              <Td>{new Date(log.timestamp).toLocaleString()}</Td>
+                            )}
                             <Td>{log.endpoint}</Td>
-                            <Td>{log.query}</Td>
+                            <Td
+                              whiteSpace={wrapLongLines ? "normal" : "nowrap"}
+                              wordBreak={wrapLongLines ? "break-word" : "normal"}
+                            >
+                              {log.query}
+                            </Td>
                             <Td>{log.status}</Td>
                             <Td>{log.responseTime} ms</Td>
                           </Tr>
                         ))}
-                        {getFilteredEntries(file.entries).length === 0 && (
+                        {getDisplayEntries(file.entries).length === 0 && (
                           <Tr>
-                            <Td colSpan={5} textAlign="center">
+                            <Td
+                              colSpan={showTimestamps ? 5 : 4}
+                              textAlign="center"
+                            >
                               <Text color="gray.500">
                                 No logs match the current filter.
                               </Text>
