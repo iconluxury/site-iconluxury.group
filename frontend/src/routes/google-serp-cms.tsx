@@ -1,10 +1,12 @@
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
+  ArrowBackIcon,
+  CheckIcon,
+  CloseIcon,
+  SearchIcon,
+  WarningIcon,
+} from "@chakra-ui/icons"
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -17,6 +19,7 @@ import {
   FormLabel,
   HStack,
   Icon,
+  IconButton,
   Input,
   Select,
   SimpleGrid,
@@ -29,39 +32,26 @@ import {
   Thead,
   Tooltip,
   Tr,
-  useColorModeValue,
   VStack,
   Wrap,
   WrapItem,
+  useColorModeValue,
 } from "@chakra-ui/react"
-import { CheckIcon, SearchIcon, WarningIcon, CopyIcon, LockIcon } from "@chakra-ui/icons"
-import { useDropzone } from "react-dropzone"
-import * as XLSX from "xlsx"
-import { FaWarehouse } from "react-icons/fa"
-
-import useCustomToast from "../hooks/useCustomToast"
-import {
-  SheetConfig,
-  useExcelProcessor,
-  withManualBrandValue,
-  withoutManualBrandValue,
-} from "../hooks/useExcelProcessor"
 import { createFileRoute } from "@tanstack/react-router"
-
-// Add a useModal mock
-const useModal = () => ({
-  isOpen: false,
-  onOpen: () => {},
-  onClose: () => {},
-  component: () => null,
-})
+import type React from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { FaCrop, FaLink, FaWarehouse } from "react-icons/fa"
+import * as XLSX from "xlsx"
+import useCustomToast from "../hooks/useCustomToast"
+import SubmitCropForm from "../components/SubmitCropForm"
+import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
 
 // Shared Constants and Types
 type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
 const SERVER_URL = "https://icon5-8005.iconluxury.today"
 
 const MAX_PREVIEW_ROWS = 20
-const MAX_FILE_SIZE_MB = 200
+const MAX_FILE_SIZE_MB = 50
 
 type CellValue = string | number | boolean | null
 type ExcelData = { headers: string[]; rows: CellValue[][] }
@@ -70,11 +60,23 @@ type ColumnMapping = Record<
   number | null
 >
 
+type SheetConfig = {
+  name: string
+  rawData: CellValue[][]
+  headerIndex: number
+  excelData: ExcelData
+  columnMapping: ColumnMapping
+  manualBrandValue: string | null
+}
 type ToastFunction = (
   title: string,
   description: string,
   status: "error" | "warning" | "success",
 ) => void
+
+type FormWithBackProps = {
+  onBack?: () => void
+}
 
 const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style"]
 const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
@@ -87,9 +89,6 @@ const GOOGLE_IMAGES_ALL_COLUMNS: ColumnType[] = [
   ...GOOGLE_IMAGES_REQUIRED_COLUMNS,
   ...GOOGLE_IMAGES_OPTIONAL_COLUMNS,
 ]
-
-const ALL_COLUMNS = GOOGLE_IMAGES_ALL_COLUMNS
-const REQUIRED_COLUMNS = GOOGLE_IMAGES_REQUIRED_COLUMNS
 
 const DATA_WAREHOUSE_REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
 const DATA_WAREHOUSE_OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
@@ -115,15 +114,6 @@ const EMPTY_COLUMN_MAPPING: ColumnMapping = Object.freeze(
   createEmptyColumnMapping(),
 )
 
-const INITIAL_SHEET_CONFIG: SheetConfig = {
-  name: "default",
-  rawData: [],
-  headerIndex: 0,
-  excelData: EMPTY_EXCEL_DATA,
-  columnMapping: EMPTY_COLUMN_MAPPING,
-  manualBrandValue: null,
-}
-
 const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
   style: mapping.style,
   brand: mapping.brand,
@@ -133,6 +123,64 @@ const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
   readImage: mapping.readImage,
   imageAdd: mapping.imageAdd,
 })
+
+const withManualBrandValue = (
+  sheet: SheetConfig,
+  manualBrandValue: string | null,
+): SheetConfig => {
+  const hasManualColumn =
+    sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
+    MANUAL_BRAND_HEADER
+
+  if (manualBrandValue && manualBrandValue.trim()) {
+    const trimmed = manualBrandValue.trim()
+    if (hasManualColumn) {
+      const updatedRows = sheet.excelData.rows.map((row) => {
+        const nextRow = [...row]
+        if (nextRow.length < sheet.excelData.headers.length) {
+          nextRow.length = sheet.excelData.headers.length
+        }
+        nextRow[nextRow.length - 1] = trimmed
+        return nextRow
+      })
+      return {
+        ...sheet,
+        excelData: {
+          headers: [...sheet.excelData.headers],
+          rows: updatedRows,
+        },
+        manualBrandValue: trimmed,
+      }
+    }
+    const newHeaders = [...sheet.excelData.headers, MANUAL_BRAND_HEADER]
+    const newRows = sheet.excelData.rows.map((row) => [...row, trimmed])
+    return {
+      ...sheet,
+      excelData: { headers: newHeaders, rows: newRows },
+      manualBrandValue: trimmed,
+    }
+  }
+
+  if (!manualBrandValue && hasManualColumn) {
+    const newHeaders = sheet.excelData.headers.slice(0, -1)
+    const newRows = sheet.excelData.rows.map((row) => row.slice(0, -1))
+    const newMapping = cloneColumnMapping(sheet.columnMapping)
+    if (newMapping.brand === newHeaders.length) {
+      newMapping.brand = null
+    }
+    return {
+      ...sheet,
+      excelData: { headers: newHeaders, rows: newRows },
+      columnMapping: newMapping,
+      manualBrandValue: null,
+    }
+  }
+
+  return {
+    ...sheet,
+    manualBrandValue: manualBrandValue ? manualBrandValue.trim() : null,
+  }
+}
 
 // Shared Helper Functions
 const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i
@@ -311,341 +359,687 @@ const useIframeEmail = (): string | null => {
   return iframeEmail
 }
 
-// ExcelDataTable Component
-const ExcelDataTable: React.FC<{
-  sheetData: { data: CellValue[][]; name: string }
-  headerRow: number
-  setHoveredRow: (index: number | null) => void
-  hoveredRow: number | null
-}> = ({
-  sheetData,
-  headerRow,
-  setHoveredRow,
-  hoveredRow,
-}) => {
-  const headerBg = useColorModeValue("gray.100", "gray.700")
-  const hoverBg = useColorModeValue("blue.50", "blue.900")
-
-  if (!sheetData || sheetData.data.length === 0) {
-    return <Text>No data to display.</Text>
-  }
-
-  const headers = sheetData.data[headerRow] || []
-
-  return (
-    <Box overflow="auto" h="100%">
-      <Table variant="simple" size="sm">
-        <Thead position="sticky" top={0} zIndex={1} bg={headerBg}>
-          <Tr>
-            {headers.map((header, index) => (
-              <Th key={index}>{getDisplayValue(header)}</Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {sheetData.data
-            .slice(headerRow + 1, headerRow + 1 + MAX_PREVIEW_ROWS)
-            .map((row, rowIndex) => (
-              <Tr
-                key={rowIndex}
-                onMouseEnter={() => setHoveredRow(rowIndex)}
-                onMouseLeave={() => setHoveredRow(null)}
-                bg={hoveredRow === rowIndex ? hoverBg : undefined}
-              >
-                {headers.map((_, cellIndex) => (
-                  <Td key={cellIndex} isTruncated maxW="200px">
-                    {getDisplayValue(row[cellIndex])}
-                  </Td>
-                ))}
-              </Tr>
-            ))}
-        </Tbody>
-      </Table>
-    </Box>
-  )
-}
-
 // Google Images Form Component
-const GoogleImagesForm: React.FC = () => {
+const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
+  const [activeSheetIndex, setActiveSheetIndex] = useState(0)
+  const [activeMappingField, setActiveMappingField] =
+    useState<ColumnType | null>(null)
+  const [manualBrand, setManualBrand] = useState("")
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
   const iframeEmail = useIframeEmail()
-  const [sendToEmail, setSendToEmail] = useState(
-    () => iframeEmail?.trim() ?? "",
-  )
-  const [hoveredRow, setHoveredRow] = useState<number | null>(null)
+  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const showToast: ToastFunction = useCustomToast()
 
-  const {
-    sheets,
-    activeSheetIndex,
-    setActiveSheetIndex,
-    sheetConfigs,
-    setSheetConfigs,
-    file: uploadedFile,
-    rawData,
-    isProcessing,
-    processFile,
-  } = useExcelProcessor()
+  const activeSheet = sheetConfigs[activeSheetIndex] ?? null
+  const excelData = activeSheet?.excelData ?? EMPTY_EXCEL_DATA
+  const rawData = activeSheet?.rawData ?? []
+  const headerIndex = activeSheet?.headerIndex ?? 0
+  const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
+  const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
+  const hasMultipleSheets = sheetConfigs.length > 1
+  const mappingPanelBg = useColorModeValue("white", "gray.800")
+  const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
+  const sheetInactiveBg = useColorModeValue("gray.100", "gray.700")
+  const sheetInactiveHover = useColorModeValue("gray.200", "gray.600")
+  const sheetWarningHover = useColorModeValue("yellow.100", "yellow.400")
 
-  const activeSheet = sheets[activeSheetIndex]
-  const activeSheetConfig = sheetConfigs[activeSheetIndex]
-
-  const updateSheetConfig = (
-    sheetIndex: number,
-    updater: (config: SheetConfig) => SheetConfig,
-  ) => {
-    setSheetConfigs((prev) =>
-      prev.map((config, index) =>
-        index === sheetIndex ? updater(config) : config,
-      ),
-    )
-  }
-
-  const [manualBrand, setManualBrand] = useState(
-    activeSheetConfig?.manualBrandValue || "",
+  const updateSheetConfig = useCallback(
+    (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
+      setSheetConfigs((prev) => {
+        if (!prev[index]) return prev
+        const next = [...prev]
+        const updatedSheet = transform(prev[index])
+        next[index] = updatedSheet
+        return next
+      })
+    },
+    [],
   )
 
-  useEffect(() => {
-    setManualBrand(activeSheetConfig?.manualBrandValue || "")
-  }, [activeSheetConfig])
+  const handleActiveSheetChange = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= sheetConfigs.length) return
+      setActiveSheetIndex(index)
+      setActiveMappingField(null)
+      setManualBrand("")
+    },
+    [sheetConfigs.length],
+  )
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      processFile(file)
-      setStep("preview")
-    }
-  }
 
-  const handleHeaderChange = (newIndex: number) => {
-    updateSheetConfig(activeSheetIndex, (config) => ({
-      ...config,
-      headerIndex: newIndex,
-    }))
-  }
-
-  const handleColumnMap = (columnIndex: number, columnType: keyof ColumnMapping) => {
-    updateSheetConfig(activeSheetIndex, (config) => ({
-      ...config,
-      columnMapping: {
-        ...config.columnMapping,
-        [columnType]: columnIndex === -1 ? null : columnIndex,
-      },
-    }))
-  }
-
-  const validateForm = useMemo(() => {
-    if (!activeSheetConfig) return { isValid: false, missing: REQUIRED_COLUMNS }
-    const missing = REQUIRED_COLUMNS.filter(
-      (col) => activeSheetConfig.columnMapping[col] === null,
-    )
-    return { isValid: missing.length === 0, missing }
-  }, [activeSheetConfig])
+  const REQUIRED_COLUMNS: ColumnType[] = ["style"]
+  const OPTIONAL_COLUMNS: ColumnType[] = [
+    "brand",
+    "category",
+    "colorName",
+    "msrp",
+  ]
+  const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
 
   const isEmailValid = useMemo(() => {
-    if (!sendToEmail) return false
-    // simple email regex
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendToEmail)
+    const trimmed = sendToEmail
+    if (!trimmed) return false
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
   }, [sendToEmail])
 
-  const handleSubmit = () => {
-    // Placeholder for submission logic
-    console.log("Submitting:", {
-      sheetConfigs,
-      sendToEmail,
-      isIconDistro,
-      skipDataWarehouse,
-      isAiMode,
-    })
-    showToast("Success", "Form submitted (placeholder)", "success")
-  }
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = event.target.files?.[0]
+      if (!selectedFile) {
+        showToast("File Error", "No file selected", "error")
+        setSheetConfigs([])
+        setUploadedFile(null)
+        return
+      }
+      if (
+        ![
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+        ].includes(selectedFile.type)
+      ) {
+        showToast(
+          "File Error",
+          "Please upload an Excel file (.xlsx or .xls)",
+          "error",
+        )
+        return
+      }
+      if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        showToast(
+          "File Error",
+          `File size exceeds ${MAX_FILE_SIZE_MB}MB`,
+          "error",
+        )
+        return
+      }
 
-  const hasMultipleSheets = sheets.length > 1
+      setUploadedFile(selectedFile)
+      setIsLoading(true)
+      setStep("upload")
+      setActiveMappingField(null)
+      setManualBrand("")
+      try {
+        const data = await selectedFile.arrayBuffer()
+        const workbook = XLSX.read(data, { type: "array" })
+        const newSheetConfigs: SheetConfig[] = []
+        const headerWarningPattern = {
+          style:
+            /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
+          brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
+        }
 
-  const mappingPanelBg = useColorModeValue("gray.50", "gray.800")
-  const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
+        workbook.SheetNames.forEach((sheetName) => {
+          const worksheet = workbook.Sheets[sheetName]
+          if (!worksheet) return
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+            blankrows: true,
+            defval: "",
+          }) as CellValue[][]
+          if (jsonData.length === 0) return
 
-  const renderSheetButtons = (size: string) => (
-    <Wrap>
-      {sheets.map((sheet, index) => (
-        <WrapItem key={sheet.name}>
-          <Button
-            size={size as "sm" | "md" | "lg" | "xs"}
-            variant={index === activeSheetIndex ? "solid" : "outline"}
-            onClick={() => setActiveSheetIndex(index)}
-          >
-            {sheet.name}
-          </Button>
-        </WrapItem>
-      ))}
-    </Wrap>
+          const detectedHeaderIndex = detectHeaderRow(jsonData)
+          if (
+            detectedHeaderIndex < 0 ||
+            detectedHeaderIndex >= jsonData.length
+          ) {
+            showToast(
+              "File Error",
+              `Invalid header row detected in sheet "${sheetName}". Please adjust the spreadsheet and re-upload.`,
+              "error",
+            )
+            return
+          }
+
+          const headers = (jsonData[detectedHeaderIndex] as any[]).map((cell) =>
+            String(cell ?? ""),
+          )
+          if (
+            detectedHeaderIndex === 0 &&
+            !headers.some(
+              (cell) =>
+                headerWarningPattern.style.test(cell) ||
+                headerWarningPattern.brand.test(cell),
+            )
+          ) {
+            showToast(
+              "Warning",
+              `Sheet "${sheetName}" has no clear header row detected; using first row. Please verify in the Header Selection step.`,
+              "warning",
+            )
+          }
+          const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][]
+          newSheetConfigs.push({
+            name: sheetName,
+            rawData: jsonData,
+            headerIndex: detectedHeaderIndex,
+            excelData: { headers, rows },
+            columnMapping: autoMapColumns(headers),
+            manualBrandValue: null,
+          })
+        })
+
+        if (newSheetConfigs.length === 0) {
+          throw new Error("Excel file is empty")
+        }
+
+        setSheetConfigs(newSheetConfigs)
+        setActiveSheetIndex(0)
+        setStep("preview")
+        if (newSheetConfigs.length > 1) {
+          showToast(
+            "Multiple Sheets Detected",
+            `Detected ${newSheetConfigs.length} sheets. Each will be processed as an individual job.`,
+            "success",
+          )
+        }
+      } catch (error) {
+        showToast(
+          "File Processing Error",
+          error instanceof Error ? error.message : "Unknown error",
+          "error",
+        )
+        setSheetConfigs([])
+        setUploadedFile(null)
+        setStep("upload")
+      } finally {
+        setIsLoading(false)
+        event.target.value = ""
+      }
+    },
+    [showToast],
   )
 
-  const {
-    activeSheetStatusTooltip,
-    ActiveSheetStatusIcon,
-    activeSheetStatusColor,
-    activeSheetStatusLabel,
-  } = useMemo(() => {
-    if (!activeSheetConfig)
-      return {
-        activeSheetStatusTooltip: "No sheet selected",
-        ActiveSheetStatusIcon: WarningIcon,
-        activeSheetStatusColor: "orange.500",
-        activeSheetStatusLabel: "No sheet",
+  const handleHeaderChange = useCallback(
+    (newHeaderIndex: number) => {
+      if (!activeSheet) return
+      if (newHeaderIndex < 0 || newHeaderIndex >= activeSheet.rawData.length)
+        return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
+          String(cell ?? ""),
+        )
+        const rows = sheet.rawData.slice(newHeaderIndex + 1) as CellValue[][]
+        return {
+          ...sheet,
+          headerIndex: newHeaderIndex,
+          excelData: { headers, rows },
+          columnMapping: autoMapColumns(headers),
+          manualBrandValue: null,
+        }
+      })
+      setManualBrand("")
+      setActiveMappingField(null)
+    },
+    [activeSheet, activeSheetIndex, updateSheetConfig],
+  )
+
+  const handleColumnMap = useCallback(
+    (index: number, field: string) => {
+      if (!activeSheet) return
+      if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        let workingSheet = sheet
+        if (field === "brand" && sheet.manualBrandValue) {
+          workingSheet = withManualBrandValue(sheet, null)
+        }
+        let newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+          if (
+            newMapping[key] === index &&
+            key !== "readImage" &&
+            key !== "imageAdd"
+          ) {
+            newMapping[key] = null
+          }
+        })
+        if (field && ALL_COLUMNS.includes(field as ColumnType)) {
+          newMapping[field as keyof ColumnMapping] = index
+        }
+        return {
+          ...workingSheet,
+          columnMapping: newMapping,
+        }
+      })
+      if (field === "brand") {
+        setManualBrand("")
       }
-    const missing = REQUIRED_COLUMNS.filter(
-      (col) => activeSheetConfig.columnMapping[col] === null,
+    },
+    [ALL_COLUMNS, activeSheet, activeSheetIndex, updateSheetConfig],
+  )
+
+  const handleColumnMapFromGrid = useCallback(
+    (index: number) => {
+      if (activeMappingField === null) return
+      handleColumnMap(index, activeMappingField)
+      setActiveMappingField(null)
+    },
+    [activeMappingField, handleColumnMap],
+  )
+
+  const handleClearMapping = useCallback(
+    (index: number) => {
+      if (!activeSheet) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        const shouldClearManualBrand =
+          sheet.manualBrandValue && sheet.columnMapping.brand === index
+        const workingSheet = shouldClearManualBrand
+          ? withManualBrandValue(sheet, null)
+          : sheet
+        const workingMapping = cloneColumnMapping(workingSheet.columnMapping)
+        ;(Object.keys(workingMapping) as (keyof ColumnMapping)[]).forEach(
+          (key) => {
+            if (
+              workingMapping[key] === index &&
+              key !== "readImage" &&
+              key !== "imageAdd"
+            ) {
+              workingMapping[key] = null
+            }
+          },
+        )
+        return {
+          ...workingSheet,
+          columnMapping: workingMapping,
+        }
+      })
+      if (
+        columnMapping.brand !== null &&
+        columnMapping.brand === index
+      ) {
+        setManualBrand("")
+      }
+    },
+    [activeSheet, activeSheetIndex, columnMapping.brand, updateSheetConfig],
+  )
+
+  const mappedDataColumns = useMemo(() => {
+    const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
+    return new Set(
+      keys
+        .map((key) => columnMapping[key])
+        .filter((value): value is number => typeof value === "number"),
     )
-    if (missing.length === 0) {
-      return {
-        activeSheetStatusTooltip: "All required columns are mapped.",
-        ActiveSheetStatusIcon: CheckIcon,
-        activeSheetStatusColor: "green.500",
-        activeSheetStatusLabel: "Ready",
-      }
-    }
-    return {
-      activeSheetStatusTooltip: `Missing columns: ${missing.join(", ")}`,
-      ActiveSheetStatusIcon: WarningIcon,
-      activeSheetStatusColor: "orange.500",
-      activeSheetStatusLabel: `${missing.length} missing`,
-    }
-  }, [activeSheetConfig])
+  }, [columnMapping, OPTIONAL_COLUMNS, REQUIRED_COLUMNS])
 
-  const excelData = useMemo(() => {
-    if (!activeSheetConfig || !rawData) return null
-    const headerIndex = activeSheetConfig.headerIndex
-    const headers = rawData[headerIndex]?.map(String) || []
-    const rows = rawData.slice(headerIndex + 1)
-    return { headers, rows }
-  }, [activeSheetConfig, rawData])
+  const mappedColumnsForHighlight = useMemo(() => {
+    const set = new Set(mappedDataColumns)
+    if (typeof columnMapping.readImage === "number")
+      set.add(columnMapping.readImage)
+    if (typeof columnMapping.imageAdd === "number")
+      set.add(columnMapping.imageAdd)
+    return set
+  }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
 
-  const headerIndex = activeSheetConfig?.headerIndex ?? 0
-  const columnMapping = activeSheetConfig?.columnMapping ?? EMPTY_COLUMN_MAPPING
-  const isManualBrandApplied = !!activeSheetConfig?.manualBrandValue
+  const selectedColumnIndex =
+    activeMappingField !== null ? columnMapping[activeMappingField] : null
+  const headersAreValid = useMemo(
+    () => excelData.headers.some((header) => String(header).trim() !== ""),
+    [excelData.headers],
+  )
 
-  const headersAreValid = useMemo(() => {
-    if (!excelData) return false
-    return excelData.headers.some((h) => h && h.trim() !== "")
-  }, [excelData])
-
-  const handleApplyManualBrand = useCallback(() => {
+  const applyManualBrand = useCallback(() => {
     const trimmed = manualBrand.trim()
-    if (!trimmed) return
+    if (!trimmed) {
+      showToast(
+        "Manual Brand Error",
+        "Please enter a non-empty brand name",
+        "warning",
+      )
+      return
+    }
     if (!activeSheet) return
     updateSheetConfig(activeSheetIndex, (sheet) => {
       const updatedSheet = withManualBrandValue(sheet, trimmed)
-      return updatedSheet
+      const brandIndex = updatedSheet.excelData.headers.length - 1
+      return {
+        ...updatedSheet,
+        columnMapping: {
+          ...updatedSheet.columnMapping,
+          brand: brandIndex,
+        },
+        manualBrandValue: trimmed,
+      }
     })
-    setSheetConfigs((prev) =>
-      prev.map((config, index) =>
-        index === activeSheetIndex
-          ? { ...config, manualBrandValue: trimmed }
-          : config,
-      ),
-    )
     showToast("Success", `Manual brand "${trimmed}" applied`, "success")
-  }, [
-    activeSheet,
-    activeSheetIndex,
-    manualBrand,
-    showToast,
-    updateSheetConfig,
-    setSheetConfigs,
-  ])
+    setManualBrand("")
+    setActiveMappingField(null)
+  }, [activeSheet, activeSheetIndex, manualBrand, showToast, updateSheetConfig])
 
-  const handleClearManualBrand = useCallback(() => {
+  const removeManualBrand = useCallback(() => {
     if (!activeSheet?.manualBrandValue) return
     updateSheetConfig(activeSheetIndex, (sheet) =>
-      withoutManualBrandValue(sheet),
+      withManualBrandValue(sheet, null),
     )
+    showToast("Success", "Manual brand removed", "success")
     setManualBrand("")
-    showToast("Success", "Manual brand cleared", "success")
+    setActiveMappingField(null)
+  }, [activeSheet, activeSheetIndex, showToast, updateSheetConfig])
+
+  const validateForm = useMemo(() => {
+    if (!activeSheet) {
+      return {
+        isValid: false,
+        missing: REQUIRED_COLUMNS,
+      }
+    }
+    const missing = REQUIRED_COLUMNS.filter(
+      (col) => columnMapping[col] === null,
+    )
+    return {
+      isValid:
+        missing.length === 0 &&
+        excelData.rows.length > 0 &&
+        headersAreValid,
+      missing,
+    }
   }, [
     activeSheet,
-    activeSheetIndex,
-    showToast,
-    updateSheetConfig,
+    columnMapping,
+    excelData.rows.length,
+    headersAreValid,
+    REQUIRED_COLUMNS,
   ])
 
-  const {
-    isOpen: isConfirmModalOpen,
-    onOpen: onConfirmModalOpen,
-    onClose: onConfirmModalClose,
-    component: ConfirmComponent,
-  } = useModal()
+  const sheetValidationResults = useMemo(
+    () =>
+      sheetConfigs.map((sheet, index) => {
+        const mapping = sheet.columnMapping ?? createEmptyColumnMapping()
+        const missing = REQUIRED_COLUMNS.filter(
+          (col) => mapping[col] === null,
+        )
+        const headersValid = sheet.excelData.headers.some(
+          (header) => String(header).trim() !== "",
+        )
+        return {
+          sheetIndex: index,
+          missing,
+          isValid:
+            missing.length === 0 &&
+            sheet.excelData.rows.length > 0 &&
+            headersValid,
+        }
+      }),
+    [REQUIRED_COLUMNS, sheetConfigs],
+  )
 
-  const handleProcess = useCallback(async () => {
-    if (!headersAreValid) return
+  const activeSheetValidation =
+    sheetValidationResults[activeSheetIndex] ?? null
+  const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
+  const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
+  const activeSheetStatusLabel = activeSheetIsReady
+    ? "Ready"
+    : "Needs mapping"
+  const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
+  const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
+  const activeSheetStatusTooltip = activeSheetIsReady
+    ? "All required columns are mapped."
+    : activeSheetMissingColumns.length > 0
+      ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
+      : "Map all required columns before submitting."
+
+  const renderSheetButtons = useCallback(
+    (size: "xs" | "sm" | "md" = "sm") => (
+      <Wrap spacing={2} shouldWrapChildren>
+        {sheetConfigs.map((sheet, index) => {
+          const isActive = index === activeSheetIndex
+          const validation = sheetValidationResults[index]
+          const isComplete = validation?.isValid
+          const hasMissing = (validation?.missing ?? []).length > 0
+          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const sheetLabel = sheet.name || `Sheet ${index + 1}`
+          const tooltipLabel = isComplete
+            ? "Mapping ready"
+            : hasMissing
+              ? `Missing: ${(validation?.missing ?? []).join(", ")}`
+              : "Map required columns"
+          return (
+            <WrapItem key={sheet.name || index}>
+              <Tooltip label={tooltipLabel} placement="top" hasArrow>
+                <Button
+                  size={size}
+                  variant={isActive ? "solid" : "ghost"}
+                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
+                  rightIcon={icon}
+                  onClick={() => handleActiveSheetChange(index)}
+                  cursor="pointer"
+                  bg={
+                    isActive
+                      ? undefined
+                      : isComplete
+                        ? sheetInactiveBg
+                        : sheetWarningHover
+                  }
+                  _hover={{
+                    bg: isActive
+                      ? undefined
+                      : isComplete
+                        ? sheetInactiveHover
+                        : sheetWarningHover,
+                  }}
+                  transition="all 0.2s ease"
+                  fontWeight={isActive ? "bold" : "semibold"}
+                  borderWidth={isActive ? "1px" : "0px"}
+                  borderColor={isActive ? "brand.500" : "transparent"}
+                  aria-pressed={isActive}
+                >
+                  {sheetLabel}
+                </Button>
+              </Tooltip>
+            </WrapItem>
+          )
+        })}
+      </Wrap>
+    ),
+    [
+      activeSheetIndex,
+      handleActiveSheetChange,
+      sheetConfigs,
+      sheetInactiveBg,
+      sheetInactiveHover,
+      sheetValidationResults,
+      sheetWarningHover,
+    ],
+  )
+
+  const handleSubmit = useCallback(async () => {
+    if (sheetConfigs.length === 0) {
+      showToast(
+        "No Data",
+        "Upload an Excel workbook before submitting.",
+        "warning",
+      )
+      return
+    }
+    const invalidSheet = sheetValidationResults.find((result) => !result.isValid)
+    if (invalidSheet) {
+      const sheetName =
+        sheetConfigs[invalidSheet.sheetIndex]?.name ||
+        `Sheet ${invalidSheet.sheetIndex + 1}`
+      showToast(
+        "Validation Error",
+        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
+        "warning",
+      )
+      setActiveSheetIndex(invalidSheet.sheetIndex)
+      setStep("map")
+      return
+    }
+    if (!sendToEmail) {
+      showToast(
+        "Recipient Email Required",
+        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
+        "warning",
+      )
+      return
+    }
+    if (!isEmailValid) {
+      showToast(
+        "Invalid Email",
+        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
+        "warning",
+      )
+      return
+    }
+
     setIsLoading(true)
     try {
-      // This seems to be dead code as processFile is from the hook and has a different signature
-      // await processFile(activeSheetIndex, {
-      //   sendToEmail,
-      //   isIconDistro,
-      //   skipDataWarehouse,
-      //   isAiMode,
-      // })
-      showToast("Success", "File processed successfully", "success")
+      for (const [index, sheet] of sheetConfigs.entries()) {
+        const mapping = sheet.columnMapping
+        if (mapping.style === null) {
+          throw new Error(
+            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+          )
+        }
+
+        const prefixRows = sheet.rawData.slice(
+          0,
+          sheet.headerIndex,
+        )
+        const aoa: CellValue[][] = [
+          ...prefixRows,
+          sheet.excelData.headers,
+          ...sheet.excelData.rows,
+        ]
+        const worksheet = XLSX.utils.aoa_to_sheet(aoa)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          sheet.name || `Sheet${index + 1}`,
+        )
+        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
+        const baseName = uploadedFile?.name
+          ? uploadedFile.name.replace(/\.xlsx?$/i, "")
+          : "google-images"
+        const sheetLabel = (sheet.name || `sheet-${index + 1}`)
+          .replace(/\s+/g, "-")
+          .toLowerCase()
+        const fileName = `${baseName}-${sheetLabel}.xlsx`
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+        const formData = new FormData()
+        formData.append(
+          "fileUploadImage",
+          new File([blob], fileName, { type: blob.type }),
+        )
+        formData.append(
+          "searchColImage",
+          indexToColumnLetter(mapping.style),
+        )
+
+        if (sheet.manualBrandValue) {
+          formData.append("brandColImage", "MANUAL")
+          formData.append("manualBrand", sheet.manualBrandValue)
+        } else if (mapping.brand !== null) {
+          formData.append("brandColImage", indexToColumnLetter(mapping.brand))
+        }
+
+        const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
+          sheet.excelData.headers,
+          sheet.excelData.rows,
+        )
+        const imageColumnIndex =
+          mapping.readImage ?? mapping.imageAdd ?? fallbackImageColumnIndex
+        if (imageColumnIndex !== null) {
+          formData.append(
+            "imageColumnImage",
+            indexToColumnLetter(imageColumnIndex),
+          )
+        } else {
+          formData.append("imageColumnImage", "")
+        }
+        if (mapping.colorName !== null) {
+          formData.append(
+            "ColorColImage",
+            indexToColumnLetter(mapping.colorName),
+          )
+        }
+        if (mapping.category !== null) {
+          formData.append(
+            "CategoryColImage",
+            indexToColumnLetter(mapping.category),
+          )
+        }
+        formData.append(
+          "header_index",
+          String(sheet.headerIndex + 1),
+        )
+        formData.append("sendToEmail", sendToEmail)
+        formData.append("isIconDistro", String(isIconDistro))
+  formData.append("isAiMode", String(isAiMode))
+        formData.append("skipDataWarehouse", String(skipDataWarehouse))
+
+        const response = await fetch(`${SERVER_URL}/submitImage`, {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(
+            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
+              errorText || response.statusText
+            }`,
+          )
+        }
+      }
+
+      showToast(
+        "Success",
+        `${sheetConfigs.length} job(s) submitted successfully`,
+        "success",
+      )
       setTimeout(() => window.location.reload(), 1000)
     } catch (error) {
+      console.error("Submission Error:", error)
       showToast(
-        "Processing Error",
-        error instanceof Error ? error.message : "Unknown error",
+        "Submission Error",
+        error instanceof Error ? error.message : "Failed to submit",
         "error",
       )
+      setStep("map")
     } finally {
       setIsLoading(false)
     }
   }, [
-    // activeSheetIndex, // processFile from hook doesn't take index
-    // processFile, // Removed as it's from the hook now
+  isAiMode,
+  isEmailValid,
+  isIconDistro,
     sendToEmail,
-    isIconDistro,
-    skipDataWarehouse,
-    isAiMode,
+    sheetConfigs,
+    sheetValidationResults,
     showToast,
-    headersAreValid,
+    skipDataWarehouse,
+    uploadedFile,
   ])
-
-  if (!activeSheetConfig) {
-    // Render a loading or empty state until sheetConfigs are populated
-    return (
-       <Container maxW="container.xl" p={4} bg="surface" color="text">
-        <VStack spacing={4} align="stretch">
-            <Text fontSize="lg" fontWeight="bold">
-              Upload Excel File for Google Images Scrape
-            </Text>
-            <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 200MB">
-                <Input
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileChange}
-                  disabled={isProcessing}
-                  bg="white"
-                  borderColor="border"
-                  p={1}
-                  aria-label="Upload Excel file"
-                />
-              </Tooltip>
-            </FormControl>
-            {isProcessing && <Spinner mt={4} />}
-          </VStack>
-      </Container>
-    )
-  }
 
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
+        {onBack && (
+          <Button
+            alignSelf="flex-start"
+            variant="ghost"
+            size="sm"
+            leftIcon={<ArrowBackIcon />}
+            onClick={() => {
+              setStep("upload")
+              onBack()
+            }}
+          >
+            Back to tools
+          </Button>
+        )}
         <HStack
           justify="space-between"
           bg="neutral.50"
@@ -756,7 +1150,7 @@ const GoogleImagesForm: React.FC = () => {
               Upload Excel File for Google Images Scrape
             </Text>
             <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 200MB">
+              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
                 <Input
                   type="file"
                   accept=".xlsx,.xls"
@@ -887,91 +1281,381 @@ const GoogleImagesForm: React.FC = () => {
             maxH="70vh"
             overflow="auto"
           >
-            {excelData && (
-              <VStack
-                gap={4}
-                align="stretch"
-                bg="transparent"
-                p={4}
-                borderRadius="md"
-                borderWidth="1px"
-                borderColor={useColorModeValue("gray.200", "gray.700")}
-                w={{ base: "100%", md: "40%" }}
-                overflowY="auto"
-              >
-                {!validateForm.isValid && (
-                  <Text color="red.500" fontSize="sm" fontWeight="medium">
-                    Missing required columns: {validateForm.missing.join(", ")}
-                    . Please map all required columns.
-                  </Text>
-                )}
-                {!headersAreValid && (
-                  <Text color="red.500" fontSize="sm" fontWeight="medium">
-                    Selected header row is empty. Choose a different header row
-                    before mapping.
-                  </Text>
-                )}
+            <VStack
+              gap={4}
+              align="stretch"
+              bg="transparent"
+              p={4}
+              borderRadius="md"
+              borderWidth="1px"
+              borderColor={mappingPanelBorder}
+              w={{ base: "100%", md: "40%" }}
+              overflowY="auto"
+            >
+              {hasMultipleSheets && (
                 <Card
                   variant="outline"
-                  bg={useColorModeValue("white", "gray.800")}
-                  borderColor={useColorModeValue("gray.200", "gray.700")}
+                  bg={mappingPanelBg}
+                  borderColor={mappingPanelBorder}
                   shadow="xs"
                 >
-                  <CardBody>
-                    <VStack align="stretch" spacing={4}>
-                      <Text fontWeight="semibold">Map Columns</Text>
-                      {ALL_COLUMNS.map((col) => (
-                        <FormControl
-                          key={col}
-                          isRequired={REQUIRED_COLUMNS.includes(col)}
+                  <CardBody p={4}>
+                    <VStack align="stretch" spacing={3}>
+                      <Flex
+                        direction={{ base: "column", md: "row" }}
+                        justify="space-between"
+                        align={{ base: "flex-start", md: "center" }}
+                        gap={3}
+                      >
+                        <Box>
+                          <Text fontWeight="semibold">Sheets</Text>
+                          <Text fontSize="xs" color="subtle">
+                            Pick a sheet to adjust its column mapping.
+                          </Text>
+                        </Box>
+                      </Flex>
+                      {renderSheetButtons("sm")}
+                      <Tooltip
+                        label={activeSheetStatusTooltip}
+                        placement="top"
+                        hasArrow
+                      >
+                        <HStack
+                          spacing={2}
+                          fontSize="xs"
+                          color="subtle"
+                          align="center"
                         >
-                          <FormLabel fontSize="sm">{col}</FormLabel>
-                          <Select
-                            size="sm"
-                            value={columnMapping[col] ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              handleColumnMap(
-                                val ? parseInt(val, 10) : -1,
-                                col,
-                              )
-                            }}
-                            placeholder={`Select ${col} column`}
-                            isDisabled={!headersAreValid}
-                          >
-                            {excelData.headers.map((header, idx) => (
-                              <option key={idx} value={idx}>
-                                {header}
-                              </option>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      ))}
+                          <Icon
+                            as={ActiveSheetStatusIcon}
+                            boxSize={3}
+                            color={activeSheetStatusColor}
+                          />
+                          <Text>{activeSheetStatusLabel}</Text>
+                        </HStack>
+                      </Tooltip>
+                      <Text fontSize="xs" color="subtle">
+                        {`Currently editing: ${
+                          sheetConfigs[activeSheetIndex]?.name ||
+                          `Sheet ${activeSheetIndex + 1}`
+                        }`}
+                      </Text>
                     </VStack>
                   </CardBody>
                 </Card>
-              </VStack>
-            )}
-            {excelData && (
-              <VStack flex={1} align="stretch" spacing={4}>
-                <HStack justifyContent="space-between" alignItems="center">
-                  <Text fontWeight="semibold">
-                    {uploadedFile?.name || "Preview"}
+              )}
+              {!validateForm.isValid && (
+                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                  Missing required columns: {validateForm.missing.join(", ")}.
+                  Please map all required columns.
+                </Text>
+              )}
+              {!headersAreValid && (
+                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                  Selected header row is empty. Choose a different header row
+                  before mapping.
+                </Text>
+              )}
+              <Text fontSize="sm" color="subtle">
+                Select a field below, then click a column in the preview grid to
+                map it instantly.
+              </Text>
+              <Text fontWeight="bold">Required Columns</Text>
+              {REQUIRED_COLUMNS.map((field) => (
+                <HStack
+                  key={field}
+                  gap={2}
+                  align="center"
+                  p={2}
+                  borderRadius="md"
+                  borderWidth={activeMappingField === field ? "2px" : "1px"}
+                  borderColor={
+                    activeMappingField === field
+                      ? SELECTED_BORDER_COLOR
+                      : "transparent"
+                  }
+                  bg={
+                    activeMappingField === field
+                      ? SELECTED_BG_SUBTLE
+                      : "transparent"
+                  }
+                  cursor="pointer"
+                  onClick={() => setActiveMappingField(field)}
+                >
+                  <Text w="120px" fontWeight="semibold">
+                    {field}:
                   </Text>
+                  <Tooltip label={`Select Excel column for ${field}`}>
+                    <Select
+                      value={
+                        columnMapping[field] !== null
+                          ? columnMapping[field]!
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleColumnMap(Number(e.target.value), field)
+                      }
+                      onFocus={() => setActiveMappingField(field)}
+                      onClick={() => setActiveMappingField(field)}
+                      placeholder="Unmapped"
+                      aria-label={`Map ${field} column`}
+                      flex="1"
+                    >
+                      <option value="">Unmapped</option>
+                      {excelData.headers.map((header, index) => (
+                        <option
+                          key={index}
+                          value={index}
+                          disabled={
+                            mappedDataColumns.has(index) &&
+                            columnMapping[field] !== index
+                          }
+                        >
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </option>
+                      ))}
+                    </Select>
+                  </Tooltip>
+                  {columnMapping[field] !== null && (
+                    <Tooltip label="Clear mapping">
+                      <IconButton
+                        aria-label={`Clear ${field} mapping`}
+                        icon={<CloseIcon />}
+                        size="sm"
+                        onClick={() =>
+                          handleClearMapping(columnMapping[field]!)
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    {getColumnPreview(columnMapping[field], excelData.rows)}
+                  </Box>
                 </HStack>
-                <Box flex={1} overflow="auto" position="relative">
-                  <ExcelDataTable
-                    sheetData={{ data: rawData, name: uploadedFile?.name || "sheet" }}
-                    headerRow={headerIndex}
-                    setHoveredRow={setHoveredRow}
-                    hoveredRow={hoveredRow}
-                  />
-                </Box>
-              </VStack>
-            )}
+              ))}
+              {columnMapping.brand === null && !isManualBrandApplied && (
+                <FormControl>
+                  <HStack gap={2}>
+                    <Text w="120px">Add Brand Column:</Text>
+                    <Tooltip label="Enter a brand to apply to all rows">
+                      <Input
+                        placeholder="Add Brand for All Rows (Optional)"
+                        value={manualBrand}
+                        onChange={(e) => setManualBrand(e.target.value)}
+                        aria-label="Manual brand input"
+                        flex="1"
+                      />
+                    </Tooltip>
+                    <Button
+                      colorScheme="brand"
+                      size="sm"
+                      onClick={applyManualBrand}
+                      isDisabled={!manualBrand.trim()}
+                    >
+                      Apply
+                    </Button>
+                    {isManualBrandApplied && (
+                      <Button
+                        colorScheme="red"
+                        variant="outline"
+                        size="sm"
+                        onClick={removeManualBrand}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </HStack>
+                  {isManualBrandApplied && (
+                    <Badge colorScheme="brand" mt={2}>
+                      Manual Brand Column Applied
+                    </Badge>
+                  )}
+                </FormControl>
+              )}
+              <Text fontWeight="bold" mt={4}>
+                Optional Columns
+              </Text>
+              {OPTIONAL_COLUMNS.map((field) => (
+                <HStack
+                  key={field}
+                  gap={2}
+                  align="center"
+                  p={2}
+                  borderRadius="md"
+                  borderWidth={activeMappingField === field ? "2px" : "1px"}
+                  borderColor={
+                    activeMappingField === field
+                      ? SELECTED_BORDER_COLOR
+                      : "transparent"
+                  }
+                  bg={
+                    activeMappingField === field
+                      ? SELECTED_BG_SUBTLE
+                      : "transparent"
+                  }
+                  cursor="pointer"
+                  onClick={() => setActiveMappingField(field)}
+                >
+                  <Text w="120px" fontWeight="semibold">
+                    {field}:
+                  </Text>
+                  <Tooltip label={`Select Excel column for ${field}`}>
+                    <Select
+                      value={
+                        columnMapping[field] !== null
+                          ? columnMapping[field]!
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleColumnMap(Number(e.target.value), field)
+                      }
+                      onFocus={() => setActiveMappingField(field)}
+                      onClick={() => setActiveMappingField(field)}
+                      placeholder="Unmapped"
+                      aria-label={`Map ${field} column`}
+                      flex="1"
+                    >
+                      <option value="">Unmapped</option>
+                      {excelData.headers.map((header, index) => (
+                        <option
+                          key={index}
+                          value={index}
+                          disabled={
+                            mappedDataColumns.has(index) &&
+                            columnMapping[field] !== index
+                          }
+                        >
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </option>
+                      ))}
+                    </Select>
+                  </Tooltip>
+                  {columnMapping[field] !== null && (
+                    <Tooltip label="Clear mapping">
+                      <IconButton
+                        aria-label={`Clear ${field} mapping`}
+                        icon={<CloseIcon />}
+                        size="sm"
+                        onClick={() =>
+                          handleClearMapping(columnMapping[field]!)
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    {getColumnPreview(columnMapping[field], excelData.rows)}
+                  </Box>
+                </HStack>
+              ))}
+            </VStack>
+            <Box
+              overflow="auto"
+              borderWidth="1px"
+              borderRadius="md"
+              p={2}
+              w={{ base: "100%", md: "60%" }}
+              maxH="70vh"
+              mt={{ base: 4, md: 0 }}
+            >
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    {excelData.headers.map((header, index) => {
+                      const isMapped = mappedColumnsForHighlight.has(index)
+                      const isSelected = selectedColumnIndex === index
+                      return (
+                        <Th
+                          key={index}
+                          bg={
+                            isSelected
+                              ? SELECTED_BG_STRONG
+                              : isMapped
+                                ? MAPPED_BG
+                                : "neutral.100"
+                          }
+                          position="sticky"
+                          top={0}
+                          border={
+                            isSelected || isMapped ? "2px solid" : undefined
+                          }
+                          borderColor={
+                            isSelected || isMapped
+                              ? SELECTED_BORDER_COLOR
+                              : "transparent"
+                          }
+                          cursor={activeMappingField ? "pointer" : "default"}
+                          onClick={() => handleColumnMapFromGrid(index)}
+                          tabIndex={activeMappingField ? 0 : undefined}
+                          onKeyDown={(event) => {
+                            if (!activeMappingField) return
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault()
+                              handleColumnMapFromGrid(index)
+                            }
+                          }}
+                          role={activeMappingField ? "button" : undefined}
+                          aria-pressed={isSelected}
+                          _hover={
+                            activeMappingField
+                              ? {
+                                  bg: isSelected
+                                    ? SELECTED_BG_STRONG
+                                    : SELECTED_BG_SUBTLE,
+                                }
+                              : undefined
+                          }
+                        >
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </Th>
+                      )
+                    })}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {excelData.rows
+                    .slice(0, MAX_PREVIEW_ROWS)
+                    .map((row, rowIndex) => (
+                      <Tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => {
+                          const isMissingRequired = REQUIRED_COLUMNS.some(
+                            (requiredField) =>
+                              columnMapping[requiredField] === cellIndex &&
+                              !cell,
+                          )
+                          const isSelectedColumn =
+                            selectedColumnIndex === cellIndex
+                          const isMappedColumn =
+                            mappedColumnsForHighlight.has(cellIndex)
+                          const bgColor = isMissingRequired
+                            ? "danger.100"
+                            : isSelectedColumn
+                              ? SELECTED_BG_SUBTLE
+                              : isMappedColumn
+                                ? MAPPED_BG
+                                : undefined
+                          return (
+                            <Td
+                              key={cellIndex}
+                              maxW="200px"
+                              isTruncated
+                              bg={bgColor}
+                              cursor={
+                                activeMappingField ? "pointer" : "default"
+                              }
+                              onClick={() => handleColumnMapFromGrid(cellIndex)}
+                            >
+                              {getDisplayValue(cell)}
+                            </Td>
+                          )
+                        })}
+                      </Tr>
+                    ))}
+                </Tbody>
+              </Table>
+            </Box>
           </Flex>
         )}
-        {step === "submit" && excelData && (
+        {step === "submit" && (
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
@@ -1023,16 +1707,16 @@ const GoogleImagesForm: React.FC = () => {
               </FormControl>
               <FormControl>
                 <Checkbox
-                  colorScheme="brand"
+                  colorScheme="gray"
                   size="lg"
                   isChecked={isAiMode}
+                  isDisabled
                   onChange={(e) => setIsAiMode(e.target.checked)}
-                  isDisabled={true}
                 >
-                  AI Mode
+                  AI Mode 
                 </Checkbox>
                 <Text fontSize="sm" color="subtle" mt={2} pl={8}>
-                  If selected, will submit with AI mode enabled.
+                  AI Mode is currently locked and will submit as disabled.
                 </Text>
               </FormControl>
               <Text>Mapped Columns:</Text>
@@ -1082,7 +1766,7 @@ const GoogleImagesForm: React.FC = () => {
   )
 }
 // Data Warehouse Form Component
-const DataWarehouseForm: React.FC = () => {
+const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -1103,56 +1787,23 @@ const DataWarehouseForm: React.FC = () => {
     readImage: null,
     imageAdd: null,
   })
+  const [activeMappingField, setActiveMappingField] =
+    useState<ColumnType | null>(null)
   const [manualBrand, setManualBrand] = useState("")
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
-  const [activeMappingField, setActiveMappingField] = useState<keyof ColumnMapping | null>(null)
-  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
-  const [hoveredRow, setHoveredRow] = useState<number | null>(null)
-  const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isNewDistro, setIsNewDistro] = useState(false)
-
+  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
   const iframeEmail = useIframeEmail()
-  const [sendToEmail, setSendToEmail] = useState(
-    () => iframeEmail?.trim() ?? "",
+  const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
+  const dataHeadersAreValid = useMemo(
+    () => excelData.headers.some((header) => String(header).trim() !== ""),
+    [excelData.headers],
   )
-
-  const dataHeadersAreValid = useMemo(() => {
-    if (!excelData || rawData.length === 0) return true
-    const headerRowData = rawData[headerIndex]
-    return (
-      headerRowData && headerRowData.some((cell) => cell !== null && cell !== "")
-    )
-  }, [excelData, headerIndex, rawData])
-
-  const {
-    getInputProps: getDWInputProps,
-    getRootProps: getDWRootProps,
-    isDragActive: isDWDragActive,
-  } = useDropzone({
-    accept: {
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-        ".xlsx",
-      ],
-      "application/vnd.ms-excel": [".xls"],
-    },
-    maxSize: MAX_FILE_SIZE_MB * 1024 * 1024,
-    onDrop: useCallback((acceptedFiles: File[]) => {
-      const file = acceptedFiles[0]
-      if (!file) return
-      setFile(file)
-      setIsLoading(true)
-      setStep("upload")
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 1000)
-    }, []),
-  })
-
-  const showToast = useCustomToast()
+  const showToast: ToastFunction = useCustomToast()
   const isEmailValid = useMemo(() => {
-    if (!sendToEmail) return false
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendToEmail)
-  }, [sendToEmail])
+    if (!emailRecipient) return false
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient)
+  }, [emailRecipient])
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
   const OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
@@ -1272,34 +1923,29 @@ const DataWarehouseForm: React.FC = () => {
     [rawData],
   )
 
-  const handleColumnMap = useCallback(
-    (index: number, field: string) => {
-      if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
-      setColumnMapping((prev) => {
-        const newMapping = { ...prev }
-        // Clear any other field that might be using this index
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (
-            newMapping[key] === index &&
-            key !== "readImage" &&
-            key !== "imageAdd"
-          ) {
-            newMapping[key] = null
-          }
-        })
-        // Set the new mapping
-        if (field && ALL_COLUMNS.includes(field as ColumnType)) {
-          newMapping[field as keyof ColumnMapping] = index
-          if (field === "brand") {
-            setManualBrand("")
-            setIsManualBrandApplied(false)
-          }
+  const handleColumnMap = useCallback((index: number, field: string) => {
+    if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
+    setColumnMapping((prev) => {
+      const newMapping = { ...prev }
+      ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+        if (
+          newMapping[key] === index &&
+          key !== "readImage" &&
+          key !== "imageAdd"
+        ) {
+          newMapping[key] = null
         }
-        return newMapping
       })
-    },
-    [ALL_COLUMNS],
-  )
+      if (field && ALL_COLUMNS.includes(field as ColumnType)) {
+        newMapping[field as keyof ColumnMapping] = index
+        if (field === "brand") {
+          setManualBrand("")
+          setIsManualBrandApplied(false)
+        }
+      }
+      return newMapping
+    })
+  }, [])
 
   const handleColumnMapFromGrid = useCallback(
     (index: number) => {
@@ -1310,29 +1956,25 @@ const DataWarehouseForm: React.FC = () => {
     [activeMappingField, handleColumnMap],
   )
 
-  const handleClearMapping = useCallback(
-    (index: number) => {
-      setColumnMapping((prev) => {
-        const newMapping = { ...prev }
-        // Clear the mapping for the specified index
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (
-            newMapping[key] === index &&
-            key !== "readImage" &&
-            key !== "imageAdd"
-          ) {
-            newMapping[key] = null
-            if (key === "brand") {
-              setManualBrand("")
-              setIsManualBrandApplied(false)
-            }
+  const handleClearMapping = useCallback((index: number) => {
+    setColumnMapping((prev) => {
+      const newMapping = { ...prev }
+      ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+        if (
+          newMapping[key] === index &&
+          key !== "readImage" &&
+          key !== "imageAdd"
+        ) {
+          newMapping[key] = null
+          if (key === "brand") {
+            setManualBrand("")
+            setIsManualBrandApplied(false)
           }
-        })
-        return newMapping
+        }
       })
-    },
-    [],
-  )
+      return newMapping
+    })
+  }, [])
 
   const mappedDataColumns = useMemo(() => {
     const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
@@ -1354,14 +1996,9 @@ const DataWarehouseForm: React.FC = () => {
 
   const selectedColumnIndex =
     activeMappingField !== null ? columnMapping[activeMappingField] : null
-  const headersAreValid = useMemo(
-    () => excelData.headers.some((header) => String(header).trim() !== ""),
-    [excelData.headers],
-  )
 
   const applyManualBrand = useCallback(() => {
-    const trimmed = manualBrand.trim()
-    if (!trimmed) {
+    if (!manualBrand.trim()) {
       showToast(
         "Manual Brand Error",
         "Please enter a non-empty brand name",
@@ -1369,24 +2006,38 @@ const DataWarehouseForm: React.FC = () => {
       )
       return
     }
-    const newHeaders = [...excelData.headers, MANUAL_BRAND_HEADER]
-    const newRows = excelData.rows.map((row) => [...row, trimmed])
-    const brandIndex = newHeaders.length - 1
-    setExcelData({ headers: newHeaders, rows: newRows })
-    setColumnMapping((prev) => ({ ...prev, brand: brandIndex }))
-    setIsManualBrandApplied(true)
+    setColumnMapping((prev) => ({ ...prev, brand: null }))
+    setExcelData((prev) => {
+      const newHeaders = [...prev.headers, "BRAND (Manual)"]
+      setColumnMapping((prevMapping) => ({
+        ...prevMapping,
+        brand: newHeaders.length - 1,
+      }))
+      setIsManualBrandApplied(true)
+      return {
+        headers: newHeaders,
+        rows: prev.rows.map((row) => [...row, manualBrand.trim()]),
+      }
+    })
+    showToast(
+      "Success",
+      `Manual brand "${manualBrand.trim()}" applied`,
+      "success",
+    )
     setManualBrand("")
     setActiveMappingField(null)
-  }, [excelData, manualBrand, showToast])
+  }, [manualBrand, showToast])
 
   const removeManualBrand = useCallback(() => {
-    if (!isManualBrandApplied) return
-    const newHeaders = excelData.headers.slice(0, -1)
-    const newRows = excelData.rows.map((row) => row.slice(0, -1))
-    setExcelData({ headers: newHeaders, rows: newRows })
+    setExcelData((prev) => ({
+      headers: prev.headers.filter((header) => header !== "BRAND (Manual)"),
+      rows: prev.rows.map((row) => row.slice(0, -1)),
+    }))
     setColumnMapping((prev) => ({ ...prev, brand: null }))
     setIsManualBrandApplied(false)
-  }, [excelData, isManualBrandApplied])
+    showToast("Success", "Manual brand removed", "success")
+    setActiveMappingField(null)
+  }, [showToast])
 
   const validateForm = useMemo(() => {
     const missing = REQUIRED_COLUMNS.filter(
@@ -1395,11 +2046,12 @@ const DataWarehouseForm: React.FC = () => {
     return {
       isValid:
         missing.length === 0 &&
+        file &&
         excelData.rows.length > 0 &&
-        headersAreValid,
+        dataHeadersAreValid,
       missing,
     }
-  }, [columnMapping, excelData.rows.length, headersAreValid, REQUIRED_COLUMNS])
+  }, [columnMapping, file, excelData.rows.length, dataHeadersAreValid])
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm.isValid) {
@@ -1410,7 +2062,15 @@ const DataWarehouseForm: React.FC = () => {
       )
       return
     }
-    if (!sendToEmail) {
+    if (!dataHeadersAreValid) {
+      showToast(
+        "Header Error",
+        "Selected header row has no values. Please choose a different header row.",
+        "warning",
+      )
+      return
+    }
+    if (!emailRecipient) {
       showToast(
         "Recipient Email Required",
         "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
@@ -1428,77 +2088,109 @@ const DataWarehouseForm: React.FC = () => {
     }
 
     setIsLoading(true)
-    try {
-      const aoa: CellValue[][] = [
-        ...rawData.slice(0, headerIndex),
-        excelData.headers,
-        ...excelData.rows,
-      ]
-      const worksheet = XLSX.utils.aoa_to_sheet(aoa)
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1")
-      const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      })
-      const formData = new FormData()
-      formData.append(
-        "fileUpload",
-        new File([blob], file?.name || "data.xlsx", { type: blob.type }),
-      )
-      formData.append("searchCol", indexToColumnLetter(columnMapping.style!))
-      if (columnMapping.brand !== null) {
-        formData.append("brandCol", indexToColumnLetter(columnMapping.brand))
-      }
-      formData.append("msrpCol", indexToColumnLetter(columnMapping.msrp!))
-      formData.append("header_index", String(headerIndex + 1))
-      formData.append("sendToEmail", sendToEmail)
-      formData.append("isNewDistro", String(isNewDistro))
-      formData.append("currency", currency)
+    const formData = new FormData()
 
-      const response = await fetch(`${SERVER_URL}/submit`, {
+    formData.append("fileUploadImage", file!)
+    formData.append("searchColImage", indexToColumnLetter(columnMapping.style!))
+    formData.append("msrpColImage", indexToColumnLetter(columnMapping.msrp!))
+
+    if (isManualBrandApplied) {
+      formData.append("brandColImage", "MANUAL")
+      const manualBrandValue =
+        (excelData.rows[0]?.[excelData.headers.length - 1] as string) || ""
+      formData.append("manualBrand", manualBrandValue)
+    } else if (columnMapping.brand !== null) {
+      formData.append("brandColImage", indexToColumnLetter(columnMapping.brand))
+    }
+
+    const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
+      excelData.headers,
+      excelData.rows,
+    )
+    const imageColumnIndex =
+      columnMapping.readImage ??
+      columnMapping.imageAdd ??
+      fallbackImageColumnIndex
+
+    if (imageColumnIndex !== null) {
+      formData.append("imageColumnImage", indexToColumnLetter(imageColumnIndex))
+    } else {
+      formData.append("imageColumnImage", "")
+    }
+    if (columnMapping.colorName !== null) {
+      formData.append(
+        "ColorColImage",
+        indexToColumnLetter(columnMapping.colorName),
+      )
+    }
+    if (columnMapping.category !== null) {
+      formData.append(
+        "CategoryColImage",
+        indexToColumnLetter(columnMapping.category),
+      )
+    }
+    formData.append("header_index", String(headerIndex + 1))
+    formData.append("sendToEmail", emailRecipient)
+    formData.append("isNewDistro", String(isNewDistro))
+    formData.append("currency", currency)
+
+    try {
+      const response = await fetch(`${SERVER_URL}/datawarehouse`, {
         method: "POST",
         body: formData,
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(
-          `Server error (${response.status}): ${
-            errorText || response.statusText
-          }`,
-        )
+        console.error("Server Response:", response.status, errorText)
+        throw new Error(`Server error: ${errorText || response.statusText}`)
       }
 
-      showToast("Success", "Job submitted successfully", "success")
+      showToast("Success", "Form submitted successfully", "success")
       setTimeout(() => window.location.reload(), 1000)
     } catch (error) {
-      console.error("Submission Error:", error)
+      console.error("Fetch Error:", error)
       showToast(
         "Submission Error",
         error instanceof Error ? error.message : "Failed to submit",
         "error",
       )
+      setStep("map")
     } finally {
       setIsLoading(false)
     }
   }, [
     validateForm,
-    sendToEmail,
-    isEmailValid,
-    rawData,
-    headerIndex,
-    excelData,
     file,
     columnMapping,
+    isManualBrandApplied,
+    headerIndex,
     isNewDistro,
     currency,
+    emailRecipient,
+    isEmailValid,
     showToast,
+    excelData,
+    dataHeadersAreValid,
   ])
 
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
       <VStack spacing={6} align="stretch">
+        {onBack && (
+          <Button
+            alignSelf="flex-start"
+            variant="ghost"
+            size="sm"
+            leftIcon={<ArrowBackIcon />}
+            onClick={() => {
+              setStep("upload")
+              onBack()
+            }}
+          >
+            Back to tools
+          </Button>
+        )}
         <HStack
           justify="space-between"
           bg="neutral.50"
@@ -1552,6 +2244,7 @@ const DataWarehouseForm: React.FC = () => {
                     )
                   }
                   variant="outline"
+                  colorScheme="primary"
                   size="sm"
                 >
                   Back
@@ -1561,6 +2254,7 @@ const DataWarehouseForm: React.FC = () => {
                 <Button
                   onClick={() => setStep("upload")}
                   variant="outline"
+                  colorScheme="brand"
                   size="sm"
                 >
                   Back
@@ -1568,6 +2262,7 @@ const DataWarehouseForm: React.FC = () => {
               )}
               {step !== "submit" && (
                 <Button
+                  colorScheme="brand"
                   onClick={() =>
                     setStep(
                       ["preview", "map", "submit"][
@@ -1593,7 +2288,7 @@ const DataWarehouseForm: React.FC = () => {
                   isLoading={isLoading}
                   size="sm"
                   isDisabled={
-                    !validateForm.isValid || !sendToEmail || !isEmailValid
+                    !validateForm.isValid || !emailRecipient || !isEmailValid
                   }
                 >
                   Submit
@@ -1606,10 +2301,10 @@ const DataWarehouseForm: React.FC = () => {
         {step === "upload" && (
           <VStack spacing={4} align="stretch">
             <Text fontSize="lg" fontWeight="bold">
-              Upload Excel File for Data Warehouse
+              Upload Excel File for Data Warehouse Scrape
             </Text>
             <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 200MB">
+              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
                 <Input
                   type="file"
                   accept=".xlsx,.xls"
@@ -1701,79 +2396,320 @@ const DataWarehouseForm: React.FC = () => {
             <VStack
               gap={4}
               align="stretch"
-              bg="transparent"
+              bg="neutral.50"
               p={4}
               borderRadius="md"
-              borderWidth="1px"
-              borderColor={useColorModeValue("gray.200", "gray.700")}
               w={{ base: "100%", md: "40%" }}
               overflowY="auto"
             >
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
-                  Missing required columns: {validateForm.missing.join(", ")}
-                  . Please map all required columns.
+                  Missing required columns: {validateForm.missing.join(", ")}.
+                  Please map all required columns.
                 </Text>
               )}
-              {!headersAreValid && (
+              {!dataHeadersAreValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
                   Selected header row is empty. Choose a different header row
                   before mapping.
                 </Text>
               )}
-              <Card
-                variant="outline"
-                bg={useColorModeValue("white", "gray.800")}
-                borderColor={useColorModeValue("gray.200", "gray.700")}
-                shadow="xs"
-              >
-                <CardBody>
-                  <VStack align="stretch" spacing={4}>
-                    <Text fontWeight="semibold">Map Columns</Text>
-                    {ALL_COLUMNS.map((col) => (
-                      <FormControl
-                        key={col}
-                        isRequired={REQUIRED_COLUMNS.includes(col)}
-                      >
-                        <FormLabel fontSize="sm">{col}</FormLabel>
-                        <Select
-                          size="sm"
-                          value={columnMapping[col] ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value
-                            handleColumnMap(
-                              val ? parseInt(val, 10) : -1,
-                              col,
-                            )
-                          }}
-                          placeholder={`Select ${col} column`}
-                          isDisabled={!headersAreValid}
+              <Text fontSize="sm" color="subtle">
+                Select a field below, then click a column in the preview grid to
+                map it instantly.
+              </Text>
+              <Text fontWeight="bold">Required Columns</Text>
+              {REQUIRED_COLUMNS.map((field) => (
+                <HStack
+                  key={field}
+                  gap={2}
+                  align="center"
+                  p={2}
+                  borderRadius="md"
+                  borderWidth={activeMappingField === field ? "2px" : "1px"}
+                  borderColor={
+                    activeMappingField === field
+                      ? SELECTED_BORDER_COLOR
+                      : "transparent"
+                  }
+                  bg={
+                    activeMappingField === field
+                      ? SELECTED_BG_SUBTLE
+                      : "transparent"
+                  }
+                  cursor="pointer"
+                  onClick={() => setActiveMappingField(field)}
+                >
+                  <Text w="120px" fontWeight="semibold">
+                    {field}:
+                  </Text>
+                  <Tooltip label={`Select Excel column for ${field}`}>
+                    <Select
+                      value={
+                        columnMapping[field] !== null
+                          ? columnMapping[field]!
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleColumnMap(Number(e.target.value), field)
+                      }
+                      onFocus={() => setActiveMappingField(field)}
+                      onClick={() => setActiveMappingField(field)}
+                      placeholder="Unmapped"
+                      aria-label={`Map ${field} column`}
+                      flex="1"
+                    >
+                      <option value="">Unmapped</option>
+                      {excelData.headers.map((header, index) => (
+                        <option
+                          key={index}
+                          value={index}
+                          disabled={
+                            mappedDataColumns.has(index) &&
+                            columnMapping[field] !== index
+                          }
                         >
-                          {excelData.headers.map((header, idx) => (
-                            <option key={idx} value={idx}>
-                              {header}
-                            </option>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </option>
+                      ))}
+                    </Select>
+                  </Tooltip>
+                  {columnMapping[field] !== null && (
+                    <Tooltip label="Clear mapping">
+                      <IconButton
+                        aria-label={`Clear ${field} mapping`}
+                        icon={<CloseIcon />}
+                        size="sm"
+                        onClick={() =>
+                          handleClearMapping(columnMapping[field]!)
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    {getColumnPreview(columnMapping[field], excelData.rows)}
+                  </Box>
+                </HStack>
+              ))}
+              <Text fontWeight="bold" mt={4}>
+                Optional Columns
+              </Text>
+              {OPTIONAL_COLUMNS.map((field) => (
+                <HStack
+                  key={field}
+                  gap={2}
+                  align="center"
+                  p={2}
+                  borderRadius="md"
+                  borderWidth={activeMappingField === field ? "2px" : "1px"}
+                  borderColor={
+                    activeMappingField === field
+                      ? SELECTED_BORDER_COLOR
+                      : "transparent"
+                  }
+                  bg={
+                    activeMappingField === field
+                      ? SELECTED_BG_SUBTLE
+                      : "transparent"
+                  }
+                  cursor="pointer"
+                  onClick={() => setActiveMappingField(field)}
+                >
+                  <Text w="120px" fontWeight="semibold">
+                    {field}:
+                  </Text>
+                  <Tooltip label={`Select Excel column for ${field}`}>
+                    <Select
+                      value={
+                        columnMapping[field] !== null
+                          ? columnMapping[field]!
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleColumnMap(Number(e.target.value), field)
+                      }
+                      onFocus={() => setActiveMappingField(field)}
+                      onClick={() => setActiveMappingField(field)}
+                      placeholder="Unmapped"
+                      aria-label={`Map ${field} column`}
+                      flex="1"
+                    >
+                      <option value="">Unmapped</option>
+                      {excelData.headers.map((header, index) => (
+                        <option
+                          key={index}
+                          value={index}
+                          disabled={
+                            mappedDataColumns.has(index) &&
+                            columnMapping[field] !== index
+                          }
+                        >
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </option>
+                      ))}
+                    </Select>
+                  </Tooltip>
+                  {columnMapping[field] !== null && (
+                    <Tooltip label="Clear mapping">
+                      <IconButton
+                        aria-label={`Clear ${field} mapping`}
+                        icon={<CloseIcon />}
+                        size="sm"
+                        onClick={() =>
+                          handleClearMapping(columnMapping[field]!)
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    {getColumnPreview(columnMapping[field], excelData.rows)}
+                  </Box>
+                </HStack>
+              ))}
+              {columnMapping.brand === null && !isManualBrandApplied && (
+                <FormControl>
+                  <HStack gap={2}>
+                    <Text w="120px">Add Brand Column:</Text>
+                    <Tooltip label="Enter a brand to apply to all rows">
+                      <Input
+                        placeholder="Add Brand for All Rows (Optional)"
+                        value={manualBrand}
+                        onChange={(e) => setManualBrand(e.target.value)}
+                        aria-label="Manual brand input"
+                        flex="1"
+                      />
+                    </Tooltip>
+                    <Button
+                      colorScheme="brand"
+                      size="sm"
+                      onClick={applyManualBrand}
+                      isDisabled={!manualBrand.trim()}
+                    >
+                      Apply
+                    </Button>
+                    {isManualBrandApplied && (
+                      <Button
+                        colorScheme="red"
+                        variant="outline"
+                        size="sm"
+                        onClick={removeManualBrand}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </HStack>
+                  {isManualBrandApplied && (
+                    <Badge colorScheme="brand" mt={2}>
+                      Manual Brand Column Applied
+                    </Badge>
+                  )}
+                </FormControl>
+              )}
+            </VStack>
+            <Box
+              overflow="auto"
+              borderWidth="1px"
+              borderRadius="md"
+              p={2}
+              w={{ base: "100%", md: "60%" }}
+              maxH="70vh"
+              mt={{ base: 4, md: 0 }}
+            >
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    {excelData.headers.map((header, index) => {
+                      const isMapped = mappedColumnsForHighlight.has(index)
+                      const isSelected = selectedColumnIndex === index
+                      return (
+                        <Th
+                          key={index}
+                          bg={
+                            isSelected
+                              ? SELECTED_BG_STRONG
+                              : isMapped
+                                ? MAPPED_BG
+                                : "neutral.100"
+                          }
+                          position="sticky"
+                          top={0}
+                          border={
+                            isSelected || isMapped ? "2px solid" : undefined
+                          }
+                          borderColor={
+                            isSelected || isMapped
+                              ? SELECTED_BORDER_COLOR
+                              : "transparent"
+                          }
+                          cursor={activeMappingField ? "pointer" : "default"}
+                          onClick={() => handleColumnMapFromGrid(index)}
+                          tabIndex={activeMappingField ? 0 : undefined}
+                          onKeyDown={(event) => {
+                            if (!activeMappingField) return
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault()
+                              handleColumnMapFromGrid(index)
+                            }
+                          }}
+                          role={activeMappingField ? "button" : undefined}
+                          aria-pressed={isSelected}
+                          _hover={
+                            activeMappingField
+                              ? {
+                                  bg: isSelected
+                                    ? SELECTED_BG_STRONG
+                                    : SELECTED_BG_SUBTLE,
+                                }
+                              : undefined
+                          }
+                        >
+                          {header || `Column ${indexToColumnLetter(index)}`}
+                        </Th>
+                      )
+                    })}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {excelData.rows
+                    .slice(0, MAX_PREVIEW_ROWS)
+                    .map((row, rowIndex) => (
+                      <Tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => {
+                          const isMissingRequired =
+                            (columnMapping.style === cellIndex ||
+                              columnMapping.msrp === cellIndex) &&
+                            !cell
+                          const isSelectedColumn =
+                            selectedColumnIndex === cellIndex
+                          const isMappedColumn =
+                            mappedColumnsForHighlight.has(cellIndex)
+                          const bgColor = isMissingRequired
+                            ? "red.100"
+                            : isSelectedColumn
+                              ? SELECTED_BG_SUBTLE
+                              : isMappedColumn
+                                ? MAPPED_BG
+                                : undefined
+                          return (
+                            <Td
+                              key={cellIndex}
+                              maxW="200px"
+                              isTruncated
+                              bg={bgColor}
+                              cursor={
+                                activeMappingField ? "pointer" : "default"
+                              }
+                              onClick={() => handleColumnMapFromGrid(cellIndex)}
+                            >
+                              {getDisplayValue(cell)}
+                            </Td>
+                          )
+                        })}
+                      </Tr>
                     ))}
-                  </VStack>
-                </CardBody>
-              </Card>
-            </VStack>
-            <VStack flex={1} align="stretch" spacing={4}>
-              <HStack justifyContent="space-between" alignItems="center">
-                <Text fontWeight="semibold">{file?.name || "Preview"}</Text>
-              </HStack>
-              <Box flex={1} overflow="auto" position="relative">
-                <ExcelDataTable
-                  sheetData={{ data: rawData, name: file?.name || "sheet" }}
-                  headerRow={headerIndex}
-                  setHoveredRow={setHoveredRow}
-                  hoveredRow={hoveredRow}
-                />
-              </Box>
-            </VStack>
+                </Tbody>
+              </Table>
+            </Box>
           </Flex>
         )}
         {step === "submit" && (
@@ -1781,9 +2717,9 @@ const DataWarehouseForm: React.FC = () => {
             <VStack align="start" spacing={4}>
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl isRequired>
-                <FormLabel>User:</FormLabel>
-                {sendToEmail ? (
-                  <Text fontWeight="medium">{sendToEmail}</Text>
+                <FormLabel>Send results to email</FormLabel>
+                {emailRecipient ? (
+                  <Text fontWeight="medium">{emailRecipient}</Text>
                 ) : (
                   <Text fontSize="sm" color="red.500">
                     No email parameter detected. Add
@@ -1791,38 +2727,24 @@ const DataWarehouseForm: React.FC = () => {
                     iframe URL.
                   </Text>
                 )}
-                {!isEmailValid && sendToEmail && (
+                {!isEmailValid && emailRecipient && (
                   <Text fontSize="sm" color="red.500" mt={1}>
-                    The email supplied the URL looks invalid. Update the
+                    The email supplied via the URL looks invalid. Update the
                     iframe query parameter before submitting.
                   </Text>
                 )}
               </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={isNewDistro}
-                  onChange={(e) => setIsNewDistro(e.target.checked)}
-                >
-                  Output as New Distro
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
-                  If not selected, results will be populated into the uploaded
-                  file.
-                </Text>
-              </FormControl>
-              <FormControl>
-                <FormLabel>Currency</FormLabel>
+              <HStack>
+                <Text>Currency:</Text>
                 <Select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as "USD" | "EUR")}
-                  w="150px"
+                  w="100px"
                 >
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                 </Select>
-              </FormControl>
+              </HStack>
               <Text>Mapped Columns:</Text>
               <Table variant="simple" size="sm">
                 <Thead>
@@ -1870,43 +2792,43 @@ const DataWarehouseForm: React.FC = () => {
   )
 }
 
-const ImageLinksToPicturesForm: React.FC = () => {
+const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   return (
-    <Container maxW="container.xl" p={4}>
-      <VStack spacing={4} align="stretch">
-        <Text fontSize="lg" fontWeight="bold">
-          Convert Image Links to Pictures
-        </Text>
-        <Text>This tool is currently under development.</Text>
+    <Container maxW="container.xl" p={4} bg="surface" color="text">
+      <VStack spacing={6} align="stretch">
+        {onBack && (
+          <Button
+            alignSelf="flex-start"
+            variant="ghost"
+            size="sm"
+            leftIcon={<ArrowBackIcon />}
+            onClick={onBack}
+          >
+            Back to tools
+          </Button>
+        )}
+        <SubmitImageLinkForm />
       </VStack>
     </Container>
   )
 }
 
-/* -------------------------------------------------------------
-   Crop tool – locked until backend is ready
-   ------------------------------------------------------------- */
-const ImageCropToolForm: React.FC = () => {
-  const showToast = useCustomToast()
-
+const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   return (
-    <Container maxW="container.xl" p={4}>
-      <VStack spacing={4} align="stretch">
-        <Text fontSize="lg" fontWeight="bold">
-          Image Crop Tool
-        </Text>
-        <Text>This tool is currently under development.</Text>
-        <Button
-          onClick={() =>
-            showToast(
-              "In Development",
-              "This feature is not yet available.",
-              "info",
-            )
-          }
-        >
-          Get Started
-        </Button>
+    <Container maxW="container.xl" p={4} bg="surface" color="text">
+      <VStack spacing={6} align="stretch">
+        {onBack && (
+          <Button
+            alignSelf="flex-start"
+            variant="ghost"
+            size="sm"
+            leftIcon={<ArrowBackIcon />}
+            onClick={onBack}
+          >
+            Back to tools
+          </Button>
+        )}
+        <SubmitCropForm />
       </VStack>
     </Container>
   )
@@ -1918,10 +2840,25 @@ const CMSGoogleSerpForm: React.FC = () => {
     "images" | "data" | "imageLinks" | "crop" | null
   >(null)
 
-  if (selectedType === "images") return <GoogleImagesForm />
-  if (selectedType === "data") return <DataWarehouseForm />
-  if (selectedType === "imageLinks") return <ImageLinksToPicturesForm />
-  if (selectedType === "crop") return <ImageCropToolForm /> // locked stub
+  const handleBackToTools = useCallback(() => {
+    setSelectedType(null)
+  }, [])
+
+  if (selectedType === "images") {
+    return <GoogleImagesForm onBack={handleBackToTools} />
+  }
+
+  if (selectedType === "data") {
+    return <DataWarehouseForm onBack={handleBackToTools} />
+  }
+
+  if (selectedType === "imageLinks") {
+    return <ImageLinksToPicturesForm onBack={handleBackToTools} />
+  }
+
+  if (selectedType === "crop") {
+    return <ImageCropToolForm onBack={handleBackToTools} />
+  }
 
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
@@ -1931,7 +2868,7 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={SearchIcon} boxSize={6} color="primary.500" />
-                <Text fontSize="xl" fontWeight="bold">
+                <Text fontSize="xl" fontWeight="semibold">
                   Scrape Google Images
                 </Text>
               </HStack>
@@ -1944,51 +2881,39 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
-                <Text fontSize="xl" fontWeight="bold">
-                  Data Warehouse
+                <Text fontSize="xl" fontWeight="semibold">
+                  Scrape Data Warehouse
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Data Warehouse</Text>
+              <Text>Internal product database</Text>
             </CardBody>
           </Card>
-          <Card
-            cursor="pointer"
-            onClick={() => setSelectedType("imageLinks")}
-            opacity={0.5}
-            _hover={{ opacity: 0.7 }}
-          >
+          <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
             <CardHeader>
               <HStack>
-                <Icon as={CopyIcon} boxSize={6} color="primary.500" />
-                <Text fontSize="xl" fontWeight="bold">
+                <Icon as={FaLink} boxSize={6} color="primary.500" />
+                <Text fontSize="xl" fontWeight="semibold">
                   Image Links to Pictures
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Convert image URLs to embedded pictures.</Text>
+              <Text>Convert image URLs into downloadable assets.</Text>
             </CardBody>
           </Card>
-          <Card
-            cursor="pointer"
-            onClick={() => setSelectedType("crop")}
-            opacity={0.5}
-            _hover={{ opacity: 0.7 }}
-          >
+          <Card cursor="pointer" onClick={() => setSelectedType("crop")}>
             <CardHeader>
               <HStack>
-                <LockIcon boxSize={6} color="gray.500" />
-                <Text fontSize="xl" fontWeight="bold">
+                <Icon as={FaCrop} boxSize={6} color="primary.500" />
+                <Text fontSize="xl" fontWeight="semibold">
                   Crop Images
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>
-                Crop images on excel file
-              </Text>
+              <Text>Submit crop jobs for uploaded spreadsheets.</Text>
             </CardBody>
           </Card>
         </SimpleGrid>
@@ -1997,6 +2922,9 @@ const CMSGoogleSerpForm: React.FC = () => {
   )
 }
 
+// Export
 export const Route = createFileRoute("/google-serp-cms")({
-  component: CMSGoogleSerpForm,
+  component: () => <CMSGoogleSerpForm />,
 })
+
+export default CMSGoogleSerpForm
