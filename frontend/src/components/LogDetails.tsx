@@ -32,6 +32,7 @@ interface LogEntry {
   query: string
   status: "success" | "error"
   responseTime: number
+  originalIndex: number
 }
 
 interface LogFile {
@@ -63,18 +64,28 @@ const logFileUrls = [
 ]
 
 const parseLogContent = (content: string): LogEntry[] => {
+  const fallbackTimestamp = new Date().toISOString()
   const lines = content.split("\n").filter((line) => line.trim())
+
   return lines
-    .map((line) => {
-      const parts = line.split(" ")
+    .map((line, index) => {
+      const parts = line.split(/\s+/)
+      const timestampCandidate = parts[0] ?? fallbackTimestamp
+      const statusCandidate = parts[parts.length - 2] ?? ""
+      const responseCandidate = parts[parts.length - 1] ?? "0"
+
+      const status: LogEntry["status"] =
+        statusCandidate.toUpperCase() === "SUCCESS" ? "success" : "error"
+
+      const responseTime = Number.parseInt(responseCandidate, 10)
+
       return {
-        timestamp: parts[0] || new Date().toISOString(),
+        timestamp: timestampCandidate || fallbackTimestamp,
         endpoint: parts[1] || "Unknown",
-        query: parts.slice(2, -2).join(" ") || "N/A",
-        status: (parts[parts.length - 2] === "SUCCESS" ? "success" : "error") as
-          | "success"
-          | "error",
-        responseTime: Number.parseInt(parts[parts.length - 1]) || 0,
+        query: parts.slice(2, -2).join(" ") || line,
+        status,
+        responseTime: Number.isNaN(responseTime) ? 0 : responseTime,
+        originalIndex: index,
       }
     })
     .filter((entry) => entry.timestamp && entry.endpoint && entry.query)
@@ -88,6 +99,11 @@ const LogsDetails: React.FC = () => {
   const [reverseChronological, setReverseChronological] = useState(false)
   const [showTimestamps, setShowTimestamps] = useState(true)
   const showToast = useCustomToast()
+
+  const formatTimestamp = useCallback((value: string) => {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString()
+  }, [])
 
   const initializeLogFiles = () => {
     const initialLogFiles = logFileUrls.map((url, index) => {
@@ -178,7 +194,7 @@ const LogsDetails: React.FC = () => {
         if (hasTimeA) return -1
         if (hasTimeB) return 1
 
-        return b.timestamp.localeCompare(a.timestamp)
+        return b.originalIndex - a.originalIndex
       })
     },
     [filter, reverseChronological],
@@ -290,39 +306,54 @@ const LogsDetails: React.FC = () => {
                         </Tr>
                       </Thead>
                       <Tbody>
-                        {getDisplayEntries(file.entries).map((log, index) => (
-                          <Tr
-                            key={index}
-                            bg={
-                              log.status === "error" ? "red.900" : "transparent"
-                            }
-                          >
-                            {showTimestamps && (
-                              <Td>{new Date(log.timestamp).toLocaleString()}</Td>
-                            )}
-                            <Td>{log.endpoint}</Td>
-                            <Td
-                              whiteSpace={wrapLongLines ? "normal" : "nowrap"}
-                              wordBreak={wrapLongLines ? "break-word" : "normal"}
+                        {(() => {
+                          const displayEntries = getDisplayEntries(file.entries)
+                          const wrappingCellProps = wrapLongLines
+                            ? {
+                                whiteSpace: "pre-wrap" as const,
+                                wordBreak: "break-word" as const,
+                                overflowWrap: "anywhere" as const,
+                              }
+                            : {
+                                whiteSpace: "nowrap" as const,
+                                wordBreak: "normal" as const,
+                                overflowWrap: "normal" as const,
+                              }
+
+                          if (displayEntries.length === 0) {
+                            return (
+                              <Tr>
+                                <Td
+                                  colSpan={showTimestamps ? 5 : 4}
+                                  textAlign="center"
+                                >
+                                  <Text color="gray.500">
+                                    No logs match the current filter.
+                                  </Text>
+                                </Td>
+                              </Tr>
+                            )
+                          }
+
+                          return displayEntries.map((log, index) => (
+                            <Tr
+                              key={index}
+                              bg={
+                                log.status === "error" ? "red.900" : "transparent"
+                              }
                             >
-                              {log.query}
-                            </Td>
-                            <Td>{log.status}</Td>
-                            <Td>{log.responseTime} ms</Td>
-                          </Tr>
-                        ))}
-                        {getDisplayEntries(file.entries).length === 0 && (
-                          <Tr>
-                            <Td
-                              colSpan={showTimestamps ? 5 : 4}
-                              textAlign="center"
-                            >
-                              <Text color="gray.500">
-                                No logs match the current filter.
-                              </Text>
-                            </Td>
-                          </Tr>
-                        )}
+                              {showTimestamps && (
+                                <Td {...wrappingCellProps}>
+                                  {formatTimestamp(log.timestamp)}
+                                </Td>
+                              )}
+                              <Td {...wrappingCellProps}>{log.endpoint}</Td>
+                              <Td {...wrappingCellProps}>{log.query}</Td>
+                              <Td {...wrappingCellProps}>{log.status}</Td>
+                              <Td {...wrappingCellProps}>{log.responseTime} ms</Td>
+                            </Tr>
+                          ))
+                        })()}
                       </Tbody>
                     </Table>
                   )}
