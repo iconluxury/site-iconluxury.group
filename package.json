@@ -2,9 +2,11 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@tanstack/react-router": "^1.99.8",
+    "@types/react-dropzone": "^4.2.2",
     "chart.js": "^4.4.8",
     "leaflet": "^1.9.4",
     "react-chartjs-2": "^5.3.0",
+    "react-dropzone": "^14.3.8",
     "react-infinite-scroll-component": "^6.1.0",
     "react-leaflet": "^5.0.0"
   },
