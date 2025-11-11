@@ -10,9 +10,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { UsersService } from "../client";
 import useCustomToast from "../hooks/useCustomToast";
 
 interface SubmitCropFormInputs {
@@ -28,17 +27,46 @@ interface SubmitCropFormInputs {
   skipDataWarehouse: boolean;
 }
 
+const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today";
+const ACCEPTED_FILE_TYPES = ".xlsx,.xls,.csv";
+
+const normalizeColumn = (value?: string | null) =>
+  value ? value.trim().toUpperCase() : "";
+
+const appendColumnIfPresent = (
+  formData: FormData,
+  key: string,
+  value?: string,
+) => {
+  const normalized = normalizeColumn(value);
+  if (normalized) {
+    formData.append(key, normalized);
+  }
+};
+
 const SubmitCropForm: React.FC = () => {
   const {
     register,
     handleSubmit,
+    reset,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<SubmitCropFormInputs>();
+  } = useForm<SubmitCropFormInputs>({
+    defaultValues: {
+      header_index: 1,
+      skipDataWarehouse: false,
+    },
+  });
   const showToast = useCustomToast();
   const [fileName, setFileName] = useState("");
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const brandColCrop = watch("brandColCrop");
+  const isManualBrand = useMemo(
+    () => normalizeColumn(brandColCrop) === "MANUAL",
+    [brandColCrop],
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -50,39 +78,112 @@ const SubmitCropForm: React.FC = () => {
 
   const onSubmit = async (data: SubmitCropFormInputs) => {
     try {
+      if (!data.fileUploadCrop || data.fileUploadCrop.length === 0) {
+        showToast("Validation Error", "Please upload a file.", "error");
+        return;
+      }
+      const file = data.fileUploadCrop[0];
+      if (!(file instanceof File)) {
+        showToast("Validation Error", "Invalid file selected.", "error");
+        return;
+      }
+
+      if (data.header_index < 1 || Number.isNaN(data.header_index)) {
+        showToast(
+          "Validation Error",
+          "Header index must be greater than or equal to 1.",
+          "error",
+        );
+        return;
+      }
+
+      const searchColumn = normalizeColumn(data.searchColCrop);
+      if (!searchColumn) {
+        showToast("Validation Error", "Search column is required.", "error");
+        return;
+      }
+
+      if (isManualBrand && !data.manualBrand?.trim()) {
+        showToast(
+          "Validation Error",
+          "Manual brand is required when Brand Column is MANUAL.",
+          "error",
+        );
+        return;
+      }
+
       const formData = new FormData();
-      formData.append("fileUploadCrop", data.fileUploadCrop[0]);
+      formData.append("fileUploadCrop", file);
       formData.append("header_index", data.header_index.toString());
-      formData.append("searchColCrop", data.searchColCrop);
-      if (data.cropColumn) formData.append("cropColumn", data.cropColumn);
-      if (data.brandColCrop) formData.append("brandColCrop", data.brandColCrop);
-      if (data.ColorColCrop) formData.append("ColorColCrop", data.ColorColCrop);
-      if (data.CategoryColCrop)
-        formData.append("CategoryColCrop", data.CategoryColCrop);
-      if (data.sendToEmail) formData.append("sendToEmail", data.sendToEmail);
-      if (data.manualBrand) formData.append("manualBrand", data.manualBrand);
-      formData.append("skipDataWarehouse", data.skipDataWarehouse.toString());
+      formData.append("searchColCrop", searchColumn);
+      appendColumnIfPresent(formData, "cropColumn", data.cropColumn);
 
-      // This is a placeholder for the actual API call
-      // You will need to replace this with your actual API call logic
-      // For example, using UsersService or another service client.
-      // const response = await YourApiService.submitCrop(formData);
+      const brandColumnNormalized = normalizeColumn(data.brandColCrop);
+      if (brandColumnNormalized) {
+        formData.append("brandColCrop", brandColumnNormalized);
+      }
+      if (isManualBrand && data.manualBrand?.trim()) {
+        formData.set("brandColCrop", "MANUAL");
+        formData.append("manualBrand", data.manualBrand.trim());
+      }
 
-      // Mocking response for now
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log(data);
+      appendColumnIfPresent(formData, "ColorColCrop", data.ColorColCrop);
+      appendColumnIfPresent(formData, "CategoryColCrop", data.CategoryColCrop);
+
+      if (data.sendToEmail?.trim()) {
+        formData.append("sendToEmail", data.sendToEmail.trim());
+      }
+
+      formData.append(
+        "skipDataWarehouse",
+        String(Boolean(data.skipDataWarehouse)),
+      );
+
+      const response = await fetch(`${API_BASE_URL}/submitCrop`, {
+        method: "POST",
+        body: formData,
+      });
+
+      let payload: any = null;
+      try {
+        payload = await response.clone().json();
+      } catch (error) {
+        payload = null;
+      }
+
+      if (!response.ok) {
+        const errorMessage =
+          payload?.detail ||
+          payload?.message ||
+          (await response.text()) ||
+          "There was an error submitting the form.";
+        throw new Error(errorMessage);
+      }
 
       showToast(
         "Success",
-        "Crop data submitted successfully.",
-        "success"
+        payload?.message ?? "Crop data submitted successfully.",
+        "success",
       );
+      reset({
+        header_index: 1,
+        searchColCrop: "",
+        cropColumn: "",
+        brandColCrop: "",
+        ColorColCrop: "",
+        CategoryColCrop: "",
+        sendToEmail: "",
+        manualBrand: "",
+        skipDataWarehouse: false,
+      });
+      setFileName("");
+      setFileInputKey((prev) => prev + 1);
     } catch (error) {
-      showToast(
-        "Error",
-        "There was an error submitting the form.",
-        "error"
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "There was an error submitting the form.";
+      showToast("Error", message, "error");
     }
   };
 
@@ -95,12 +196,24 @@ const SubmitCropForm: React.FC = () => {
         <VStack spacing={4} align="stretch">
           <FormControl isRequired isInvalid={!!errors.fileUploadCrop}>
             <FormLabel>Upload File</FormLabel>
-            <Input
-              type="file"
-              {...register("fileUploadCrop", { required: "File is required" })}
-              onChange={handleFileChange}
-              p={1}
-            />
+            {(() => {
+              const fileInputRegister = register("fileUploadCrop", {
+                required: "File is required",
+              });
+              return (
+                <Input
+                  key={fileInputKey}
+                  type="file"
+                  accept={ACCEPTED_FILE_TYPES}
+                  p={1}
+                  {...fileInputRegister}
+                  onChange={(event) => {
+                    fileInputRegister.onChange(event);
+                    handleFileChange(event);
+                  }}
+                />
+              )
+            })()}
             {fileName && <Text mt={2}>Selected file: {fileName}</Text>}
           </FormControl>
 
@@ -128,15 +241,19 @@ const SubmitCropForm: React.FC = () => {
 
           <FormControl>
             <FormLabel>Brand Column</FormLabel>
-            <Input {...register("brandColCrop")} placeholder="e.g., A or MANUAL" />
+            <Input
+              {...register("brandColCrop")}
+              placeholder="e.g., A or MANUAL"
+            />
           </FormControl>
 
-          {brandColCrop === "MANUAL" && (
+          {isManualBrand && (
             <FormControl isRequired isInvalid={!!errors.manualBrand}>
               <FormLabel>Manual Brand</FormLabel>
               <Input
                 {...register("manualBrand", {
-                  required: "Manual brand is required when Brand Column is MANUAL",
+                  required:
+                    "Manual brand is required when Brand Column is MANUAL",
                 })}
               />
             </FormControl>
