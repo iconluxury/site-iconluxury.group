@@ -620,7 +620,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <Alert status="error" variant="subtle" borderRadius="md" mb={3}>
               <AlertIcon />
               <VStack align="start" spacing={0}>
-                <AlertTitle>Developer tool</AlertTitle>
+                <AlertTitle>Developer Mode</AlertTitle>
                 <AlertDescription>
                   Image URL downloader is fully functional; this banner persists in development to highlight it.
                 </AlertDescription>
