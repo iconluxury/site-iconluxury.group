@@ -6,10 +6,6 @@ import {
 } from "@chakra-ui/icons"
 import {
   Badge,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Box,
   Button,
   Card,
@@ -2909,7 +2905,6 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
 }
 
 const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
-  const isDev = import.meta.env.DEV
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -2924,27 +2919,13 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             Back to tools
           </Button>
         )}
-        {isDev && (
-          <Alert status="error" variant="subtle" borderRadius="md">
-            <AlertIcon />
-            <VStack align="start" spacing={0}>
-              <AlertTitle>Developer tool</AlertTitle>
-              <AlertDescription>
-                Image URL downloader is fully functional; this banner persists in development to highlight it.
-              </AlertDescription>
-            </VStack>
-          </Alert>
-        )}
-        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
-          <SubmitImageLinkForm />
-        </Box>
+        <SubmitImageLinkForm />
       </VStack>
     </Container>
   )
 }
 
 const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
-  const isDev = import.meta.env.DEV
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -2959,20 +2940,7 @@ const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             Back to tools
           </Button>
         )}
-        {isDev && (
-          <Alert status="error" variant="subtle" borderRadius="md">
-            <AlertIcon />
-            <VStack align="start" spacing={0}>
-              <AlertTitle>Developer tool</AlertTitle>
-              <AlertDescription>
-                Image cropper is fully functional; this banner persists in development to highlight it.
-              </AlertDescription>
-            </VStack>
-          </Alert>
-        )}
-        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
-          <SubmitCropForm />
-        </Box>
+        <SubmitCropForm />
       </VStack>
     </Container>
   )

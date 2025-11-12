@@ -615,20 +615,21 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           </Button>
         )}
 
-        {isDev && (
-          <Alert status="error" variant="subtle" borderRadius="md">
-            <AlertIcon />
-            <VStack align="start" spacing={0}>
-              <AlertTitle>Developer tool</AlertTitle>
-              <AlertDescription>
-                Image URL downloader is fully functional; this banner persists in development to highlight it.
-              </AlertDescription>
-            </VStack>
-          </Alert>
-        )}
+        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
+          {isDev && (
+            <Alert status="error" variant="subtle" borderRadius="md" mb={3}>
+              <AlertIcon />
+              <VStack align="start" spacing={0}>
+                <AlertTitle>Developer tool</AlertTitle>
+                <AlertDescription>
+                  Image URL downloader is fully functional; this banner persists in development to highlight it.
+                </AlertDescription>
+              </VStack>
+            </Alert>
+          )}
 
-        {/* Stepper */}
-        <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center">
+          {/* Stepper */}
+          <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center">
           <HStack spacing={4}>
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
               <Text
@@ -1019,6 +1020,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             </VStack>
           </VStack>
         )}
+        </Box>
       </VStack>
     </Container>
   )
