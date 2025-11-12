@@ -20,7 +20,6 @@ interface SubmitCropFormInputs {
   fileUploadCrop: FileList;
   header_index: number;
   searchColCrop: string;
-  title: string;
 }
 
 const API_BASE_URL =
@@ -42,7 +41,6 @@ const SubmitCropForm: React.FC = () => {
     defaultValues: {
       header_index: 1,
       searchColCrop: "",
-      title: "",
     },
   });
   const showToast = useCustomToast();
@@ -56,9 +54,6 @@ const SubmitCropForm: React.FC = () => {
     const file = e.target.files?.[0] ?? null;
     if (file) {
       setFileName(file.name);
-      // Suggest a default title from the file name (without extension)
-      const suggestedTitle = file.name.replace(/\.[^.]+$/i, "");
-      setValue("title", suggestedTitle, { shouldValidate: true });
       try {
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array" });
@@ -89,19 +84,15 @@ const SubmitCropForm: React.FC = () => {
         return;
       }
 
-      // For simplified UX, only Title is required in addition to the file.
-
-      const title = (data.title || "").trim();
-      if (!title) {
-        showToast("Validation Error", "Please provide a title.", "error");
-        return;
-      }
+      // Derive a reasonable title from the file name (without extension)
+      const title = file.name.replace(/\.[^.]+$/i, "");
 
       const formData = new FormData();
       formData.append("fileUploadCrop", file);
       // Provide a safe default header index for compatibility
       formData.append("header_index", "1");
-      formData.append("title", title);
+  // Keep sending title for backend compatibility, though it's no longer shown in the UI
+  formData.append("title", title);
 
       const response = await fetch(`${API_BASE_URL}/submitCrop`, {
         method: "POST",
@@ -129,7 +120,7 @@ const SubmitCropForm: React.FC = () => {
         payload?.message ?? "Crop data submitted successfully.",
         "success",
       );
-      reset({ header_index: 1, searchColCrop: "", title: "" });
+      reset({ header_index: 1, searchColCrop: "" });
       setFileName("");
       setFileInputKey((prev) => prev + 1);
       setStep("upload");
@@ -147,7 +138,7 @@ const SubmitCropForm: React.FC = () => {
     <Box p={4}>
 
       {/* Stepper - keep consistent with other tools */}
-      <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center" mb={4}>
+      <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center" mb={2}>
         <HStack spacing={4}>
           {(["Upload", "Submit"] as const).map((label, i) => (
             <Text
@@ -182,6 +173,11 @@ const SubmitCropForm: React.FC = () => {
         )}
       </HStack>
 
+      {/* Tool title/name in between upload and step bar */}
+      <Text fontSize="lg" fontWeight="bold" mb={4}>
+        Crop Images
+      </Text>
+
       {/* Upload */}
       {step === "upload" && (
         <VStack spacing={4} align="stretch">
@@ -212,13 +208,6 @@ const SubmitCropForm: React.FC = () => {
             })()}
             {fileName && <Text mt={2}>Selected file: {fileName}</Text>}
           </FormControl>
-          <FormControl isRequired isInvalid={!!errors.title}>
-            <FormLabel>Title</FormLabel>
-            <Input
-              placeholder="Enter a title for this job"
-              {...register("title", { required: "Title is required" })}
-            />
-          </FormControl>
         </VStack>
       )}
 
@@ -230,7 +219,6 @@ const SubmitCropForm: React.FC = () => {
             <Text fontSize="sm" color="subtle">This will submit your file for cropping.</Text>
             <Box borderWidth="1px" borderRadius="md" p={3} bg="white" borderColor="gray.200">
               <VStack spacing={1} align="start">
-                <Text><strong>Title:</strong> {watch("title") || "(none)"}</Text>f
                 <Text><strong>File:</strong> {fileName || "(none)"}</Text>
                 {recordCount !== null && (
                   <Text><strong>Rows:</strong> {recordCount}</Text>

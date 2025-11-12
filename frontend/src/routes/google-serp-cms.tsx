@@ -36,11 +36,13 @@ import {
   Wrap,
   WrapItem,
   useColorModeValue,
+  UnorderedList,
+  ListItem,
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf, FaCamera } from "react-icons/fa"
+import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf, FaMagic } from "react-icons/fa"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
@@ -3057,17 +3059,16 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={FaCamera} boxSize={6} color="gray.400" />
+                <Icon as={FaFilePdf} boxSize={6} color="gray.400" />
                 <Text fontSize="xl" fontWeight="semibold">
-                  Generate Image 
+                  PDF to Excel Parser
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
               <Text>
-              Fix bad product photos; convert lifestyle shots to
-                studio-style product images; transform mockups/CAD into
-                production-ready product photos.(Nano Banana)
+                Convert PDFs (catalogs, invoices, spec sheets) into structured
+                Excel/CSV data.
               </Text>
             </CardBody>
           </Card>
@@ -3081,17 +3082,25 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={FaFilePdf} boxSize={6} color="gray.400" />
+                <Icon as={FaMagic} boxSize={6} color="gray.400" />
                 <Text fontSize="xl" fontWeight="semibold">
-                  PDF to Excel Parser
+                  Generate Image 
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>
-                Convert PDFs (catalogs, invoices, spec sheets) into structured
-                Excel/CSV data.
-              </Text>
+              <VStack align="start" spacing={1}>
+                <Text>
+                  Generates studio-style product photo shots from reference
+                  photos. (Nano Banana)
+                </Text>
+                <Text fontWeight="semibold">Convert:</Text>
+                <UnorderedList pl={5} m={0}>
+                  <ListItem>Lifestyle shots</ListItem>
+                  <ListItem>Mockups/CAD</ListItem>
+                  <ListItem>Low-quality product photos</ListItem>
+                </UnorderedList>
+              </VStack>
             </CardBody>
           </Card>
         </SimpleGrid>
