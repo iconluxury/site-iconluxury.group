@@ -3118,11 +3118,10 @@ const CMSGoogleSerpForm: React.FC = () => {
                   photos. (Nano Banana)
                 </Text>
                 <Text fontWeight="semibold">Convert:</Text>
-                <UnorderedList pl={5} m={0}>
-                  <ListItem>Lifestyle shots</ListItem>
-                  <ListItem>Mockups/CAD</ListItem>
-                  <ListItem>Low-quality product photos</ListItem>
-                </UnorderedList>
+                <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text> 
+                  Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
+                  <Text as="span" mx={2}>•</Text> Low-quality product photos
+                </Text>
               </VStack>
             </CardBody>
           </Card>
