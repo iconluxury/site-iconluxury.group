@@ -2977,7 +2977,7 @@ const CMSGoogleSerpForm: React.FC = () => {
       <VStack spacing={6} align="stretch">
   {/* Mine Data */}
   <Text fontSize="lg" fontWeight="bold">Mine Data</Text>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("images")}>
             <CardHeader>
               <HStack>
@@ -2987,6 +2987,17 @@ const CMSGoogleSerpForm: React.FC = () => {
             </CardHeader>
             <CardBody>
               <Text>Search and collect images from Google.</Text>
+            </CardBody>
+          </Card>
+          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
+            <CardHeader>
+              <HStack>
+                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Data Warehouse</Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Internal product database (images, MSRP).</Text>
             </CardBody>
           </Card>
           {/* Reverse Image Search (Locked) */}
@@ -3013,18 +3024,7 @@ const CMSGoogleSerpForm: React.FC = () => {
 
   {/* Transform Excel */}
   <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
-            <CardHeader>
-              <HStack>
-                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Data Warehouse</Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>Internal product database (images, MSRP).</Text>
-            </CardBody>
-          </Card>
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
             <CardHeader>
               <HStack>
@@ -3108,7 +3108,7 @@ const CMSGoogleSerpForm: React.FC = () => {
                 <Text>
                   Generate studio-style product photos from reference shots. (Nano Banana)
                 </Text>
-                <Text fontWeight="semibold">Targets:</Text>
+                <Text fontWeight="semibold">Convert:</Text>
                 <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text>
                   Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
                   <Text as="span" mx={2}>•</Text> Low‑quality product photos
