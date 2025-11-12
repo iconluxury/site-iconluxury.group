@@ -16,7 +16,7 @@ import {
   AlertDescription,
 } from "@chakra-ui/react";
 import * as XLSX from "xlsx";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import useCustomToast from "../hooks/useCustomToast";
 import { showDevUI } from "../utils";
@@ -34,7 +34,34 @@ const ACCEPTED_FILE_TYPES = ".xlsx,.xls";
 const normalizeColumn = (value?: string | null) =>
   value ? value.trim().toUpperCase() : "";
 
+// Email via iFrame support (consistent with other tools)
+const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"] as const;
+const getIframeEmailParameter = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((k) => k.toLowerCase()));
+  for (const [k, v] of params.entries()) {
+    if (candidateKeys.has(k.toLowerCase())) {
+      const trimmed = v.trim();
+      if (trimmed) return trimmed;
+    }
+  }
+  return null;
+};
+const useIframeEmail = (): string | null => {
+  const [email, setEmail] = useState<string | null>(() => getIframeEmailParameter());
+  useEffect(() => {
+    if (!email) {
+      const e = getIframeEmailParameter();
+      if (e) setEmail(e);
+    }
+  }, [email]);
+  return email;
+};
+
 const SubmitCropForm: React.FC = () => {
+  const iframeEmail = useIframeEmail();
+  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail]);
   const {
     register,
     handleSubmit,
@@ -98,6 +125,10 @@ const SubmitCropForm: React.FC = () => {
       formData.append("header_index", "1");
   // Keep sending title for backend compatibility, though it's no longer shown in the UI
   formData.append("title", title);
+      // Pass through user email if provided via iframe query params (backend expects sendToEmail)
+      if (sendToEmail) {
+        formData.append("sendToEmail", sendToEmail);
+      }
 
       const response = await fetch(`${API_BASE_URL}/submitCrop`, {
         method: "POST",
