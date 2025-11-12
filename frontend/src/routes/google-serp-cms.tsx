@@ -2975,20 +2975,18 @@ const CMSGoogleSerpForm: React.FC = () => {
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
       <VStack spacing={6} align="stretch">
-        {/* Search tools */}
-        <Text fontSize="lg" fontWeight="bold">Search</Text>
+  {/* Mine Data */}
+  <Text fontSize="lg" fontWeight="bold">Mine Data</Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("images")}>
             <CardHeader>
               <HStack>
                 <Icon as={LuSearch} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Scrape Google Images
-                </Text>
+                <Text fontSize="xl" fontWeight="semibold">Google Images</Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Google Images</Text>
+              <Text>Search and collect images from Google.</Text>
             </CardBody>
           </Card>
           {/* Reverse Image Search (Locked) */}
@@ -3002,9 +3000,7 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Reverse Image Search
-                </Text>
+                <Text fontSize="xl" fontWeight="semibold">Reverse Image Search</Text>
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3015,8 +3011,66 @@ const CMSGoogleSerpForm: React.FC = () => {
           </Card>
         </SimpleGrid>
 
-        {/* Generative AI tools */}
-        <Text fontSize="lg" fontWeight="bold" mt={2}>Generative AI</Text>
+  {/* Transform Excel */}
+  <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
+            <CardHeader>
+              <HStack>
+                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Data Warehouse</Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Internal product database (images, MSRP).</Text>
+            </CardBody>
+          </Card>
+          <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
+            <CardHeader>
+              <HStack>
+                <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Image URL downloader</Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Convert image links into downloadable assets.</Text>
+            </CardBody>
+          </Card>
+          <Card cursor="pointer" onClick={() => setSelectedType("crop")}>
+            <CardHeader>
+              <HStack>
+                <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Image cropper</Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Submit crop jobs from spreadsheets.</Text>
+            </CardBody>
+          </Card>
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
+                <Text fontSize="xl" fontWeight="semibold">PDF → Excel</Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>
+                Convert PDFs (catalogs, invoices, spec sheets) into structured
+                Excel/CSV data.
+              </Text>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+
+  {/* Enhance Images (Gen AI) - coming soon */}
+  <Text fontSize="lg" fontWeight="bold" mt={2}>Enhance Images (Gen AI)</Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card
             cursor="not-allowed"
@@ -3028,9 +3082,7 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Image Background Remover
-                </Text>
+                <Text fontSize="xl" fontWeight="semibold">Background remover</Text>
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3048,89 +3100,20 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Generate Image
-                </Text>
+                <Text fontSize="xl" fontWeight="semibold">Image generator</Text>
               </HStack>
             </CardHeader>
             <CardBody>
               <VStack align="start" spacing={1}>
                 <Text>
-                  Generates studio-style product photo shots from reference
-                  photos. (Nano Banana)
+                  Generate studio-style product photos from reference shots. (Nano Banana)
                 </Text>
-                <Text fontWeight="semibold">Convert:</Text>
+                <Text fontWeight="semibold">Targets:</Text>
                 <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text>
                   Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
-                  <Text as="span" mx={2}>•</Text> Low-quality product photos
+                  <Text as="span" mx={2}>•</Text> Low‑quality product photos
                 </Text>
               </VStack>
-            </CardBody>
-          </Card>
-        </SimpleGrid>
-
-        {/* Excel utilities */}
-        <Text fontSize="lg" fontWeight="bold" mt={2}>Excel utils</Text>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
-            <CardHeader>
-              <HStack>
-                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Scrape Data Warehouse
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>Internal product database (include images or MSRP)</Text>
-            </CardBody>
-          </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
-            <CardHeader>
-              <HStack>
-                <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Image Links to Pictures
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>Convert image URLs into downloadable assets.</Text>
-            </CardBody>
-          </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("crop")}>
-            <CardHeader>
-              <HStack>
-                <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Crop Images
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>Submit crop jobs for uploaded spreadsheets.</Text>
-            </CardBody>
-          </Card>
-          <Card
-            cursor="not-allowed"
-            aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
-          >
-            <CardHeader>
-              <HStack>
-                <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">
-                  PDF to Excel Parser
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>
-                Convert PDFs (catalogs, invoices, spec sheets) into structured
-                Excel/CSV data.
-              </Text>
             </CardBody>
           </Card>
         </SimpleGrid>
