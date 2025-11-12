@@ -1,49 +1,33 @@
 import {
   Box,
   Button,
-  Checkbox,
   FormControl,
   FormLabel,
+  HStack,
   Input,
   NumberInput,
   NumberInputField,
   Text,
   VStack,
+  Tooltip,
 } from "@chakra-ui/react";
-import React, { useMemo, useState } from "react";
+import * as XLSX from "xlsx";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import useCustomToast from "../hooks/useCustomToast";
 
 interface SubmitCropFormInputs {
   fileUploadCrop: FileList;
   header_index: number;
-  cropColumn?: string;
   searchColCrop: string;
-  brandColCrop?: string;
-  ColorColCrop?: string;
-  CategoryColCrop?: string;
-  sendToEmail?: string;
-  manualBrand?: string;
-  skipDataWarehouse: boolean;
 }
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today";
-const ACCEPTED_FILE_TYPES = ".xlsx,.xls,.csv";
+const ACCEPTED_FILE_TYPES = ".xlsx,.xls";
 
 const normalizeColumn = (value?: string | null) =>
   value ? value.trim().toUpperCase() : "";
-
-const appendColumnIfPresent = (
-  formData: FormData,
-  key: string,
-  value?: string,
-) => {
-  const normalized = normalizeColumn(value);
-  if (normalized) {
-    formData.append(key, normalized);
-  }
-};
 
 const SubmitCropForm: React.FC = () => {
   const {
@@ -55,24 +39,35 @@ const SubmitCropForm: React.FC = () => {
   } = useForm<SubmitCropFormInputs>({
     defaultValues: {
       header_index: 1,
-      skipDataWarehouse: false,
+      searchColCrop: "",
     },
   });
   const showToast = useCustomToast();
   const [fileName, setFileName] = useState("");
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [step, setStep] = useState<"upload" | "submit">("upload");
+  const fileList = watch("fileUploadCrop");
+  const [recordCount, setRecordCount] = useState<number | null>(null);
 
-  const brandColCrop = watch("brandColCrop");
-  const isManualBrand = useMemo(
-    () => normalizeColumn(brandColCrop) === "MANUAL",
-    [brandColCrop],
-  );
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFileName(e.target.files[0].name);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (file) {
+      setFileName(file.name);
+      try {
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const sheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        setRecordCount(Array.isArray(rows) ? rows.length : null);
+      } catch {
+        setRecordCount(null);
+      }
+      // Auto-advance to submit step after selecting a file for consistent UX
+      setStep("submit");
     } else {
       setFileName("");
+      setRecordCount(null);
     }
   };
 
@@ -88,56 +83,12 @@ const SubmitCropForm: React.FC = () => {
         return;
       }
 
-      if (data.header_index < 1 || Number.isNaN(data.header_index)) {
-        showToast(
-          "Validation Error",
-          "Header index must be greater than or equal to 1.",
-          "error",
-        );
-        return;
-      }
-
-      const searchColumn = normalizeColumn(data.searchColCrop);
-      if (!searchColumn) {
-        showToast("Validation Error", "Search column is required.", "error");
-        return;
-      }
-
-      if (isManualBrand && !data.manualBrand?.trim()) {
-        showToast(
-          "Validation Error",
-          "Manual brand is required when Brand Column is MANUAL.",
-          "error",
-        );
-        return;
-      }
+      // For simplified UX, no additional inputs are required on submit step.
 
       const formData = new FormData();
       formData.append("fileUploadCrop", file);
-      formData.append("header_index", data.header_index.toString());
-      formData.append("searchColCrop", searchColumn);
-      appendColumnIfPresent(formData, "cropColumn", data.cropColumn);
-
-      const brandColumnNormalized = normalizeColumn(data.brandColCrop);
-      if (brandColumnNormalized) {
-        formData.append("brandColCrop", brandColumnNormalized);
-      }
-      if (isManualBrand && data.manualBrand?.trim()) {
-        formData.set("brandColCrop", "MANUAL");
-        formData.append("manualBrand", data.manualBrand.trim());
-      }
-
-      appendColumnIfPresent(formData, "ColorColCrop", data.ColorColCrop);
-      appendColumnIfPresent(formData, "CategoryColCrop", data.CategoryColCrop);
-
-      if (data.sendToEmail?.trim()) {
-        formData.append("sendToEmail", data.sendToEmail.trim());
-      }
-
-      formData.append(
-        "skipDataWarehouse",
-        String(Boolean(data.skipDataWarehouse)),
-      );
+      // Provide a safe default header index for compatibility
+      formData.append("header_index", "1");
 
       const response = await fetch(`${API_BASE_URL}/submitCrop`, {
         method: "POST",
@@ -165,19 +116,11 @@ const SubmitCropForm: React.FC = () => {
         payload?.message ?? "Crop data submitted successfully.",
         "success",
       );
-      reset({
-        header_index: 1,
-        searchColCrop: "",
-        cropColumn: "",
-        brandColCrop: "",
-        ColorColCrop: "",
-        CategoryColCrop: "",
-        sendToEmail: "",
-        manualBrand: "",
-        skipDataWarehouse: false,
-      });
+      reset({ header_index: 1, searchColCrop: "" });
       setFileName("");
       setFileInputKey((prev) => prev + 1);
+      setStep("upload");
+      setRecordCount(null);
     } catch (error) {
       const message =
         error instanceof Error
@@ -189,10 +132,45 @@ const SubmitCropForm: React.FC = () => {
 
   return (
     <Box p={4}>
-      <Text fontSize="xl" fontWeight="bold" mb={4}>
-        Submit Crop
-      </Text>
-      <form onSubmit={handleSubmit(onSubmit)}>
+
+      {/* Stepper - keep consistent with other tools */}
+      <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center" mb={4}>
+        <HStack spacing={4}>
+          {(["Upload", "Submit"] as const).map((label, i) => (
+            <Text
+              key={label}
+              fontWeight={step === label.toLowerCase() ? "bold" : "normal"}
+              color={step === label.toLowerCase() ? "brand.600" : "subtle"}
+              cursor={i < ["upload", "submit"].indexOf(step) ? "pointer" : "default"}
+              onClick={() => {
+                if (i < ["upload", "submit"].indexOf(step)) setStep(label.toLowerCase() as typeof step)
+              }}
+            >
+              {i + 1}. {label}
+            </Text>
+          ))}
+        </HStack>
+        {step !== "upload" && (
+          <HStack>
+            <Button onClick={() => setStep("upload")} variant="outline" size="sm">
+              Back
+            </Button>
+            {step !== "submit" && (
+              <Button size="sm" onClick={() => setStep("submit")} isDisabled={!fileList || fileList.length === 0}>
+                Next: Submit
+              </Button>
+            )}
+            {step === "submit" && (
+              <Button type="submit" form="crop-submit-form" colorScheme="brand" size="sm" isLoading={isSubmitting}>
+                Submit
+              </Button>
+            )}
+          </HStack>
+        )}
+      </HStack>
+
+      {/* Upload */}
+      {step === "upload" && (
         <VStack spacing={4} align="stretch">
           <FormControl isRequired isInvalid={!!errors.fileUploadCrop}>
             <FormLabel>Upload File</FormLabel>
@@ -201,100 +179,55 @@ const SubmitCropForm: React.FC = () => {
                 required: "File is required",
               });
               return (
-                <Input
-                  key={fileInputKey}
-                  type="file"
-                  accept={ACCEPTED_FILE_TYPES}
-                  p={1}
-                  {...fileInputRegister}
-                  onChange={(event) => {
-                    fileInputRegister.onChange(event);
-                    handleFileChange(event);
-                  }}
-                />
-              )
+                <Tooltip label="Upload an Excel file (.xlsx or .xls)">
+                  <Input
+                    key={fileInputKey}
+                    type="file"
+                    accept={ACCEPTED_FILE_TYPES}
+                    p={1}
+                    bg="white"
+                    borderColor="border"
+                    aria-label="Upload Excel file"
+                    {...fileInputRegister}
+                    onChange={(event) => {
+                      fileInputRegister.onChange(event);
+                      handleFileChange(event);
+                    }}
+                  />
+                </Tooltip>
+              );
             })()}
             {fileName && <Text mt={2}>Selected file: {fileName}</Text>}
           </FormControl>
-
-          <FormControl isRequired isInvalid={!!errors.header_index}>
-            <FormLabel>Header Index</FormLabel>
-            <NumberInput min={1}>
-              <NumberInputField
-                {...register("header_index", {
-                  required: "Header index is required",
-                  valueAsNumber: true,
-                  min: { value: 1, message: "Header index must be >= 1" },
-                })}
-              />
-            </NumberInput>
-          </FormControl>
-
-          <FormControl isRequired isInvalid={!!errors.searchColCrop}>
-            <FormLabel>Search Column</FormLabel>
-            <Input
-              {...register("searchColCrop", {
-                required: "Search column is required",
-              })}
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Brand Column</FormLabel>
-            <Input
-              {...register("brandColCrop")}
-              placeholder="e.g., A or MANUAL"
-            />
-          </FormControl>
-
-          {isManualBrand && (
-            <FormControl isRequired isInvalid={!!errors.manualBrand}>
-              <FormLabel>Manual Brand</FormLabel>
-              <Input
-                {...register("manualBrand", {
-                  required:
-                    "Manual brand is required when Brand Column is MANUAL",
-                })}
-              />
-            </FormControl>
-          )}
-
-          <FormControl>
-            <FormLabel>Crop Column</FormLabel>
-            <Input {...register("cropColumn")} />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Color Column</FormLabel>
-            <Input {...register("ColorColCrop")} />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Category Column</FormLabel>
-            <Input {...register("CategoryColCrop")} />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Send To Email</FormLabel>
-            <Input type="email" {...register("sendToEmail")} />
-          </FormControl>
-
-          <FormControl>
-            <Checkbox {...register("skipDataWarehouse")}>
-              Skip Data Warehouse
-            </Checkbox>
-          </FormControl>
-
-          <Button
-            type="submit"
-            colorScheme="blue"
-            isLoading={isSubmitting}
-            mt={4}
-          >
-            Submit
-          </Button>
         </VStack>
-      </form>
+      )}
+
+      {/* Submit */}
+      {step === "submit" && (
+        <form id="crop-submit-form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack spacing={2} align="stretch">
+            <Text fontWeight="semibold">Ready to submit</Text>
+            <Text fontSize="sm" color="subtle">This will submit your file for cropping.</Text>
+            <Box borderWidth="1px" borderRadius="md" p={3} bg="white" borderColor="gray.200">
+              <VStack spacing={1} align="start">
+                <Text><strong>File:</strong> {fileName || "(none)"}</Text>
+                {recordCount !== null && (
+                  <Text><strong>Rows:</strong> {recordCount}</Text>
+                )}
+              </VStack>
+            </Box>
+            <HStack justify="space-between" mt={2}>
+              <Button variant="outline" onClick={() => setStep("upload")} size="sm">
+                Back
+              </Button>
+              {/* Submit button is also available in the stepper header */}
+              <Button type="submit" colorScheme="brand" isLoading={isSubmitting} size="sm">
+                Submit
+              </Button>
+            </HStack>
+          </VStack>
+        </form>
+      )}
     </Box>
   );
 };
