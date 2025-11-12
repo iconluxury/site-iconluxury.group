@@ -2,7 +2,6 @@ import {
   ArrowBackIcon,
   CheckIcon,
   CloseIcon,
-  SearchIcon,
   WarningIcon,
 } from "@chakra-ui/icons"
 import {
@@ -42,7 +41,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf, FaMagic, FaSearch } from "react-icons/fa"
+import { LuSearch, LuDatabase, LuLink, LuCrop, LuEraser, LuFileText, LuWand2 } from "react-icons/lu"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
@@ -2976,11 +2975,13 @@ const CMSGoogleSerpForm: React.FC = () => {
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
       <VStack spacing={6} align="stretch">
+        {/* Search tools */}
+        <Text fontSize="lg" fontWeight="bold">Search</Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("images")}>
             <CardHeader>
               <HStack>
-                <Icon as={SearchIcon} boxSize={6} color="primary.500" />
+                <Icon as={LuSearch} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">
                   Scrape Google Images
                 </Text>
@@ -2990,10 +2991,91 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Google Images</Text>
             </CardBody>
           </Card>
+          {/* Reverse Image Search (Locked) */}
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Reverse Image Search
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>
+                Image search using a reference photo and reverse image search.
+              </Text>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+
+        {/* Generative AI tools */}
+        <Text fontSize="lg" fontWeight="bold" mt={2}>Generative AI</Text>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Image Background Remover
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Remove image backgrounds. (Nano Banana)</Text>
+            </CardBody>
+          </Card>
+
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Generate Image
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <VStack align="start" spacing={1}>
+                <Text>
+                  Generates studio-style product photo shots from reference
+                  photos. (Nano Banana)
+                </Text>
+                <Text fontWeight="semibold">Convert:</Text>
+                <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text>
+                  Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
+                  <Text as="span" mx={2}>•</Text> Low-quality product photos
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+
+        {/* Excel utilities */}
+        <Text fontSize="lg" fontWeight="bold" mt={2}>Excel utils</Text>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("data")}>
             <CardHeader>
               <HStack>
-                <Icon as={FaWarehouse} boxSize={6} color="primary.500" />
+                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">
                   Scrape Data Warehouse
                 </Text>
@@ -3006,7 +3088,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
             <CardHeader>
               <HStack>
-                <Icon as={FaLink} boxSize={6} color="primary.500" />
+                <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">
                   Image Links to Pictures
                 </Text>
@@ -3019,7 +3101,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card cursor="pointer" onClick={() => setSelectedType("crop")}>
             <CardHeader>
               <HStack>
-                <Icon as={FaCrop} boxSize={6} color="primary.500" />
+                <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">
                   Crop Images
                 </Text>
@@ -3029,7 +3111,6 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Submit crop jobs for uploaded spreadsheets.</Text>
             </CardBody>
           </Card>
-          {/* Disabled / Coming Soon Cards */}
           <Card
             cursor="not-allowed"
             aria-disabled
@@ -3039,50 +3120,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={FaEraser} boxSize={6} color="gray.400" />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Image Background Remover
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>Remove image backgrounds. (Nano Banana)</Text>
-            </CardBody>
-          </Card>
-
-          {/* Reverse Image Search (Locked) */}
-          <Card
-            cursor="not-allowed"
-            aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
-          >
-            <CardHeader>
-              <HStack>
-                <Icon as={FaSearch} boxSize={6} color="gray.400" />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Reverse Image Search
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <Text>
-                Image search using a reference photo and reverse image search.
-              </Text>
-            </CardBody>
-          </Card>
-
-          <Card
-            cursor="not-allowed"
-            aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
-          >
-            <CardHeader>
-              <HStack>
-                <Icon as={FaFilePdf} boxSize={6} color="gray.400" />
+                <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">
                   PDF to Excel Parser
                 </Text>
@@ -3093,36 +3131,6 @@ const CMSGoogleSerpForm: React.FC = () => {
                 Convert PDFs (catalogs, invoices, spec sheets) into structured
                 Excel/CSV data.
               </Text>
-            </CardBody>
-          </Card>
-
-          <Card
-            cursor="not-allowed"
-            aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
-          >
-            <CardHeader>
-              <HStack>
-                <Icon as={FaMagic} boxSize={6} color="gray.400" />
-                <Text fontSize="xl" fontWeight="semibold">
-                  Generate Image 
-                </Text>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <VStack align="start" spacing={1}>
-                <Text>
-                  Generates studio-style product photo shots from reference
-                  photos. (Nano Banana)
-                </Text>
-                <Text fontWeight="semibold">Convert:</Text>
-                <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text> 
-                  Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
-                  <Text as="span" mx={2}>•</Text> Low-quality product photos
-                </Text>
-              </VStack>
             </CardBody>
           </Card>
         </SimpleGrid>
