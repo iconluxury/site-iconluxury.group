@@ -1957,10 +1957,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           </Th>
 
           {showFileDetails && (
-            <Th
-              w="120px"
-              cursor="pointer"
-            >
+            <Th w="120px" cursor="pointer">
               Color Name{" "}
               {sortConfig.key === "productColor" &&
                 (sortConfig.direction === "ascending" ? "↑" : "↓")}

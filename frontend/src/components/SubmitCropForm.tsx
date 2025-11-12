@@ -9,41 +9,42 @@ import {
   NumberInputField,
   Text,
   VStack,
-} from "@chakra-ui/react";
-import React, { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import useCustomToast from "../hooks/useCustomToast";
+} from "@chakra-ui/react"
+import type React from "react"
+import { useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import useCustomToast from "../hooks/useCustomToast"
 
 interface SubmitCropFormInputs {
-  fileUploadCrop: FileList;
-  header_index: number;
-  cropColumn?: string;
-  searchColCrop: string;
-  brandColCrop?: string;
-  ColorColCrop?: string;
-  CategoryColCrop?: string;
-  sendToEmail?: string;
-  manualBrand?: string;
-  skipDataWarehouse: boolean;
+  fileUploadCrop: FileList
+  header_index: number
+  cropColumn?: string
+  searchColCrop: string
+  brandColCrop?: string
+  ColorColCrop?: string
+  CategoryColCrop?: string
+  sendToEmail?: string
+  manualBrand?: string
+  skipDataWarehouse: boolean
 }
 
 const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today";
-const ACCEPTED_FILE_TYPES = ".xlsx,.xls,.csv";
+  import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today"
+const ACCEPTED_FILE_TYPES = ".xlsx,.xls,.csv"
 
 const normalizeColumn = (value?: string | null) =>
-  value ? value.trim().toUpperCase() : "";
+  value ? value.trim().toUpperCase() : ""
 
 const appendColumnIfPresent = (
   formData: FormData,
   key: string,
   value?: string,
 ) => {
-  const normalized = normalizeColumn(value);
+  const normalized = normalizeColumn(value)
   if (normalized) {
-    formData.append(key, normalized);
+    formData.append(key, normalized)
   }
-};
+}
 
 const SubmitCropForm: React.FC = () => {
   const {
@@ -57,35 +58,35 @@ const SubmitCropForm: React.FC = () => {
       header_index: 1,
       skipDataWarehouse: false,
     },
-  });
-  const showToast = useCustomToast();
-  const [fileName, setFileName] = useState("");
-  const [fileInputKey, setFileInputKey] = useState(0);
+  })
+  const showToast = useCustomToast()
+  const [fileName, setFileName] = useState("")
+  const [fileInputKey, setFileInputKey] = useState(0)
 
-  const brandColCrop = watch("brandColCrop");
+  const brandColCrop = watch("brandColCrop")
   const isManualBrand = useMemo(
     () => normalizeColumn(brandColCrop) === "MANUAL",
     [brandColCrop],
-  );
+  )
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFileName(e.target.files[0].name);
+      setFileName(e.target.files[0].name)
     } else {
-      setFileName("");
+      setFileName("")
     }
-  };
+  }
 
   const onSubmit = async (data: SubmitCropFormInputs) => {
     try {
       if (!data.fileUploadCrop || data.fileUploadCrop.length === 0) {
-        showToast("Validation Error", "Please upload a file.", "error");
-        return;
+        showToast("Validation Error", "Please upload a file.", "error")
+        return
       }
-      const file = data.fileUploadCrop[0];
+      const file = data.fileUploadCrop[0]
       if (!(file instanceof File)) {
-        showToast("Validation Error", "Invalid file selected.", "error");
-        return;
+        showToast("Validation Error", "Invalid file selected.", "error")
+        return
       }
 
       if (data.header_index < 1 || Number.isNaN(data.header_index)) {
@@ -93,14 +94,14 @@ const SubmitCropForm: React.FC = () => {
           "Validation Error",
           "Header index must be greater than or equal to 1.",
           "error",
-        );
-        return;
+        )
+        return
       }
 
-      const searchColumn = normalizeColumn(data.searchColCrop);
+      const searchColumn = normalizeColumn(data.searchColCrop)
       if (!searchColumn) {
-        showToast("Validation Error", "Search column is required.", "error");
-        return;
+        showToast("Validation Error", "Search column is required.", "error")
+        return
       }
 
       if (isManualBrand && !data.manualBrand?.trim()) {
@@ -108,47 +109,47 @@ const SubmitCropForm: React.FC = () => {
           "Validation Error",
           "Manual brand is required when Brand Column is MANUAL.",
           "error",
-        );
-        return;
+        )
+        return
       }
 
-      const formData = new FormData();
-      formData.append("fileUploadCrop", file);
-      formData.append("header_index", data.header_index.toString());
-      formData.append("searchColCrop", searchColumn);
-      appendColumnIfPresent(formData, "cropColumn", data.cropColumn);
+      const formData = new FormData()
+      formData.append("fileUploadCrop", file)
+      formData.append("header_index", data.header_index.toString())
+      formData.append("searchColCrop", searchColumn)
+      appendColumnIfPresent(formData, "cropColumn", data.cropColumn)
 
-      const brandColumnNormalized = normalizeColumn(data.brandColCrop);
+      const brandColumnNormalized = normalizeColumn(data.brandColCrop)
       if (brandColumnNormalized) {
-        formData.append("brandColCrop", brandColumnNormalized);
+        formData.append("brandColCrop", brandColumnNormalized)
       }
       if (isManualBrand && data.manualBrand?.trim()) {
-        formData.set("brandColCrop", "MANUAL");
-        formData.append("manualBrand", data.manualBrand.trim());
+        formData.set("brandColCrop", "MANUAL")
+        formData.append("manualBrand", data.manualBrand.trim())
       }
 
-      appendColumnIfPresent(formData, "ColorColCrop", data.ColorColCrop);
-      appendColumnIfPresent(formData, "CategoryColCrop", data.CategoryColCrop);
+      appendColumnIfPresent(formData, "ColorColCrop", data.ColorColCrop)
+      appendColumnIfPresent(formData, "CategoryColCrop", data.CategoryColCrop)
 
       if (data.sendToEmail?.trim()) {
-        formData.append("sendToEmail", data.sendToEmail.trim());
+        formData.append("sendToEmail", data.sendToEmail.trim())
       }
 
       formData.append(
         "skipDataWarehouse",
         String(Boolean(data.skipDataWarehouse)),
-      );
+      )
 
       const response = await fetch(`${API_BASE_URL}/submitCrop`, {
         method: "POST",
         body: formData,
-      });
+      })
 
-      let payload: any = null;
+      let payload: any = null
       try {
-        payload = await response.clone().json();
+        payload = await response.clone().json()
       } catch (error) {
-        payload = null;
+        payload = null
       }
 
       if (!response.ok) {
@@ -156,15 +157,15 @@ const SubmitCropForm: React.FC = () => {
           payload?.detail ||
           payload?.message ||
           (await response.text()) ||
-          "There was an error submitting the form.";
-        throw new Error(errorMessage);
+          "There was an error submitting the form."
+        throw new Error(errorMessage)
       }
 
       showToast(
         "Success",
         payload?.message ?? "Crop data submitted successfully.",
         "success",
-      );
+      )
       reset({
         header_index: 1,
         searchColCrop: "",
@@ -175,17 +176,17 @@ const SubmitCropForm: React.FC = () => {
         sendToEmail: "",
         manualBrand: "",
         skipDataWarehouse: false,
-      });
-      setFileName("");
-      setFileInputKey((prev) => prev + 1);
+      })
+      setFileName("")
+      setFileInputKey((prev) => prev + 1)
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "There was an error submitting the form.";
-      showToast("Error", message, "error");
+          : "There was an error submitting the form."
+      showToast("Error", message, "error")
     }
-  };
+  }
 
   return (
     <Box p={4}>
@@ -199,7 +200,7 @@ const SubmitCropForm: React.FC = () => {
             {(() => {
               const fileInputRegister = register("fileUploadCrop", {
                 required: "File is required",
-              });
+              })
               return (
                 <Input
                   key={fileInputKey}
@@ -208,8 +209,8 @@ const SubmitCropForm: React.FC = () => {
                   p={1}
                   {...fileInputRegister}
                   onChange={(event) => {
-                    fileInputRegister.onChange(event);
-                    handleFileChange(event);
+                    fileInputRegister.onChange(event)
+                    handleFileChange(event)
                   }}
                 />
               )
@@ -296,7 +297,7 @@ const SubmitCropForm: React.FC = () => {
         </VStack>
       </form>
     </Box>
-  );
-};
+  )
+}
 
-export default SubmitCropForm;
+export default SubmitCropForm

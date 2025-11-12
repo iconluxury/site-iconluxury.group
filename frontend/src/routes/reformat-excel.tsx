@@ -11,8 +11,8 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Heading,
   HStack,
+  Heading,
   Icon,
   IconButton,
   Input,
@@ -150,10 +150,10 @@ const withManualValue = (
   )
   const hasManualColumn = headerIndex !== -1
 
-  if (value && value.trim()) {
+  if (value?.trim()) {
     const trimmed = value.trim()
-    let newHeaders = [...sheet.excelData.headers]
-    let newRows = sheet.excelData.rows.map((r) => [...r])
+    const newHeaders = [...sheet.excelData.headers]
+    const newRows = sheet.excelData.rows.map((r) => [...r])
 
     if (hasManualColumn) {
       newRows.forEach((row) => {
@@ -179,7 +179,9 @@ const withManualValue = (
   }
 
   if (!value && hasManualColumn) {
-    const newHeaders = sheet.excelData.headers.filter((_, i) => i !== headerIndex)
+    const newHeaders = sheet.excelData.headers.filter(
+      (_, i) => i !== headerIndex,
+    )
     const newRows = sheet.excelData.rows.map((row) =>
       row.filter((_, i) => i !== headerIndex),
     )
@@ -340,7 +342,9 @@ const SubmitStep: React.FC<{
                               <Text>
                                 {isReady
                                   ? "Ready"
-                                  : `Missing: ${validation?.missing.join(", ")}`}
+                                  : `Missing: ${validation?.missing.join(
+                                      ", ",
+                                    )}`}
                               </Text>
                             </HStack>
                           </Badge>
@@ -624,7 +628,6 @@ const ReformatExcelForm: React.FC = () => {
     [sheetConfigs.length],
   )
 
-
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
     "brand",
@@ -898,10 +901,7 @@ const ReformatExcelForm: React.FC = () => {
           columnMapping: workingMapping,
         }
       })
-      if (
-        columnMapping.brand !== null &&
-        columnMapping.brand === index
-      ) {
+      if (columnMapping.brand !== null && columnMapping.brand === index) {
         setManualInputs((prev) => ({ ...prev, brand: "" }))
       }
     },
@@ -909,9 +909,7 @@ const ReformatExcelForm: React.FC = () => {
   )
 
   const mappedDataColumns = useMemo(() => {
-    const keys: (ColumnType | "readImage")[] = [
-      ...DISPLAY_ORDER,
-    ]
+    const keys: (ColumnType | "readImage")[] = [...DISPLAY_ORDER]
     return new Set(
       keys
         .map((key) => columnMapping[key as keyof ColumnMapping])
@@ -982,9 +980,7 @@ const ReformatExcelForm: React.FC = () => {
     )
     return {
       isValid:
-        missing.length === 0 &&
-        excelData.rows.length > 0 &&
-        headersAreValid,
+        missing.length === 0 && excelData.rows.length > 0 && headersAreValid,
       missing,
     }
   }, [
@@ -999,9 +995,7 @@ const ReformatExcelForm: React.FC = () => {
     () =>
       sheetConfigs.map((sheet, index) => {
         const mapping = sheet.columnMapping ?? createEmptyColumnMapping()
-        const missing = REQUIRED_COLUMNS.filter(
-          (col) => mapping[col] === null,
-        )
+        const missing = REQUIRED_COLUMNS.filter((col) => mapping[col] === null)
         const headersValid = sheet.excelData.headers.some(
           (header) => String(header).trim() !== "",
         )
@@ -1017,13 +1011,10 @@ const ReformatExcelForm: React.FC = () => {
     [REQUIRED_COLUMNS, sheetConfigs],
   )
 
-  const activeSheetValidation =
-    sheetValidationResults[activeSheetIndex] ?? null
+  const activeSheetValidation = sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
-  const activeSheetStatusLabel = activeSheetIsReady
-    ? "Ready"
-    : "Needs mapping"
+  const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
   const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
   const activeSheetStatusTooltip = activeSheetIsReady
@@ -1040,7 +1031,11 @@ const ReformatExcelForm: React.FC = () => {
           const validation = sheetValidationResults[index]
           const isComplete = validation?.isValid
           const hasMissing = (validation?.missing ?? []).length > 0
-          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const icon = isComplete ? (
+            <CheckIcon boxSize={3} />
+          ) : (
+            <WarningIcon boxSize={3} />
+          )
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
             ? "Mapping ready"
@@ -1053,7 +1048,9 @@ const ReformatExcelForm: React.FC = () => {
                 <Button
                   size={size}
                   variant={isActive ? "solid" : "ghost"}
-                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
+                  colorScheme={
+                    isActive ? "brand" : isComplete ? "gray" : "yellow"
+                  }
                   rightIcon={icon}
                   onClick={() => handleActiveSheetChange(index)}
                   cursor="pointer"
@@ -1109,7 +1106,9 @@ const ReformatExcelForm: React.FC = () => {
         const sheetName = sheet.name || `Sheet ${sheetIndex + 1}`
         showToast(
           "Validation Error",
-          `Missing required columns in ${sheetName}: ${validation.missing.join(", ")}`,
+          `Missing required columns in ${sheetName}: ${validation.missing.join(
+            ", ",
+          )}`,
           "warning",
         )
         setActiveSheetIndex(sheetIndex)
@@ -1131,7 +1130,9 @@ const ReformatExcelForm: React.FC = () => {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" is missing a mapped style column.`,
+            `Sheet "${
+              sheet.name || `Sheet ${sheetIndex + 1}`
+            }" is missing a mapped style column.`,
           )
         }
 
@@ -1211,15 +1212,17 @@ const ReformatExcelForm: React.FC = () => {
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" (${response.status}): ${
-              errorText || response.statusText
-            }`,
+            `Server error for sheet "${
+              sheet.name || `Sheet ${sheetIndex + 1}`
+            }" (${response.status}): ${errorText || response.statusText}`,
           )
         }
 
         showToast(
           "Success",
-          `Sheet "${sheet.name || `Sheet ${sheetIndex + 1}`}" submitted successfully.`,
+          `Sheet "${
+            sheet.name || `Sheet ${sheetIndex + 1}`
+          }" submitted successfully.`,
           "success",
         )
         // Optionally, you might want to update the UI to show this sheet is done
@@ -1375,7 +1378,8 @@ const ReformatExcelForm: React.FC = () => {
                     <HStack justify="space-between" align="center">
                       <Text fontWeight="semibold">Sheets</Text>
                       <Text fontSize="xs" color="subtle">
-                        Viewing {sheetConfigs[activeSheetIndex]?.name ||
+                        Viewing{" "}
+                        {sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`}
                       </Text>
                     </HStack>
@@ -1631,34 +1635,35 @@ const ReformatExcelForm: React.FC = () => {
                           ))}
                         </Select>
                       </Tooltip>
-                      {columnMapping[typedField] === null && !isManualApplied && (
-                        <>
-                          <Text fontSize="sm" color="subtle">
-                            Or
-                          </Text>
-                          <Input
-                            w="150px"
-                            placeholder={`Add Manual ${label}`}
-                            value={manualInputs[typedField] || ""}
-                            onChange={(e) =>
-                              setManualInputs((prev) => ({
-                                ...prev,
-                                [typedField]: e.target.value,
-                              }))
-                            }
-                            aria-label={`Manual ${label} input`}
-                            size="sm"
-                          />
-                          <Button
-                            colorScheme="brand"
-                            size="sm"
-                            onClick={() => applyManualValue(typedField)}
-                            isDisabled={!manualInputs[typedField]?.trim()}
-                          >
-                            Apply
-                          </Button>
-                        </>
-                      )}
+                      {columnMapping[typedField] === null &&
+                        !isManualApplied && (
+                          <>
+                            <Text fontSize="sm" color="subtle">
+                              Or
+                            </Text>
+                            <Input
+                              w="150px"
+                              placeholder={`Add Manual ${label}`}
+                              value={manualInputs[typedField] || ""}
+                              onChange={(e) =>
+                                setManualInputs((prev) => ({
+                                  ...prev,
+                                  [typedField]: e.target.value,
+                                }))
+                              }
+                              aria-label={`Manual ${label} input`}
+                              size="sm"
+                            />
+                            <Button
+                              colorScheme="brand"
+                              size="sm"
+                              onClick={() => applyManualValue(typedField)}
+                              isDisabled={!manualInputs[typedField]?.trim()}
+                            >
+                              Apply
+                            </Button>
+                          </>
+                        )}
                       {isManualApplied && (
                         <>
                           <Badge colorScheme="green" noOfLines={1}>
@@ -1674,18 +1679,19 @@ const ReformatExcelForm: React.FC = () => {
                           </Button>
                         </>
                       )}
-                      {columnMapping[typedField] !== null && !isManualApplied && (
-                        <Tooltip label="Clear mapping">
-                          <IconButton
-                            aria-label={`Clear ${label} mapping`}
-                            icon={<CloseIcon />}
-                            size="sm"
-                            onClick={() =>
-                              handleClearMapping(columnMapping[typedField]!)
-                            }
-                          />
-                        </Tooltip>
-                      )}
+                      {columnMapping[typedField] !== null &&
+                        !isManualApplied && (
+                          <Tooltip label="Clear mapping">
+                            <IconButton
+                              aria-label={`Clear ${label} mapping`}
+                              icon={<CloseIcon />}
+                              size="sm"
+                              onClick={() =>
+                                handleClearMapping(columnMapping[typedField]!)
+                              }
+                            />
+                          </Tooltip>
+                        )}
                     </HStack>
                   )
                 }
@@ -1902,7 +1908,6 @@ const ReformatExcelForm: React.FC = () => {
     </Container>
   )
 }
-
 
 // Export
 export const Route = createFileRoute("/reformat-excel")({
