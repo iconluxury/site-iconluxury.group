@@ -3046,7 +3046,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Convert image links into excel pictures.</Text>
+              <Text>Convert image links to excel pictures.</Text>
             </CardBody>
           </Card>
           <Card
@@ -3066,7 +3066,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Submit spreadsheets to remove whitespace from Excel pictures.</Text>
+              <Text>Submit Distro to remove whitespace from Excel pictures.</Text>
             </CardBody>
           </Card>
           <Card
