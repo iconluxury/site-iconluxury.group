@@ -3046,7 +3046,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Convert image links into downloadable assets.</Text>
+              <Text>Convert image links into excel pictures.</Text>
             </CardBody>
           </Card>
           <Card
