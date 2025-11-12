@@ -42,9 +42,9 @@ import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FaCrop, FaLink, FaWarehouse } from "react-icons/fa"
 import * as XLSX from "xlsx"
-import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
+import useCustomToast from "../hooks/useCustomToast"
 
 // Shared Constants and Types
 type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
@@ -132,7 +132,7 @@ const withManualBrandValue = (
     sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
     MANUAL_BRAND_HEADER
 
-  if (manualBrandValue && manualBrandValue.trim()) {
+  if (manualBrandValue?.trim()) {
     const trimmed = manualBrandValue.trim()
     if (hasManualColumn) {
       const updatedRows = sheet.excelData.rows.map((row) => {
@@ -414,7 +414,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [sheetConfigs.length],
   )
 
-
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
     "brand",
@@ -591,7 +590,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         if (field === "brand" && sheet.manualBrandValue) {
           workingSheet = withManualBrandValue(sheet, null)
         }
-        let newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        const newMapping = cloneColumnMapping(workingSheet.columnMapping)
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
           if (
             newMapping[key] === index &&
@@ -651,10 +650,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           columnMapping: workingMapping,
         }
       })
-      if (
-        columnMapping.brand !== null &&
-        columnMapping.brand === index
-      ) {
+      if (columnMapping.brand !== null && columnMapping.brand === index) {
         setManualBrand("")
       }
     },
@@ -736,9 +732,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     )
     return {
       isValid:
-        missing.length === 0 &&
-        excelData.rows.length > 0 &&
-        headersAreValid,
+        missing.length === 0 && excelData.rows.length > 0 && headersAreValid,
       missing,
     }
   }, [
@@ -753,9 +747,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     () =>
       sheetConfigs.map((sheet, index) => {
         const mapping = sheet.columnMapping ?? createEmptyColumnMapping()
-        const missing = REQUIRED_COLUMNS.filter(
-          (col) => mapping[col] === null,
-        )
+        const missing = REQUIRED_COLUMNS.filter((col) => mapping[col] === null)
         const headersValid = sheet.excelData.headers.some(
           (header) => String(header).trim() !== "",
         )
@@ -771,13 +763,10 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [REQUIRED_COLUMNS, sheetConfigs],
   )
 
-  const activeSheetValidation =
-    sheetValidationResults[activeSheetIndex] ?? null
+  const activeSheetValidation = sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
-  const activeSheetStatusLabel = activeSheetIsReady
-    ? "Ready"
-    : "Needs mapping"
+  const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
   const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
   const activeSheetStatusTooltip = activeSheetIsReady
@@ -794,7 +783,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           const validation = sheetValidationResults[index]
           const isComplete = validation?.isValid
           const hasMissing = (validation?.missing ?? []).length > 0
-          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const icon = isComplete ? (
+            <CheckIcon boxSize={3} />
+          ) : (
+            <WarningIcon boxSize={3} />
+          )
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
             ? "Mapping ready"
@@ -807,7 +800,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                 <Button
                   size={size}
                   variant={isActive ? "solid" : "ghost"}
-                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
+                  colorScheme={
+                    isActive ? "brand" : isComplete ? "gray" : "yellow"
+                  }
                   rightIcon={icon}
                   onClick={() => handleActiveSheetChange(index)}
                   cursor="pointer"
@@ -859,14 +854,18 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       )
       return
     }
-    const invalidSheet = sheetValidationResults.find((result) => !result.isValid)
+    const invalidSheet = sheetValidationResults.find(
+      (result) => !result.isValid,
+    )
     if (invalidSheet) {
       const sheetName =
         sheetConfigs[invalidSheet.sheetIndex]?.name ||
         `Sheet ${invalidSheet.sheetIndex + 1}`
       showToast(
         "Validation Error",
-        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
+        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(
+          ", ",
+        )}`,
         "warning",
       )
       setActiveSheetIndex(invalidSheet.sheetIndex)
@@ -896,14 +895,13 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+            `Sheet "${
+              sheet.name || `Sheet ${index + 1}`
+            }" is missing a mapped style column.`,
           )
         }
 
-        const prefixRows = sheet.rawData.slice(
-          0,
-          sheet.headerIndex,
-        )
+        const prefixRows = sheet.rawData.slice(0, sheet.headerIndex)
         const aoa: CellValue[][] = [
           ...prefixRows,
           sheet.excelData.headers,
@@ -932,10 +930,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           "fileUploadImage",
           new File([blob], fileName, { type: blob.type }),
         )
-        formData.append(
-          "searchColImage",
-          indexToColumnLetter(mapping.style),
-        )
+        formData.append("searchColImage", indexToColumnLetter(mapping.style))
 
         if (sheet.manualBrandValue) {
           formData.append("brandColImage", "MANUAL")
@@ -970,13 +965,10 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             indexToColumnLetter(mapping.category),
           )
         }
-        formData.append(
-          "header_index",
-          String(sheet.headerIndex + 1),
-        )
+        formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
         formData.append("isIconDistro", String(isIconDistro))
-  formData.append("isAiMode", String(isAiMode))
+        formData.append("isAiMode", String(isAiMode))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
@@ -987,9 +979,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
-              errorText || response.statusText
-            }`,
+            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${
+              response.status
+            }): ${errorText || response.statusText}`,
           )
         }
       }
@@ -1012,9 +1004,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       setIsLoading(false)
     }
   }, [
-  isAiMode,
-  isEmailValid,
-  isIconDistro,
+    isAiMode,
+    isEmailValid,
+    isIconDistro,
     sendToEmail,
     sheetConfigs,
     sheetValidationResults,
@@ -1180,7 +1172,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                     <HStack justify="space-between" align="center">
                       <Text fontWeight="semibold">Sheets</Text>
                       <Text fontSize="xs" color="subtle">
-                        Viewing {sheetConfigs[activeSheetIndex]?.name ||
+                        Viewing{" "}
+                        {sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`}
                       </Text>
                     </HStack>
@@ -1672,8 +1665,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                 )}
                 {!isEmailValid && sendToEmail && (
                   <Text fontSize="sm" color="red.500" mt={1}>
-                    The email supplied the URL looks invalid. Update the
-                    iframe query parameter before submitting.
+                    The email supplied the URL looks invalid. Update the iframe
+                    query parameter before submitting.
                   </Text>
                 )}
               </FormControl>
@@ -1713,7 +1706,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                   isDisabled
                   onChange={(e) => setIsAiMode(e.target.checked)}
                 >
-                  AI Mode 
+                  AI Mode
                 </Checkbox>
                 <Text fontSize="sm" color="subtle" mt={2} pl={8}>
                   AI Mode is currently locked and will submit as disabled.

@@ -34,7 +34,7 @@ const getAuthToken = (): string | null => {
 async function fetchJobs(): Promise<JobSummary[]> {
   const token = getAuthToken()
   const response = await fetch(
-    `https://external.iconluxury.group/api/scraping-jobs?page=1&page_size=100`,
+    "https://external.iconluxury.group/api/scraping-jobs?page=1&page_size=100",
     {
       method: "GET",
       headers: {
@@ -76,7 +76,9 @@ function JobsDashboard() {
   }
 
   const totalJobs = jobs.length
-  const completedJobs = jobs.filter((job) => getStatus(job) === "Completed").length
+  const completedJobs = jobs.filter(
+    (job) => getStatus(job) === "Completed",
+  ).length
   const inProgressJobs = jobs.filter(
     (job) => getStatus(job) === "In Progress",
   ).length
