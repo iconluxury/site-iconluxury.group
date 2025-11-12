@@ -40,7 +40,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf } from "react-icons/fa"
+import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf, FaCamera } from "react-icons/fa"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
@@ -3039,12 +3039,36 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={FaEraser} boxSize={6} color="gray.400" />
                 <Text fontSize="xl" fontWeight="semibold">
-                  Background Remover (Nano Banana)
+                  Image Background Remover
                 </Text>
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Remove image backgrounds with Nano Banana.</Text>
+              <Text>Remove image backgrounds. (Nano Banana)</Text>
+            </CardBody>
+          </Card>
+
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={FaCamera} boxSize={6} color="gray.400" />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Generate Image 
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>
+              Fix bad product photos; convert lifestyle shots to
+                studio-style product images; transform mockups/CAD into
+                production-ready product photos.(Nano Banana)
+              </Text>
             </CardBody>
           </Card>
 

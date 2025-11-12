@@ -230,7 +230,7 @@ const SubmitCropForm: React.FC = () => {
             <Text fontSize="sm" color="subtle">This will submit your file for cropping.</Text>
             <Box borderWidth="1px" borderRadius="md" p={3} bg="white" borderColor="gray.200">
               <VStack spacing={1} align="start">
-                <Text><strong>Title:</strong> {watch("title") || "(none)"}</Text>
+                <Text><strong>Title:</strong> {watch("title") || "(none)"}</Text>f
                 <Text><strong>File:</strong> {fileName || "(none)"}</Text>
                 {recordCount !== null && (
                   <Text><strong>Rows:</strong> {recordCount}</Text>
