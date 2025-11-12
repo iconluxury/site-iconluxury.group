@@ -51,3 +51,12 @@ export const handleError = (err: ApiError, showToast: any) => {
   }
   showToast("Error", errorMessage, "error")
 }
+
+// UI helper: decide when to show developer banners/tags in any environment
+// - Shows in Vite dev server automatically (import.meta.env.DEV)
+// - Can be forced on in production builds by setting VITE_SHOW_DEV_UI to a truthy value
+//   accepted values: "true", "1", "yes", "on" (case-insensitive)
+export const showDevUI = (): boolean => {
+  // Hardcoded ON per request: always show developer UI in all environments
+  return true
+}

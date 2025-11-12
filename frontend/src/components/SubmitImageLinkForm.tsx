@@ -41,6 +41,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
+import { showDevUI } from "../utils"
 
 // Keep server URL consistent with other tools
 const SERVER_URL = "https://icon5-8005.iconluxury.today"
@@ -596,7 +597,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }
   }, [isEmailValid, sendToEmail, sheetConfigs, sheetValidationResults, showToast, uploadedFile])
 
-  const isDev = import.meta.env.DEV
+  const isDev = showDevUI()
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">

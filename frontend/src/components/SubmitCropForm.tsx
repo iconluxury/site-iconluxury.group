@@ -19,6 +19,7 @@ import * as XLSX from "xlsx";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import useCustomToast from "../hooks/useCustomToast";
+import { showDevUI } from "../utils";
 
 interface SubmitCropFormInputs {
   fileUploadCrop: FileList;
@@ -138,7 +139,7 @@ const SubmitCropForm: React.FC = () => {
     }
   };
 
-  const isDev = import.meta.env.DEV
+  const isDev = showDevUI()
   return (
     <Box p={4} bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius={isDev ? "md" : undefined}>
 

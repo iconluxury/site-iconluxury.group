@@ -46,6 +46,7 @@ import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
+import { showDevUI } from "../utils"
 
 // Shared Constants and Types
 type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
@@ -3012,7 +3013,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Reverse Image Search</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
@@ -3031,15 +3032,15 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card
             cursor="pointer"
             onClick={() => setSelectedType("imageLinks")}
-            bg={import.meta.env.DEV ? "red.50" : undefined}
-            borderWidth={import.meta.env.DEV ? "1px" : undefined}
-            borderColor={import.meta.env.DEV ? "red.200" : undefined}
+            bg={showDevUI() ? "red.50" : undefined}
+            borderWidth={showDevUI() ? "1px" : undefined}
+            borderColor={showDevUI() ? "red.200" : undefined}
           >
             <CardHeader>
               <HStack>
                 <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">Image URL downloader</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
@@ -3051,15 +3052,15 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card
             cursor="pointer"
             onClick={() => setSelectedType("crop")}
-            bg={import.meta.env.DEV ? "red.50" : undefined}
-            borderWidth={import.meta.env.DEV ? "1px" : undefined}
-            borderColor={import.meta.env.DEV ? "red.200" : undefined}
+            bg={showDevUI() ? "red.50" : undefined}
+            borderWidth={showDevUI() ? "1px" : undefined}
+            borderColor={showDevUI() ? "red.200" : undefined}
           >
             <CardHeader>
               <HStack>
                 <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">Image cropper</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
@@ -3079,7 +3080,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">PDF → Excel</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
@@ -3107,7 +3108,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Background remover</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
@@ -3128,7 +3129,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Image generator</Text>
-                {import.meta.env.DEV && (
+                {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
