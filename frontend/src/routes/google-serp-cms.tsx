@@ -661,6 +661,31 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [activeSheet, activeSheetIndex, columnMapping.brand, updateSheetConfig],
   )
 
+  // Image column mappers: allow mapping and clearing readImage/imageAdd explicitly
+  const handleImageColumnMap = useCallback(
+    (index: number, field: "readImage" | "imageAdd") => {
+      if (!activeSheet) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        const newMapping = cloneColumnMapping(sheet.columnMapping)
+        newMapping[field] = index
+        return { ...sheet, columnMapping: newMapping }
+      })
+    },
+    [activeSheet, activeSheetIndex, updateSheetConfig],
+  )
+
+  const handleClearImageMapping = useCallback(
+    (field: "readImage" | "imageAdd") => {
+      if (!activeSheet) return
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        const newMapping = cloneColumnMapping(sheet.columnMapping)
+        newMapping[field] = null
+        return { ...sheet, columnMapping: newMapping }
+      })
+    },
+    [activeSheet, activeSheetIndex, updateSheetConfig],
+  )
+
   const mappedDataColumns = useMemo(() => {
     const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
     return new Set(
@@ -1547,6 +1572,91 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                   </Box>
                 </HStack>
               ))}
+
+              {/* Image-specific columns */}
+              <Text fontWeight="bold" mt={4}>
+                Image Columns
+              </Text>
+              <HStack gap={2} align="center" p={2} borderRadius="md">
+                <Text w="180px" fontWeight="semibold">
+                  Image Link Column:
+                </Text>
+                <Tooltip label="Select the Excel column that contains image URLs (links)">
+                  <Select
+                    value={
+                      columnMapping.readImage !== null
+                        ? columnMapping.readImage!
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleImageColumnMap(Number(e.target.value), "readImage")
+                    }
+                    placeholder="Unmapped"
+                    aria-label="Map image link column"
+                    flex="1"
+                  >
+                    <option value="">Unmapped</option>
+                    {excelData.headers.map((header, index) => (
+                      <option key={index} value={index}>
+                        {header || `Column ${indexToColumnLetter(index)}`}
+                      </option>
+                    ))}
+                  </Select>
+                </Tooltip>
+                {columnMapping.readImage !== null && (
+                  <Tooltip label="Clear mapping">
+                    <IconButton
+                      aria-label={`Clear image link mapping`}
+                      icon={<CloseIcon />}
+                      size="sm"
+                      onClick={() => handleClearImageMapping("readImage")}
+                    />
+                  </Tooltip>
+                )}
+                <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                  {getColumnPreview(columnMapping.readImage, excelData.rows)}
+                </Box>
+              </HStack>
+              <HStack gap={2} align="center" p={2} borderRadius="md">
+                <Text w="180px" fontWeight="semibold">
+                  Image Anchor / Target Column:
+                </Text>
+                <Tooltip label="Select the Excel column indicating image anchor text or target">
+                  <Select
+                    value={
+                      columnMapping.imageAdd !== null
+                        ? columnMapping.imageAdd!
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleImageColumnMap(Number(e.target.value), "imageAdd")
+                    }
+                    placeholder="Unmapped"
+                    aria-label="Map image anchor/target column"
+                    flex="1"
+                  >
+                    <option value="">Unmapped</option>
+                    {excelData.headers.map((header, index) => (
+                      <option key={index} value={index}>
+                        {header || `Column ${indexToColumnLetter(index)}`}
+                      </option>
+                    ))}
+                  </Select>
+                </Tooltip>
+                {columnMapping.imageAdd !== null && (
+                  <Tooltip label="Clear mapping">
+                    <IconButton
+                      aria-label={`Clear image anchor/target mapping`}
+                      icon={<CloseIcon />}
+                      size="sm"
+                      onClick={() => handleClearImageMapping("imageAdd")}
+                    />
+                  </Tooltip>
+                )}
+                <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                  {getColumnPreview(columnMapping.imageAdd, excelData.rows)}
+                </Box>
+              </HStack>
             </VStack>
             <Box
               overflow="auto"
@@ -1730,15 +1840,16 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                 </Thead>
                 <Tbody>
                   {getColumnMappingEntries(columnMapping)
-                    .filter(
-                      ([col, index]) =>
-                        index !== null &&
-                        col !== "readImage" &&
-                        col !== "imageAdd",
-                    )
+                    .filter(([_, index]) => index !== null)
                     .map(([col, index]) => (
                       <Tr key={col}>
-                        <Td>{col}</Td>
+                        <Td>
+                          {col === "readImage"
+                            ? "Image Link"
+                            : col === "imageAdd"
+                              ? "Image Anchor / Target"
+                              : col}
+                        </Td>
                         <Td>
                           {excelData.headers[index!] ||
                             `Column ${indexToColumnLetter(index!)}`}
