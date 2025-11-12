@@ -149,7 +149,7 @@ const SubmitCropForm: React.FC = () => {
           <VStack align="start" spacing={0}>
             <AlertTitle>Developer Mode</AlertTitle>
             <AlertDescription>
-              Image cropper is fully functional; this banner persists in development to highlight it.
+             This banner persists in development to highlight it.
             </AlertDescription>
           </VStack>
         </Alert>
