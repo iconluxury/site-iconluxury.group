@@ -33,6 +33,10 @@ import {
   Wrap,
   WrapItem,
   useColorModeValue,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
@@ -592,6 +596,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }
   }, [isEmailValid, sendToEmail, sheetConfigs, sheetValidationResults, showToast, uploadedFile])
 
+  const isDev = import.meta.env.DEV
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -608,6 +613,18 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           >
             Back to tools
           </Button>
+        )}
+
+        {isDev && (
+          <Alert status="error" variant="subtle" borderRadius="md">
+            <AlertIcon />
+            <VStack align="start" spacing={0}>
+              <AlertTitle>Developer tool</AlertTitle>
+              <AlertDescription>
+                Image URL downloader is fully functional; this banner persists in development to highlight it.
+              </AlertDescription>
+            </VStack>
+          </Alert>
         )}
 
         {/* Stepper */}

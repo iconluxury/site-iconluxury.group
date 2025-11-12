@@ -10,6 +10,10 @@ import {
   Text,
   VStack,
   Tooltip,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react";
 import * as XLSX from "xlsx";
 import React, { useState } from "react";
@@ -134,8 +138,21 @@ const SubmitCropForm: React.FC = () => {
     }
   };
 
+  const isDev = import.meta.env.DEV
   return (
-    <Box p={4}>
+    <Box p={4} bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius={isDev ? "md" : undefined}>
+
+      {isDev && (
+        <Alert status="error" variant="subtle" borderRadius="md" mb={3}>
+          <AlertIcon />
+          <VStack align="start" spacing={0}>
+            <AlertTitle>Developer tool</AlertTitle>
+            <AlertDescription>
+              Image cropper is fully functional; this banner persists in development to highlight it.
+            </AlertDescription>
+          </VStack>
+        </Alert>
+      )}
 
       {/* Stepper - keep consistent with other tools */}
       <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center" mb={2}>

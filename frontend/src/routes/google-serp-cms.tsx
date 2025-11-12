@@ -6,6 +6,10 @@ import {
 } from "@chakra-ui/icons"
 import {
   Badge,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
   Box,
   Button,
   Card,
@@ -2905,6 +2909,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
 }
 
 const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+  const isDev = import.meta.env.DEV
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -2919,13 +2924,27 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             Back to tools
           </Button>
         )}
-        <SubmitImageLinkForm />
+        {isDev && (
+          <Alert status="error" variant="subtle" borderRadius="md">
+            <AlertIcon />
+            <VStack align="start" spacing={0}>
+              <AlertTitle>Developer tool</AlertTitle>
+              <AlertDescription>
+                Image URL downloader is fully functional; this banner persists in development to highlight it.
+              </AlertDescription>
+            </VStack>
+          </Alert>
+        )}
+        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
+          <SubmitImageLinkForm />
+        </Box>
       </VStack>
     </Container>
   )
 }
 
 const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+  const isDev = import.meta.env.DEV
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -2940,7 +2959,20 @@ const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             Back to tools
           </Button>
         )}
-        <SubmitCropForm />
+        {isDev && (
+          <Alert status="error" variant="subtle" borderRadius="md">
+            <AlertIcon />
+            <VStack align="start" spacing={0}>
+              <AlertTitle>Developer tool</AlertTitle>
+              <AlertDescription>
+                Image cropper is fully functional; this banner persists in development to highlight it.
+              </AlertDescription>
+            </VStack>
+          </Alert>
+        )}
+        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
+          <SubmitCropForm />
+        </Box>
       </VStack>
     </Container>
   )
@@ -3025,22 +3057,40 @@ const CMSGoogleSerpForm: React.FC = () => {
   {/* Transform Excel */}
   <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-          <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
+          <Card
+            cursor="pointer"
+            onClick={() => setSelectedType("imageLinks")}
+            bg={import.meta.env.DEV ? "red.50" : undefined}
+            borderWidth={import.meta.env.DEV ? "1px" : undefined}
+            borderColor={import.meta.env.DEV ? "red.200" : undefined}
+          >
             <CardHeader>
               <HStack>
                 <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">Image URL downloader</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
               <Text>Convert image links into downloadable assets.</Text>
             </CardBody>
           </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("crop")}>
+          <Card
+            cursor="pointer"
+            onClick={() => setSelectedType("crop")}
+            bg={import.meta.env.DEV ? "red.50" : undefined}
+            borderWidth={import.meta.env.DEV ? "1px" : undefined}
+            borderColor={import.meta.env.DEV ? "red.200" : undefined}
+          >
             <CardHeader>
               <HStack>
                 <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
                 <Text fontSize="xl" fontWeight="semibold">Image cropper</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
