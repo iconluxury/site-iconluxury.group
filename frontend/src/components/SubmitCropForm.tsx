@@ -221,9 +221,6 @@ const SubmitCropForm: React.FC = () => {
                 Back
               </Button>
               {/* Submit button is also available in the stepper header */}
-              <Button type="submit" colorScheme="brand" isLoading={isSubmitting} size="sm">
-                Submit
-              </Button>
             </HStack>
           </VStack>
         </form>
