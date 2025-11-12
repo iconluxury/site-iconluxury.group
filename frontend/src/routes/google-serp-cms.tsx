@@ -40,7 +40,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FaCrop, FaLink, FaWarehouse } from "react-icons/fa"
+import { FaCrop, FaLink, FaWarehouse, FaEraser, FaFilePdf } from "react-icons/fa"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
@@ -2998,7 +2998,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Internal product database</Text>
+              <Text>Internal product database (include images or MSRP)</Text>
             </CardBody>
           </Card>
           <Card cursor="pointer" onClick={() => setSelectedType("imageLinks")}>
@@ -3025,6 +3025,49 @@ const CMSGoogleSerpForm: React.FC = () => {
             </CardHeader>
             <CardBody>
               <Text>Submit crop jobs for uploaded spreadsheets.</Text>
+            </CardBody>
+          </Card>
+          {/* Disabled / Coming Soon Cards */}
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={FaEraser} boxSize={6} color="gray.400" />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Background Remover (Nano Banana)
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Remove image backgrounds with Nano Banana.</Text>
+            </CardBody>
+          </Card>
+
+          <Card
+            cursor="not-allowed"
+            aria-disabled
+            bg="gray.100"
+            borderColor="gray.200"
+            color="gray.500"
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={FaFilePdf} boxSize={6} color="gray.400" />
+                <Text fontSize="xl" fontWeight="semibold">
+                  PDF to Excel Parser
+                </Text>
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>
+                Convert PDFs (catalogs, invoices, spec sheets) into structured
+                Excel/CSV data.
+              </Text>
             </CardBody>
           </Card>
         </SimpleGrid>
