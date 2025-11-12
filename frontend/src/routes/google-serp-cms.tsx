@@ -3066,7 +3066,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Submit crop jobs from spreadsheets.</Text>
+              <Text>Submit spreadsheets to remove whitespace from Excel pictures.</Text>
             </CardBody>
           </Card>
           <Card
