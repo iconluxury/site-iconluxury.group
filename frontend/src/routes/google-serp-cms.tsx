@@ -3012,6 +3012,9 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Reverse Image Search</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3076,6 +3079,9 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">PDF → Excel</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3101,6 +3107,9 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Background remover</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3119,6 +3128,9 @@ const CMSGoogleSerpForm: React.FC = () => {
               <HStack>
                 <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
                 <Text fontSize="xl" fontWeight="semibold">Image generator</Text>
+                {import.meta.env.DEV && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
               </HStack>
             </CardHeader>
             <CardBody>
