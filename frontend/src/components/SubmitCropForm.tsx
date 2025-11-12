@@ -180,7 +180,7 @@ const SubmitCropForm: React.FC = () => {
           <VStack align="start" spacing={0}>
             <AlertTitle>Developer Mode</AlertTitle>
             <AlertDescription>
-             This banner persists in development to highlight it.
+             This banner persists during development
             </AlertDescription>
           </VStack>
         </Alert>
