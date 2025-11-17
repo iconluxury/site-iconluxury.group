@@ -623,7 +623,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               <VStack align="start" spacing={0}>
                 <AlertTitle>Developer Mode</AlertTitle>
                 <AlertDescription>
-                     This banner persists during development
+               Not for production use.
                 </AlertDescription>
               </VStack>
             </Alert>
