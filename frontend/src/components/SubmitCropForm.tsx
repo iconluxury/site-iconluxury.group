@@ -183,7 +183,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const isEmailValid = useMemo(() => {
-    if (!sendToEmail) return false
+    if (!sendToEmail) return true
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendToEmail)
   }, [sendToEmail])
   const showToast = useCustomToast()
@@ -209,7 +209,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     [sheetConfigs.length],
   )
 
-  const REQUIRED_FIELDS: (keyof ColumnMapping)[] = ["style", "image"]
+  const REQUIRED_FIELDS: (keyof ColumnMapping)[] = ["style"]
 
   const headersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
@@ -398,11 +398,17 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetValidation = sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
-  const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
+  const activeSheetStatusLabel = activeSheetIsReady
+    ? columnMapping.image === null
+      ? "Ready (embedded images)"
+      : "Ready"
+    : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
   const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
   const activeSheetStatusTooltip = activeSheetIsReady
-    ? "All required columns are mapped."
+    ? columnMapping.image === null
+      ? "Style column mapped. Image column optional; embedded images will be detected."
+      : "Style and image columns are mapped."
     : activeSheetMissingColumns.length > 0
       ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
       : "Map all required columns before submitting."
@@ -418,7 +424,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
-            ? "Mapping ready"
+            ? sheet.columnMapping.image === null
+              ? "Style mapped; embedded images will be auto-detected"
+              : "Style and image columns mapped"
             : hasMissing
               ? `Missing: ${(validation?.missing ?? []).join(", ")}`
               : "Map required columns"
@@ -478,18 +486,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setStep("map")
       return
     }
-    if (!sendToEmail) {
-      showToast(
-        "Recipient Email Required",
-        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
-        "warning",
-      )
-      return
-    }
-    if (!isEmailValid) {
+    if (sendToEmail && !isEmailValid) {
       showToast(
         "Invalid Email",
-        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
+        "The email supplied via URL parameters isn't valid. Update or remove the email before submitting.",
         "warning",
       )
       return
@@ -499,9 +499,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     try {
       for (const [index, sheet] of sheetConfigs.entries()) {
         const mapping = sheet.columnMapping
-        if (mapping.style === null || mapping.image === null) {
+        if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing required mappings.`,
+            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing the style column mapping.`,
           )
         }
 
@@ -532,9 +532,13 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         const formData = new FormData()
         formData.append("fileUploadCrop", new File([blob], fileName, { type: blob.type }))
         formData.append("searchColCrop", indexToColumnLetter(mapping.style))
-        formData.append("cropColumn", indexToColumnLetter(mapping.image))
+        if (typeof mapping.image === "number") {
+          formData.append("cropColumn", indexToColumnLetter(mapping.image))
+        }
         formData.append("header_index", String(sheet.headerIndex + 1))
-        formData.append("sendToEmail", sendToEmail)
+        if (sendToEmail) {
+          formData.append("sendToEmail", sendToEmail)
+        }
 
         const response = await fetch(`${SERVER_URL}/submitCrop`, {
           method: "POST",
@@ -653,7 +657,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     onClick={handleSubmit}
                     isLoading={isLoading}
                     size="sm"
-                    isDisabled={!validateForm.isValid || !sendToEmail || !isEmailValid}
+                    isDisabled={!validateForm.isValid || !isEmailValid}
                   >
                     Submit
                   </Button>
@@ -798,6 +802,15 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     </CardBody>
                   </Card>
                 )}
+                <Alert status="info" variant="subtle" borderRadius="md" alignItems="flex-start">
+                  <AlertIcon />
+                  <VStack align="start" spacing={0} fontSize="sm">
+                    <AlertTitle fontSize="sm">Mapping tips</AlertTitle>
+                    <AlertDescription fontSize="xs">
+                      Map the style column (required). Map the image column only if your sheet has one—embedded images without a column are detected automatically.
+                    </AlertDescription>
+                  </VStack>
+                </Alert>
 
                 {!validateForm.isValid && (
                   <Text color="red.500" fontSize="sm" fontWeight="medium">
