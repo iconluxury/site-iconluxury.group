@@ -927,23 +927,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           )
         }
 
-        const prefixRows = sheet.rawData.slice(
-          0,
-          sheet.headerIndex,
-        )
-        const aoa: CellValue[][] = [
-          ...prefixRows,
-          sheet.excelData.headers,
-          ...sheet.excelData.rows,
-        ]
-        const worksheet = XLSX.utils.aoa_to_sheet(aoa)
-        const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(
-          workbook,
-          worksheet,
-          sheet.name || `Sheet${index + 1}`,
-        )
-        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
         const baseName = uploadedFile?.name
           ? uploadedFile.name.replace(/\.xlsx?$/i, "")
           : "google-images"
@@ -951,14 +934,15 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        if (!uploadedFile) {
+          throw new Error("Original file missing. Please re-upload your workbook.")
+        }
+        const originalType =
+          uploadedFile.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        // Reuse the original workbook so formatting, formulas, and hidden data stay intact.
+        const renamedFile = new File([uploadedFile], fileName, { type: originalType })
         const formData = new FormData()
-        formData.append(
-          "fileUploadImage",
-          new File([blob], fileName, { type: blob.type }),
-        )
+        formData.append("fileUploadImage", renamedFile)
         formData.append(
           "searchColImage",
           indexToColumnLetter(mapping.style),
@@ -1002,9 +986,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           String(sheet.headerIndex + 1),
         )
         formData.append("sendToEmail", sendToEmail)
-        formData.append("isIconDistro", String(isIconDistro))
-  formData.append("isAiMode", String(isAiMode))
-        formData.append("skipDataWarehouse", String(skipDataWarehouse))
+        formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
+          formData.append("sheetIndex", String(index + 1))
+          formData.append("isIconDistro", String(isIconDistro))
+          formData.append("isAiMode", String(isAiMode))
+          formData.append("skipDataWarehouse", String(skipDataWarehouse))
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
