@@ -40,7 +40,7 @@ import {
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { LuSearch, LuDatabase, LuLink, LuCrop, LuEraser, LuFileText, LuWand2 } from "react-icons/lu"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
@@ -64,6 +64,7 @@ type ColumnMapping = Record<
 
 type SheetConfig = {
   name: string
+  originalIndex: number
   rawData: CellValue[][]
   headerIndex: number
   excelData: ExcelData
@@ -370,6 +371,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
+  const [originalWorkbook, setOriginalWorkbook] =
+    useState<XLSX.WorkBook | null>(null)
+  const originalFileBufferRef = useRef<ArrayBuffer | null>(null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
   const [activeMappingField, setActiveMappingField] =
     useState<ColumnType | null>(null)
@@ -456,6 +460,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         showToast("File Error", "No file selected", "error")
         setSheetConfigs([])
         setUploadedFile(null)
+        setOriginalWorkbook(null)
+        originalFileBufferRef.current = null
         return
       }
       if (
@@ -487,7 +493,12 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       setManualBrand("")
       try {
         const data = await selectedFile.arrayBuffer()
-        const workbook = XLSX.read(data, { type: "array" })
+        originalFileBufferRef.current = data
+        const workbook = XLSX.read(data, {
+          type: "array",
+          cellStyles: true,
+        })
+        setOriginalWorkbook(workbook)
         const newSheetConfigs: SheetConfig[] = []
         const headerWarningPattern = {
           style:
@@ -495,7 +506,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
         }
 
-        workbook.SheetNames.forEach((sheetName) => {
+        workbook.SheetNames.forEach((sheetName, sheetIndex) => {
           const worksheet = workbook.Sheets[sheetName]
           if (!worksheet) return
           const jsonData = XLSX.utils.sheet_to_json(worksheet, {
@@ -538,6 +549,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][]
           newSheetConfigs.push({
             name: sheetName,
+            originalIndex: sheetIndex,
             rawData: jsonData,
             headerIndex: detectedHeaderIndex,
             excelData: { headers, rows },
@@ -569,6 +581,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         )
         setSheetConfigs([])
         setUploadedFile(null)
+        setOriginalWorkbook(null)
+        originalFileBufferRef.current = null
         setStep("upload")
       } finally {
         setIsLoading(false)
@@ -962,6 +976,139 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     ],
   )
 
+  const prepareSheetUploadFile = useCallback(
+    (sheet: SheetConfig, index: number, fileName: string, isolate: boolean) => {
+      if (!uploadedFile) {
+        throw new Error(
+          "Original file missing. Please re-upload your workbook.",
+        )
+      }
+      const originalType =
+        uploadedFile.type ||
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+      if (!isolate) {
+        return new File([uploadedFile], fileName, {
+          type: originalType,
+          lastModified: uploadedFile.lastModified,
+        })
+      }
+
+      const buffer = originalFileBufferRef.current
+      if (buffer) {
+        try {
+          const workbook = XLSX.read(buffer.slice(0), {
+            type: "array",
+            cellStyles: true,
+          })
+          const candidates: string[] = []
+          if (sheet.name) candidates.push(sheet.name)
+          if (
+            typeof sheet.originalIndex === "number" &&
+            workbook.SheetNames[sheet.originalIndex]
+          ) {
+            candidates.push(workbook.SheetNames[sheet.originalIndex])
+          }
+          if (workbook.SheetNames[index]) {
+            candidates.push(workbook.SheetNames[index])
+          }
+          candidates.push(`Sheet ${index + 1}`)
+          const resolvedSheetName = candidates.find((candidate) =>
+            candidate ? Boolean(workbook.Sheets[candidate]) : false,
+          )
+
+          if (resolvedSheetName) {
+            const worksheet = workbook.Sheets[resolvedSheetName]
+            const originalSheetNames = workbook.SheetNames.slice()
+            const originalSheetIndex = originalSheetNames.indexOf(
+              resolvedSheetName,
+            )
+            workbook.SheetNames = [resolvedSheetName]
+            workbook.Sheets = { [resolvedSheetName]: worksheet }
+
+            if (workbook.Workbook) {
+              const workbookMeta = workbook.Workbook as Record<string, any>
+
+              if (Array.isArray(workbookMeta.Sheets)) {
+                workbookMeta.Sheets = workbookMeta.Sheets
+                  .filter(
+                    (sheetEntry: any) =>
+                      sheetEntry && sheetEntry.name === resolvedSheetName,
+                  )
+                  .map((sheetEntry: any) => ({
+                    ...sheetEntry,
+                    SheetId: 1,
+                    sheetId: 1,
+                  }))
+              }
+
+              if (
+                Array.isArray(workbookMeta.DefinedNames) &&
+                originalSheetIndex >= 0
+              ) {
+                const normalizedName = resolvedSheetName.replace(/'/g, "''")
+                workbookMeta.DefinedNames = workbookMeta.DefinedNames
+                  .filter((definedName: any) => {
+                    if (!definedName) return false
+                    if (typeof definedName.Sheet === "number") {
+                      return definedName.Sheet === originalSheetIndex
+                    }
+                    if (typeof definedName.Ref === "string") {
+                      const refLower = definedName.Ref.toLowerCase()
+                      return refLower.includes(
+                        `'${normalizedName.toLowerCase()}'!`,
+                      )
+                    }
+                    return false
+                  })
+                  .map((definedName: any) =>
+                    typeof definedName.Sheet === "number"
+                      ? { ...definedName, Sheet: 0 }
+                      : { ...definedName },
+                  )
+              }
+            }
+
+            const arrayBuffer = XLSX.write(workbook, {
+              bookType: "xlsx",
+              type: "array",
+              cellStyles: true,
+            })
+
+            return new File([arrayBuffer], fileName, {
+              type: originalType,
+              lastModified: uploadedFile.lastModified,
+            })
+          }
+        } catch (error) {
+          console.error("Workbook isolation error:", error)
+        }
+      }
+
+      const fallbackRows =
+        sheet.rawData.length > 0
+          ? sheet.rawData
+          : [sheet.excelData.headers, ...sheet.excelData.rows]
+      const fallbackSheet = XLSX.utils.aoa_to_sheet(fallbackRows)
+      const fallbackWorkbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(
+        fallbackWorkbook,
+        fallbackSheet,
+        sheet.name || `Sheet ${index + 1}`,
+      )
+      const fallbackArray = XLSX.write(fallbackWorkbook, {
+        bookType: "xlsx",
+        type: "array",
+        cellStyles: true,
+      })
+      return new File([fallbackArray], fileName, {
+        type: originalType,
+        lastModified: uploadedFile.lastModified,
+      })
+    },
+    [uploadedFile],
+  )
+
   const handleSubmit = useCallback(async () => {
     if (sheetConfigs.length === 0) {
       showToast(
@@ -1017,6 +1164,14 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
 
     setIsLoading(true)
     try {
+      if (!uploadedFile) {
+        throw new Error(
+          "Original file missing. Please re-upload your workbook.",
+        )
+      }
+      const workbookSheetCount =
+        originalWorkbook?.SheetNames?.length ?? sheetConfigs.length
+      const shouldIsolateSheets = workbookSheetCount > 1
       for (const { index, sheet } of sheetsToSubmit) {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
@@ -1032,15 +1187,14 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
-        if (!uploadedFile) {
-          throw new Error("Original file missing. Please re-upload your workbook.")
-        }
-        const originalType =
-          uploadedFile.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        // Reuse the original workbook so formatting, formulas, and hidden data stay intact.
-        const renamedFile = new File([uploadedFile], fileName, { type: originalType })
+        const sheetFile = prepareSheetUploadFile(
+          sheet,
+          index,
+          fileName,
+          shouldIsolateSheets,
+        )
         const formData = new FormData()
-        formData.append("fileUploadImage", renamedFile)
+        formData.append("fileUploadImage", sheetFile)
         formData.append(
           "searchColImage",
           indexToColumnLetter(mapping.style),
@@ -1123,9 +1277,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       setIsLoading(false)
     }
   }, [
-  isAiMode,
-  isEmailValid,
-  isIconDistro,
+    isAiMode,
+    isEmailValid,
+    isIconDistro,
+    originalWorkbook,
+    prepareSheetUploadFile,
     sendToEmail,
     sheetConfigs,
     sheetValidationResults,
