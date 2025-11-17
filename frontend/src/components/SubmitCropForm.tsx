@@ -15,6 +15,7 @@ import {
   AlertTitle,
   AlertDescription,
   Badge,
+  Spinner,
 } from "@chakra-ui/react"
 import * as XLSX from "xlsx"
 import React, { useEffect, useMemo, useState } from "react"
@@ -70,13 +71,11 @@ const SubmitCropForm: React.FC = () => {
   const showToast = useCustomToast()
   const [fileName, setFileName] = useState("")
   const [fileInputKey, setFileInputKey] = useState(0)
-  const [step, setStep] = useState<"upload" | "configure" | "submit">("upload")
-
-  // Form state
-  const [headerRow, setHeaderRow] = useState(5) // Most ICON files have headers on row 5
-  const [searchCol, setSearchCol] = useState("D") // Style # is almost always D
-  const [brandCol, setBrandCol] = useState("B") // Brand is usually B
-  const [imageCol, setImageCol] = useState("A") // Images are in A
+  const [step, setStep] = useState<"upload" | "map" | "submit">("upload")
+  const [headerRow, setHeaderRow] = useState(5)
+  const [searchCol, setSearchCol] = useState("")
+  const [brandCol, setBrandCol] = useState("")
+  const [cropCol, setCropCol] = useState("A") // DEFAULT TO A — 99.9% of cases
   const [manualBrand, setManualBrand] = useState("")
   const [isManualBrand, setIsManualBrand] = useState(false)
 
@@ -86,7 +85,7 @@ const SubmitCropForm: React.FC = () => {
     const file = e.target.files?.[0] ?? null
     if (file) {
       setFileName(file.name)
-      setStep("configure")
+      setStep("map")
     } else {
       setFileName("")
       setStep("upload")
@@ -104,7 +103,7 @@ const SubmitCropForm: React.FC = () => {
     formData.append("fileUploadCrop", file)
     formData.append("header_index", String(headerRow))
     formData.append("searchColCrop", searchCol)
-    formData.append("cropColumn", imageCol) // THIS IS THE CRITICAL LINE
+    formData.append("cropColumn", cropCol) // THIS IS THE KEY
 
     if (isManualBrand && manualBrand.trim()) {
       formData.append("brandColCrop", "MANUAL")
@@ -131,19 +130,18 @@ const SubmitCropForm: React.FC = () => {
 
       showToast(
         "Success!",
-        `Crop job submitted! File ID: ${result.file_id} — Images from column ${imageCol} will be extracted and cropped.`,
+        `Crop job submitted! File ID: ${result.file_id} — Images from column ${cropCol} will be cropped.`,
         "success",
       )
 
-      // Reset
       reset()
       setFileName("")
       setFileInputKey((k) => k + 1)
       setStep("upload")
       setHeaderRow(5)
-      setSearchCol("D")
-      setBrandCol("B")
-      setImageCol("A")
+      setSearchCol("")
+      setBrandCol("")
+      setCropCol("A")
       setManualBrand("")
       setIsManualBrand(false)
     } catch (err: any) {
@@ -159,7 +157,7 @@ const SubmitCropForm: React.FC = () => {
         <Alert status="warning" mb={4}>
           <AlertIcon />
           <AlertTitle>DEV MODE</AlertTitle>
-          <AlertDescription>Crop Tool — Images from Column A</AlertDescription>
+          <AlertDescription>Crop Tool — Now with Image Column Mapping</AlertDescription>
         </Alert>
       )}
 
@@ -168,16 +166,16 @@ const SubmitCropForm: React.FC = () => {
       </Text>
 
       {/* Step Indicator */}
-      <HStack justify="center" mb={6}>
-        {["Upload", "Configure", "Submit"].map((s, i) => (
-          <HStack key={s}>
-            <Badge colorScheme={step === s.toLowerCase() ? "brand" : "gray"}>
+      <HStack justify="center" mb={6} spacing={8}>
+        {["Upload", "Map Columns", "Submit"].map((s, i) => (
+          <HStack key={s} spacing={3}>
+            <Badge colorScheme={step === (i === 0 ? "upload" : i === 1 ? "map" : "submit") ? "brand" : "gray"}>
               {i + 1}
             </Badge>
-            <Text fontWeight={step === s.toLowerCase() ? "bold" : "normal"}>
+            <Text fontWeight={step === (i === 0 ? "upload" : i === 1 ? "map" : "submit") ? "bold" : "normal"}>
               {s}
             </Text>
-            {i < 2 && <Box w={8} h="1px" bg="gray.300" />}
+            {i < 2 && <Box w={12} h="1px" bg="gray.300" />}
           </HStack>
         ))}
       </HStack>
@@ -185,9 +183,9 @@ const SubmitCropForm: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Upload Step */}
         {step === "upload" && (
-          <VStack spacing={4}>
+          <VStack spacing={5}>
             <FormControl isRequired isInvalid={!!errors.fileUploadCrop}>
-              <FormLabel>Excel File</FormLabel>
+              <FormLabel>Upload Excel File</FormLabel>
               <Input
                 key={fileInputKey}
                 type="file"
@@ -205,9 +203,9 @@ const SubmitCropForm: React.FC = () => {
           </VStack>
         )}
 
-        {/* Configure Step */}
-        {step === "configure" && (
-          <VStack spacing={5} align="stretch">
+        {/* Map Step */}
+        {step === "map" && (
+          <VStack spacing={6} align="stretch">
             <FormControl>
               <FormLabel>Header Row</FormLabel>
               <Input
@@ -220,7 +218,7 @@ const SubmitCropForm: React.FC = () => {
 
             <FormControl isRequired>
               <FormLabel>Style # Column</FormLabel>
-              <Select value={searchCol} onChange={(e) => setSearchCol(e.target.value)}>
+              <Select value={searchCol} onChange={(e) => setSearchCol(e.target.value)} placeholder="Select column">
                 {["A","B","C","D","E","F","G","H","I","J"].map((c) => (
                   <option key={c} value={c}>
                     Column {c} {c === "D" ? "(Most Common)" : ""}
@@ -230,21 +228,26 @@ const SubmitCropForm: React.FC = () => {
             </FormControl>
 
             <FormControl>
-              <FormLabel>Brand Column</FormLabel>
-              <Select value={isManualBrand ? "MANUAL" : brandCol} onChange={(e) => {
-                const val = e.target.value
-                if (val === "MANUAL") {
-                  setIsManualBrand(true)
-                  setBrandCol("")
-                } else {
-                  setIsManualBrand(false)
-                  setBrandCol(val)
-                }
-              }}>
-                <option value="">None</option>
+              <FormLabel>Brand Column (Optional)</FormLabel>
+              <Select
+                value={isManualBrand ? "MANUAL" : brandCol}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === "MANUAL") {
+                    setIsManualBrand(true)
+                    setBrandCol("")
+                  } else {
+                    setIsManualBrand(false)
+                    setBrandCol(val)
+                  }
+                }}
+                placeholder="Select or use MANUAL"
+              >
                 <option value="MANUAL">MANUAL — Enter Below</option>
                 {["A","B","C","D","E"].map((c) => (
-                  <option key={c} value={c}>Column {c} {c === "B" ? "(Most Common)" : ""}</option>
+                  <option key={c} value={c}>
+                    Column {c} {c === "B" ? "(Most Common)" : ""}
+                  </option>
                 ))}
               </Select>
             </FormControl>
@@ -263,17 +266,17 @@ const SubmitCropForm: React.FC = () => {
             <FormControl isRequired>
               <FormLabel>
                 Image Column (where pictures are pasted)
-                <Badge ml={2} colorScheme="purple">MOST IMPORTANT</Badge>
+                <Badge ml={2} colorScheme="purple">CRITICAL</Badge>
               </FormLabel>
-              <Select value={imageCol} onChange={(e) => setImageCol(e.target.value)}>
+              <Select value={cropCol} onChange={(e) => setCropCol(e.target.value)}>
                 {["A","B","C","D","E","F","G","H","I","J"].map((c) => (
                   <option key={c} value={c}>
-                    Column {c} {c === "A" ? "(default)" : ""}
+                    Column {c} {c === "A" ? "(99% of files)" : ""}
                   </option>
                 ))}
               </Select>
               <Text fontSize="sm" color="gray.600" mt={2}>
-                This is the column with actual pictures pasted in Excel. Almost always Column A.
+                This is the column with actual images pasted in Excel. Almost always Column A.
               </Text>
             </FormControl>
 
@@ -281,7 +284,11 @@ const SubmitCropForm: React.FC = () => {
               <Button onClick={() => setStep("upload")} variant="outline">
                 Back
               </Button>
-              <Button colorScheme="brand" onClick={() => setStep("submit")}>
+              <Button
+                colorScheme="brand"
+                onClick={() => setStep("submit")}
+                isDisabled={!searchCol || !cropCol}
+              >
                 Next: Review & Submit
               </Button>
             </HStack>
@@ -292,8 +299,8 @@ const SubmitCropForm: React.FC = () => {
         {step === "submit" && (
           <VStack spacing={6} align="stretch">
             <Box p={4} bg="gray.50" borderRadius="md">
-              <Text fontWeight="bold" mb={3}>Submission Summary</Text>
-              <VStack align="start" spacing={1} fontSize="sm">
+              <Text fontWeight="bold" mb={3}>Job Summary</Text>
+              <VStack align="start" spacing={2} fontSize="sm">
                 <Text><strong>File:</strong> {fileName}</Text>
                 <Text><strong>Header Row:</strong> {headerRow}</Text>
                 <Text><strong>Style Column:</strong> {searchCol}</Text>
@@ -301,13 +308,13 @@ const SubmitCropForm: React.FC = () => {
                   <strong>Brand:</strong> {isManualBrand ? manualBrand || "MANUAL" : brandCol || "None"}
                 </Text>
                 <Text color="purple.600" fontWeight="bold">
-                  Images will be extracted from Column {imageCol}
+                  Images will be cropped from Column {cropCol}
                 </Text>
               </VStack>
             </Box>
 
             <HStack justify="space-between">
-              <Button onClick={() => setStep("configure")} variant="outline">
+              <Button onClick={() => setStep("map")} variant="outline">
                 Back
               </Button>
               <Button
@@ -315,9 +322,8 @@ const SubmitCropForm: React.FC = () => {
                 colorScheme="brand"
                 size="lg"
                 isLoading={isSubmitting}
-                leftIcon={<Box as="span">Crop</Box>}
               >
-                Submit Crop Job
+                {isSubmitting ? <Spinner size="sm" /> : "Submit Crop Job"}
               </Button>
             </HStack>
           </VStack>
