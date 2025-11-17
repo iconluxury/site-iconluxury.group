@@ -572,7 +572,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
 
-        const response = await fetch(`${SERVER_URL}/submitLink`, {
+        const response = await fetch(`${SERVER_URL}/submitImageLink`, {
           method: "POST",
           body: formData,
         })
