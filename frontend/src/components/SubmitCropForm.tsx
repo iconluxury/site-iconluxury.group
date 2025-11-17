@@ -1,3 +1,4 @@
+// components/SubmitCropForm.tsx
 import {
   Box,
   Button,
@@ -5,8 +6,7 @@ import {
   FormLabel,
   HStack,
   Input,
-  NumberInput,
-  NumberInputField,
+  Select,
   Text,
   VStack,
   Tooltip,
@@ -14,277 +14,317 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-} from "@chakra-ui/react";
-import * as XLSX from "xlsx";
-import React, { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import useCustomToast from "../hooks/useCustomToast";
-import { showDevUI } from "../utils";
+  Badge,
+} from "@chakra-ui/react"
+import * as XLSX from "xlsx"
+import React, { useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import useCustomToast from "../hooks/useCustomToast"
+import { showDevUI } from "../utils"
 
 interface SubmitCropFormInputs {
-  fileUploadCrop: FileList;
-  header_index: number;
-  searchColCrop: string;
+  fileUploadCrop: FileList
 }
 
 const API_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today";
-const ACCEPTED_FILE_TYPES = ".xlsx,.xls";
+  import.meta.env.VITE_BACKEND_URL ?? "https://icon5-8005.iconluxury.today"
+const ACCEPTED_FILE_TYPES = ".xlsx,.xls"
 
-const normalizeColumn = (value?: string | null) =>
-  value ? value.trim().toUpperCase() : "";
-
-// Email via iFrame support (consistent with other tools)
-const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"] as const;
+const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"] as const
 const getIframeEmailParameter = (): string | null => {
-  if (typeof window === "undefined") return null;
-  const params = new URLSearchParams(window.location.search);
-  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((k) => k.toLowerCase()));
+  if (typeof window === "undefined") return null
+  const params = new URLSearchParams(window.location.search)
+  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((k) => k.toLowerCase()))
   for (const [k, v] of params.entries()) {
     if (candidateKeys.has(k.toLowerCase())) {
-      const trimmed = v.trim();
-      if (trimmed) return trimmed;
+      const trimmed = v.trim()
+      if (trimmed) return trimmed
     }
   }
-  return null;
-};
+  return null
+}
+
 const useIframeEmail = (): string | null => {
-  const [email, setEmail] = useState<string | null>(() => getIframeEmailParameter());
+  const [email, setEmail] = useState<string | null>(() => getIframeEmailParameter())
   useEffect(() => {
     if (!email) {
-      const e = getIframeEmailParameter();
-      if (e) setEmail(e);
+      const e = getIframeEmailParameter()
+      if (e) setEmail(e)
     }
-  }, [email]);
-  return email;
-};
+  }, [email])
+  return email
+}
 
 const SubmitCropForm: React.FC = () => {
-  const iframeEmail = useIframeEmail();
-  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail]);
+  const iframeEmail = useIframeEmail()
+  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
+
   const {
     register,
     handleSubmit,
     reset,
     watch,
-    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<SubmitCropFormInputs>({
-    defaultValues: {
-      header_index: 1,
-      searchColCrop: "",
-    },
-  });
-  const showToast = useCustomToast();
-  const [fileName, setFileName] = useState("");
-  const [fileInputKey, setFileInputKey] = useState(0);
-  const [step, setStep] = useState<"upload" | "submit">("upload");
-  const fileList = watch("fileUploadCrop");
-  const [recordCount, setRecordCount] = useState<number | null>(null);
+  } = useForm<SubmitCropFormInputs>()
+
+  const showToast = useCustomToast()
+  const [fileName, setFileName] = useState("")
+  const [fileInputKey, setFileInputKey] = useState(0)
+  const [step, setStep] = useState<"upload" | "configure" | "submit">("upload")
+
+  // Form state
+  const [headerRow, setHeaderRow] = useState(5) // Most ICON files have headers on row 5
+  const [searchCol, setSearchCol] = useState("D") // Style # is almost always D
+  const [brandCol, setBrandCol] = useState("B") // Brand is usually B
+  const [imageCol, setImageCol] = useState("A") // Images are in A
+  const [manualBrand, setManualBrand] = useState("")
+  const [isManualBrand, setIsManualBrand] = useState(false)
+
+  const fileList = watch("fileUploadCrop")
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
+    const file = e.target.files?.[0] ?? null
     if (file) {
-      setFileName(file.name);
-      try {
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const sheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
-        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setRecordCount(Array.isArray(rows) ? rows.length : null);
-      } catch {
-        setRecordCount(null);
-      }
-      // Auto-advance to submit step after selecting a file for consistent UX
-      setStep("submit");
+      setFileName(file.name)
+      setStep("configure")
     } else {
-      setFileName("");
-      setRecordCount(null);
+      setFileName("")
+      setStep("upload")
     }
-  };
+  }
 
   const onSubmit = async (data: SubmitCropFormInputs) => {
+    if (!data.fileUploadCrop || data.fileUploadCrop.length === 0) {
+      showToast("Error", "Please upload a file", "error")
+      return
+    }
+
+    const file = data.fileUploadCrop[0]
+    const formData = new FormData()
+    formData.append("fileUploadCrop", file)
+    formData.append("header_index", String(headerRow))
+    formData.append("searchColCrop", searchCol)
+    formData.append("cropColumn", imageCol) // THIS IS THE CRITICAL LINE
+
+    if (isManualBrand && manualBrand.trim()) {
+      formData.append("brandColCrop", "MANUAL")
+      formData.append("manualBrand", manualBrand.trim())
+    } else if (brandCol) {
+      formData.append("brandColCrop", brandCol)
+    }
+
+    if (sendToEmail) {
+      formData.append("sendToEmail", sendToEmail)
+    }
+
     try {
-      if (!data.fileUploadCrop || data.fileUploadCrop.length === 0) {
-        showToast("Validation Error", "Please upload a file.", "error");
-        return;
-      }
-      const file = data.fileUploadCrop[0];
-      if (!(file instanceof File)) {
-        showToast("Validation Error", "Invalid file selected.", "error");
-        return;
-      }
-
-      // Derive a reasonable title from the file name (without extension)
-      const title = file.name.replace(/\.[^.]+$/i, "");
-
-      const formData = new FormData();
-      formData.append("fileUploadCrop", file);
-      // Provide a safe default header index for compatibility
-      formData.append("header_index", "1");
-  // Keep sending title for backend compatibility, though it's no longer shown in the UI
-  formData.append("title", title);
-      // Pass through user email if provided via iframe query params (backend expects sendToEmail)
-      if (sendToEmail) {
-        formData.append("sendToEmail", sendToEmail);
-      }
-
       const response = await fetch(`${API_BASE_URL}/submitCrop`, {
         method: "POST",
         body: formData,
-      });
+      })
 
-      let payload: any = null;
-      try {
-        payload = await response.clone().json();
-      } catch (error) {
-        payload = null;
-      }
+      const result = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        const errorMessage =
-          payload?.detail ||
-          payload?.message ||
-          (await response.text()) ||
-          "There was an error submitting the form.";
-        throw new Error(errorMessage);
+        throw new Error(result.detail || result.message || "Submission failed")
       }
 
       showToast(
-        "Success",
-        payload?.message ?? "Crop data submitted successfully.",
+        "Success!",
+        `Crop job submitted! File ID: ${result.file_id} — Images from column ${imageCol} will be extracted and cropped.`,
         "success",
-      );
-      reset({ header_index: 1, searchColCrop: "" });
-      setFileName("");
-      setFileInputKey((prev) => prev + 1);
-      setStep("upload");
-      setRecordCount(null);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "There was an error submitting the form.";
-      showToast("Error", message, "error");
+      )
+
+      // Reset
+      reset()
+      setFileName("")
+      setFileInputKey((k) => k + 1)
+      setStep("upload")
+      setHeaderRow(5)
+      setSearchCol("D")
+      setBrandCol("B")
+      setImageCol("A")
+      setManualBrand("")
+      setIsManualBrand(false)
+    } catch (err: any) {
+      showToast("Error", err.message || "Failed to submit", "error")
     }
-  };
+  }
 
   const isDev = showDevUI()
-  return (
-    <Box p={4} bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius={isDev ? "md" : undefined}>
 
+  return (
+    <Box p={6} bg={isDev ? "red.50" : "white"} borderRadius="lg" boxShadow="md">
       {isDev && (
-        <Alert status="error" variant="subtle" borderRadius="md" mb={3}>
+        <Alert status="warning" mb={4}>
           <AlertIcon />
-          <VStack align="start" spacing={0}>
-            <AlertTitle>Developer Mode</AlertTitle>
-            <AlertDescription>
-           Not for production use.
-            </AlertDescription>
-          </VStack>
+          <AlertTitle>DEV MODE</AlertTitle>
+          <AlertDescription>Crop Tool — Images from Column A</AlertDescription>
         </Alert>
       )}
 
-      {/* Stepper - keep consistent with other tools */}
-      <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center" mb={2}>
-        <HStack spacing={4}>
-          {(["Upload", "Submit"] as const).map((label, i) => (
-            <Text
-              key={label}
-              fontWeight={step === label.toLowerCase() ? "bold" : "normal"}
-              color={step === label.toLowerCase() ? "brand.600" : "subtle"}
-              cursor={i < ["upload", "submit"].indexOf(step) ? "pointer" : "default"}
-              onClick={() => {
-                if (i < ["upload", "submit"].indexOf(step)) setStep(label.toLowerCase() as typeof step)
-              }}
-            >
-              {i + 1}. {label}
-            </Text>
-          ))}
-        </HStack>
-        {step !== "upload" && (
-          <HStack>
-            <Button onClick={() => setStep("upload")} variant="outline" size="sm">
-              Back
-            </Button>
-            {step !== "submit" && (
-              <Button size="sm" onClick={() => setStep("submit")} isDisabled={!fileList || fileList.length === 0}>
-                Next: Submit
-              </Button>
-            )}
-            {step === "submit" && (
-              <Button type="submit" form="crop-submit-form" colorScheme="brand" size="sm" isLoading={isSubmitting}>
-                Submit
-              </Button>
-            )}
-          </HStack>
-        )}
-      </HStack>
-
-      {/* Tool title/name in between upload and step bar */}
-      <Text fontSize="lg" fontWeight="bold" mb={4}>
-        Crop Images
+      <Text fontSize="2xl" fontWeight="bold" mb={6} textAlign="center">
+        Crop Images — Remove Whitespace
       </Text>
 
-      {/* Upload */}
-      {step === "upload" && (
-        <VStack spacing={4} align="stretch">
-          <FormControl isRequired isInvalid={!!errors.fileUploadCrop}>
-            <FormLabel>Upload File</FormLabel>
-            {(() => {
-              const fileInputRegister = register("fileUploadCrop", {
-                required: "File is required",
-              });
-              return (
-                <Tooltip label="Upload an Excel file (.xlsx or .xls)">
-                  <Input
-                    key={fileInputKey}
-                    type="file"
-                    accept={ACCEPTED_FILE_TYPES}
-                    p={1}
-                    bg="white"
-                    borderColor="border"
-                    aria-label="Upload Excel file"
-                    {...fileInputRegister}
-                    onChange={(event) => {
-                      fileInputRegister.onChange(event);
-                      handleFileChange(event);
-                    }}
-                  />
-                </Tooltip>
-              );
-            })()}
-            {fileName && <Text mt={2}>Selected file: {fileName}</Text>}
-          </FormControl>
-        </VStack>
-      )}
+      {/* Step Indicator */}
+      <HStack justify="center" mb={6}>
+        {["Upload", "Configure", "Submit"].map((s, i) => (
+          <HStack key={s}>
+            <Badge colorScheme={step === s.toLowerCase() ? "brand" : "gray"}>
+              {i + 1}
+            </Badge>
+            <Text fontWeight={step === s.toLowerCase() ? "bold" : "normal"}>
+              {s}
+            </Text>
+            {i < 2 && <Box w={8} h="1px" bg="gray.300" />}
+          </HStack>
+        ))}
+      </HStack>
 
-      {/* Submit */}
-      {step === "submit" && (
-        <form id="crop-submit-form" onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={2} align="stretch">
-            <Text fontWeight="semibold">Ready to submit</Text>
-            <Text fontSize="sm" color="subtle">This will submit your file for cropping.</Text>
-            <Box borderWidth="1px" borderRadius="md" p={3} bg="white" borderColor="gray.200">
-              <VStack spacing={1} align="start">
-                <Text><strong>File:</strong> {fileName || "(none)"}</Text>
-                {recordCount !== null && (
-                  <Text><strong>Rows:</strong> {recordCount}</Text>
-                )}
-              </VStack>
-            </Box>
-            <HStack justify="space-between" mt={2}>
-              <Button variant="outline" onClick={() => setStep("upload")} size="sm">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* Upload Step */}
+        {step === "upload" && (
+          <VStack spacing={4}>
+            <FormControl isRequired isInvalid={!!errors.fileUploadCrop}>
+              <FormLabel>Excel File</FormLabel>
+              <Input
+                key={fileInputKey}
+                type="file"
+                accept={ACCEPTED_FILE_TYPES}
+                {...register("fileUploadCrop", { required: "File required" })}
+                onChange={handleFileChange}
+                p={2}
+              />
+            </FormControl>
+            {fileName && (
+              <Text color="green.600" fontWeight="medium">
+                Selected: {fileName}
+              </Text>
+            )}
+          </VStack>
+        )}
+
+        {/* Configure Step */}
+        {step === "configure" && (
+          <VStack spacing={5} align="stretch">
+            <FormControl>
+              <FormLabel>Header Row</FormLabel>
+              <Input
+                type="number"
+                value={headerRow}
+                onChange={(e) => setHeaderRow(Number(e.target.value))}
+                min={1}
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Style # Column</FormLabel>
+              <Select value={searchCol} onChange={(e) => setSearchCol(e.target.value)}>
+                {["A","B","C","D","E","F","G","H","I","J"].map((c) => (
+                  <option key={c} value={c}>
+                    Column {c} {c === "D" ? "(Most Common)" : ""}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Brand Column</FormLabel>
+              <Select value={isManualBrand ? "MANUAL" : brandCol} onChange={(e) => {
+                const val = e.target.value
+                if (val === "MANUAL") {
+                  setIsManualBrand(true)
+                  setBrandCol("")
+                } else {
+                  setIsManualBrand(false)
+                  setBrandCol(val)
+                }
+              }}>
+                <option value="">None</option>
+                <option value="MANUAL">MANUAL — Enter Below</option>
+                {["A","B","C","D","E"].map((c) => (
+                  <option key={c} value={c}>Column {c} {c === "B" ? "(Most Common)" : ""}</option>
+                ))}
+              </Select>
+            </FormControl>
+
+            {isManualBrand && (
+              <FormControl>
+                <FormLabel>Manual Brand Name</FormLabel>
+                <Input
+                  value={manualBrand}
+                  onChange={(e) => setManualBrand(e.target.value)}
+                  placeholder="e.g. ICON LUXURY"
+                />
+              </FormControl>
+            )}
+
+            <FormControl isRequired>
+              <FormLabel>
+                Image Column (where pictures are pasted)
+                <Badge ml={2} colorScheme="purple">MOST IMPORTANT</Badge>
+              </FormLabel>
+              <Select value={imageCol} onChange={(e) => setImageCol(e.target.value)}>
+                {["A","B","C","D","E","F","G","H","I","J"].map((c) => (
+                  <option key={c} value={c}>
+                    Column {c} {c === "A" ? "(default)" : ""}
+                  </option>
+                ))}
+              </Select>
+              <Text fontSize="sm" color="gray.600" mt={2}>
+                This is the column with actual pictures pasted in Excel. Almost always Column A.
+              </Text>
+            </FormControl>
+
+            <HStack justify="space-between">
+              <Button onClick={() => setStep("upload")} variant="outline">
                 Back
               </Button>
-              {/* Submit button is also available in the stepper header */}
+              <Button colorScheme="brand" onClick={() => setStep("submit")}>
+                Next: Review & Submit
+              </Button>
             </HStack>
           </VStack>
-        </form>
-      )}
-    </Box>
-  );
-};
+        )}
 
-export default SubmitCropForm;
+        {/* Submit Step */}
+        {step === "submit" && (
+          <VStack spacing={6} align="stretch">
+            <Box p={4} bg="gray.50" borderRadius="md">
+              <Text fontWeight="bold" mb={3}>Submission Summary</Text>
+              <VStack align="start" spacing={1} fontSize="sm">
+                <Text><strong>File:</strong> {fileName}</Text>
+                <Text><strong>Header Row:</strong> {headerRow}</Text>
+                <Text><strong>Style Column:</strong> {searchCol}</Text>
+                <Text>
+                  <strong>Brand:</strong> {isManualBrand ? manualBrand || "MANUAL" : brandCol || "None"}
+                </Text>
+                <Text color="purple.600" fontWeight="bold">
+                  Images will be extracted from Column {imageCol}
+                </Text>
+              </VStack>
+            </Box>
+
+            <HStack justify="space-between">
+              <Button onClick={() => setStep("configure")} variant="outline">
+                Back
+              </Button>
+              <Button
+                type="submit"
+                colorScheme="brand"
+                size="lg"
+                isLoading={isSubmitting}
+                leftIcon={<Box as="span">Crop</Box>}
+              >
+                Submit Crop Job
+              </Button>
+            </HStack>
+          </VStack>
+        )}
+      </form>
+    </Box>
+  )
+}
+
+export default SubmitCropForm
