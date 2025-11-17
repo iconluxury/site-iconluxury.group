@@ -398,6 +398,27 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   const sheetInactiveHover = useColorModeValue("gray.200", "gray.600")
   const sheetWarningHover = useColorModeValue("yellow.100", "yellow.400")
 
+  const sanitizeWorksheet = useCallback((worksheet: XLSX.WorkSheet) => {
+    const sanitized: XLSX.WorkSheet = { ...worksheet }
+
+    const sanitizeDimensionEntries = (entries: any[] | undefined) => {
+      if (!Array.isArray(entries)) return entries
+      return entries.map((entry) => {
+        if (!entry || typeof entry !== "object") return entry
+        const { level, outlineLevel, ...rest } = entry as Record<string, any>
+        return { ...rest }
+      })
+    }
+
+    const cols = sanitized["!cols"] as any[] | undefined
+    const rows = sanitized["!rows"] as any[] | undefined
+
+    if (cols) sanitized["!cols"] = sanitizeDimensionEntries(cols) as any
+    if (rows) sanitized["!rows"] = sanitizeDimensionEntries(rows) as any
+
+    return sanitized
+  }, [])
+
   const updateSheetConfig = useCallback(
     (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
       setSheetConfigs((prev) => {
@@ -1018,58 +1039,17 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
           )
 
           if (resolvedSheetName) {
-            const worksheet = workbook.Sheets[resolvedSheetName]
-            const originalSheetNames = workbook.SheetNames.slice()
-            const originalSheetIndex = originalSheetNames.indexOf(
+            const worksheet = sanitizeWorksheet(
+              workbook.Sheets[resolvedSheetName],
+            )
+            const trimmedWorkbook = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(
+              trimmedWorkbook,
+              worksheet,
               resolvedSheetName,
             )
-            workbook.SheetNames = [resolvedSheetName]
-            workbook.Sheets = { [resolvedSheetName]: worksheet }
 
-            if (workbook.Workbook) {
-              const workbookMeta = workbook.Workbook as Record<string, any>
-
-              if (Array.isArray(workbookMeta.Sheets)) {
-                workbookMeta.Sheets = workbookMeta.Sheets
-                  .filter(
-                    (sheetEntry: any) =>
-                      sheetEntry && sheetEntry.name === resolvedSheetName,
-                  )
-                  .map((sheetEntry: any) => ({
-                    ...sheetEntry,
-                    SheetId: 1,
-                    sheetId: 1,
-                  }))
-              }
-
-              if (
-                Array.isArray(workbookMeta.DefinedNames) &&
-                originalSheetIndex >= 0
-              ) {
-                const normalizedName = resolvedSheetName.replace(/'/g, "''")
-                workbookMeta.DefinedNames = workbookMeta.DefinedNames
-                  .filter((definedName: any) => {
-                    if (!definedName) return false
-                    if (typeof definedName.Sheet === "number") {
-                      return definedName.Sheet === originalSheetIndex
-                    }
-                    if (typeof definedName.Ref === "string") {
-                      const refLower = definedName.Ref.toLowerCase()
-                      return refLower.includes(
-                        `'${normalizedName.toLowerCase()}'!`,
-                      )
-                    }
-                    return false
-                  })
-                  .map((definedName: any) =>
-                    typeof definedName.Sheet === "number"
-                      ? { ...definedName, Sheet: 0 }
-                      : { ...definedName },
-                  )
-              }
-            }
-
-            const arrayBuffer = XLSX.write(workbook, {
+            const arrayBuffer = XLSX.write(trimmedWorkbook, {
               bookType: "xlsx",
               type: "array",
               cellStyles: true,
@@ -1106,7 +1086,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         lastModified: uploadedFile.lastModified,
       })
     },
-    [uploadedFile],
+    [sanitizeWorksheet, uploadedFile],
   )
 
   const handleSubmit = useCallback(async () => {
