@@ -474,6 +474,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       showToast("No Data", "Upload an Excel workbook before submitting.", "warning")
       return
     }
+    if (!uploadedFile) {
+      showToast("Missing File", "Original workbook is unavailable. Re-upload the Excel file.", "error")
+      return
+    }
     const invalidSheet = sheetValidationResults.find((r) => !r.isValid)
     if (invalidSheet) {
       const sheetName = sheetConfigs[invalidSheet.sheetIndex]?.name || `Sheet ${invalidSheet.sheetIndex + 1}`
@@ -505,20 +509,6 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           )
         }
 
-        const prefixRows = sheet.rawData.slice(0, sheet.headerIndex)
-        const aoa: CellValue[][] = [
-          ...prefixRows,
-          sheet.excelData.headers,
-          ...sheet.excelData.rows,
-        ]
-        const worksheet = XLSX.utils.aoa_to_sheet(aoa)
-        const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(
-          workbook,
-          worksheet,
-          sheet.name || `Sheet${index + 1}`,
-        )
-        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
         const baseName = uploadedFile?.name
           ? uploadedFile.name.replace(/\.xlsx?$/i, "")
           : "crop"
@@ -526,16 +516,21 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        const originalFile = uploadedFile
+          ? new File([uploadedFile], fileName, { type: uploadedFile.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+          : null
+        if (!originalFile) {
+          throw new Error("Original file missing. Please re-upload your workbook.")
+        }
         const formData = new FormData()
-        formData.append("fileUploadCrop", new File([blob], fileName, { type: blob.type }))
+        formData.append("fileUploadCrop", originalFile)
         formData.append("searchColCrop", indexToColumnLetter(mapping.style))
         if (typeof mapping.image === "number") {
           formData.append("cropColumn", indexToColumnLetter(mapping.image))
         }
         formData.append("header_index", String(sheet.headerIndex + 1))
+        formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
+        formData.append("sheetIndex", String(index + 1))
         if (sendToEmail) {
           formData.append("sendToEmail", sendToEmail)
         }
