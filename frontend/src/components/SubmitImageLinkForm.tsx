@@ -541,20 +541,6 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           )
         }
 
-        const prefixRows = sheet.rawData.slice(0, sheet.headerIndex)
-        const aoa: CellValue[][] = [
-          ...prefixRows,
-          sheet.excelData.headers,
-          ...sheet.excelData.rows,
-        ]
-        const worksheet = XLSX.utils.aoa_to_sheet(aoa)
-        const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(
-          workbook,
-          worksheet,
-          sheet.name || `Sheet${index + 1}`,
-        )
-        const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" })
         const baseName = uploadedFile?.name
           ? uploadedFile.name.replace(/\.xlsx?$/i, "")
           : "image-links"
@@ -562,15 +548,21 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           .replace(/\s+/g, "-")
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        if (!uploadedFile) {
+          throw new Error("Original file missing. Please re-upload your workbook.")
+        }
+        const originalType =
+          uploadedFile.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        // Preserve the original workbook so formatting and formulas stay intact.
+        const renamedFile = new File([uploadedFile], fileName, { type: originalType })
         const formData = new FormData()
-        formData.append("fileUploadLink", new File([blob], fileName, { type: blob.type }))
+        formData.append("fileUploadLink", renamedFile)
         formData.append("searchColLink", indexToColumnLetter(mapping.style))
         formData.append("linkColumn", indexToColumnLetter(mapping.link))
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
+        formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
+        formData.append("sheetIndex", String(index + 1))
 
         const response = await fetch(`${SERVER_URL}/submitImageLink`, {
           method: "POST",
