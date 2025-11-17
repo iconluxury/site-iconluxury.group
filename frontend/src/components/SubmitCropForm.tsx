@@ -665,7 +665,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           {step === "upload" && (
             <VStack spacing={4} align="stretch">
               <Text fontSize="lg" fontWeight="bold">
-                Crop Images — Remove Whitespace from Pasted Pictures
+                Crop Images
               </Text>
               <FormControl>
                 <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 50MB">
