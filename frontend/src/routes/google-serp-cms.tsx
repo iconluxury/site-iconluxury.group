@@ -69,6 +69,7 @@ type SheetConfig = {
   excelData: ExcelData
   columnMapping: ColumnMapping
   manualBrandValue: string | null
+  isSelected: boolean
 }
 type ToastFunction = (
   title: string,
@@ -406,6 +407,17 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [],
   )
 
+  const handleToggleSheetSelection = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= sheetConfigs.length) return
+      updateSheetConfig(index, (sheet) => ({
+        ...sheet,
+        isSelected: !sheet.isSelected,
+      }))
+    },
+    [sheetConfigs.length, updateSheetConfig],
+  )
+
   const handleActiveSheetChange = useCallback(
     (index: number) => {
       if (index < 0 || index >= sheetConfigs.length) return
@@ -425,6 +437,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     "msrp",
   ]
   const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
+
+  const selectedSheetCount = useMemo(
+    () => sheetConfigs.filter((sheet) => sheet.isSelected).length,
+    [sheetConfigs],
+  )
 
   const isEmailValid = useMemo(() => {
     const trimmed = sendToEmail
@@ -526,6 +543,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             excelData: { headers, rows },
             columnMapping: autoMapColumns(headers),
             manualBrandValue: null,
+            isSelected: true,
           })
         })
 
@@ -539,7 +557,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         if (newSheetConfigs.length > 1) {
           showToast(
             "Multiple Sheets Detected",
-            `Detected ${newSheetConfigs.length} sheets. Each will be processed as an individual job.`,
+            `Detected ${newSheetConfigs.length} sheets. Toggle the checkboxes to include only the sheets you need before submitting.`,
             "success",
           )
         }
@@ -758,6 +776,12 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         missing: REQUIRED_COLUMNS,
       }
     }
+    if (!activeSheet.isSelected) {
+      return {
+        isValid: true,
+        missing: [],
+      }
+    }
     const missing = REQUIRED_COLUMNS.filter(
       (col) => columnMapping[col] === null,
     )
@@ -798,68 +822,128 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [REQUIRED_COLUMNS, sheetConfigs],
   )
 
+  const hasInvalidSelectedSheet = useMemo(
+    () =>
+      sheetValidationResults.some((result) => {
+        const sheet = sheetConfigs[result.sheetIndex]
+        return sheet?.isSelected && !result.isValid
+      }),
+    [sheetConfigs, sheetValidationResults],
+  )
+
   const activeSheetValidation =
     sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
-  const activeSheetStatusLabel = activeSheetIsReady
-    ? "Ready"
-    : "Needs mapping"
-  const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
-  const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
-  const activeSheetStatusTooltip = activeSheetIsReady
-    ? "All required columns are mapped."
-    : activeSheetMissingColumns.length > 0
-      ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
-      : "Map all required columns before submitting."
+  const activeSheetIsSelected = activeSheet?.isSelected ?? false
+  const activeSheetStatusLabel = activeSheetIsSelected
+    ? activeSheetIsReady
+      ? "Ready"
+      : "Needs mapping"
+    : "Excluded"
+  const ActiveSheetStatusIcon = activeSheetIsSelected
+    ? activeSheetIsReady
+      ? CheckIcon
+      : WarningIcon
+    : CloseIcon
+  const activeSheetStatusColor = activeSheetIsSelected
+    ? activeSheetIsReady
+      ? "green.400"
+      : "yellow.400"
+    : "gray.400"
+  const activeSheetStatusTooltip = activeSheetIsSelected
+    ? activeSheetIsReady
+      ? "All required columns are mapped."
+      : activeSheetMissingColumns.length > 0
+        ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
+        : "Map all required columns before submitting."
+    : "Sheet will be skipped during submission."
 
   const renderSheetButtons = useCallback(
     (size: "xs" | "sm" | "md" = "sm") => (
       <Wrap spacing={2} shouldWrapChildren>
         {sheetConfigs.map((sheet, index) => {
           const isActive = index === activeSheetIndex
+          const isSelected = sheet.isSelected
           const validation = sheetValidationResults[index]
-          const isComplete = validation?.isValid
           const hasMissing = (validation?.missing ?? []).length > 0
-          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const isComplete = Boolean(validation?.isValid)
+          const showWarning = isSelected && hasMissing
+          const checkboxSize: "sm" | "md" = size === "md" ? "md" : "sm"
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
-          const tooltipLabel = isComplete
-            ? "Mapping ready"
-            : hasMissing
-              ? `Missing: ${(validation?.missing ?? []).join(", ")}`
-              : "Map required columns"
+          const tooltipParts: string[] = [
+            isSelected ? "Included in submission" : "Excluded from submission",
+          ]
+          if (isSelected) {
+            tooltipParts.push(
+              showWarning
+                ? `Missing required: ${(validation?.missing ?? []).join(", ")}`
+                : "Mapping ready",
+            )
+          } else if (hasMissing) {
+            tooltipParts.push(`Missing required: ${(validation?.missing ?? []).join(", ")}`)
+          }
+          const tooltipLabel = tooltipParts.join(" • ")
+          const statusIcon = !isSelected
+            ? <CloseIcon boxSize={3} />
+            : showWarning
+              ? <WarningIcon boxSize={3} />
+              : <CheckIcon boxSize={3} />
+          const resolvedBg = isActive
+            ? undefined
+            : !isSelected
+              ? sheetInactiveBg
+              : showWarning
+                ? sheetWarningHover
+                : sheetInactiveBg
+          const resolvedHoverBg = isActive
+            ? undefined
+            : !isSelected
+              ? sheetInactiveHover
+              : showWarning
+                ? sheetWarningHover
+                : sheetInactiveHover
           return (
             <WrapItem key={sheet.name || index}>
               <Tooltip label={tooltipLabel} placement="top" hasArrow>
-                <Button
-                  size={size}
-                  variant={isActive ? "solid" : "ghost"}
-                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
-                  rightIcon={icon}
-                  onClick={() => handleActiveSheetChange(index)}
-                  cursor="pointer"
-                  bg={
-                    isActive
-                      ? undefined
-                      : isComplete
-                        ? sheetInactiveBg
-                        : sheetWarningHover
-                  }
-                  _hover={{
-                    bg: isActive
-                      ? undefined
-                      : isComplete
-                        ? sheetInactiveHover
-                        : sheetWarningHover,
-                  }}
-                  transition="all 0.2s ease"
-                  fontWeight={isActive ? "bold" : "semibold"}
-                  borderWidth={isActive ? "1px" : "0px"}
-                  borderColor={isActive ? "brand.500" : "transparent"}
-                  aria-pressed={isActive}
-                >
-                  {sheetLabel}
-                </Button>
+                <HStack spacing={1} align="center">
+                  <Checkbox
+                    size={checkboxSize}
+                    colorScheme="brand"
+                    isChecked={isSelected}
+                    onChange={(event) => {
+                      event.stopPropagation()
+                      handleToggleSheetSelection(index)
+                    }}
+                    aria-label={`${isSelected ? "Exclude" : "Include"} ${sheetLabel}`}
+                  />
+                  <Button
+                    size={size}
+                    variant={isActive ? "solid" : isSelected ? "ghost" : "outline"}
+                    colorScheme={
+                      isActive
+                        ? "brand"
+                        : !isSelected
+                          ? "gray"
+                          : showWarning
+                            ? "yellow"
+                            : "green"
+                    }
+                    rightIcon={statusIcon}
+                    onClick={() => handleActiveSheetChange(index)}
+                    cursor="pointer"
+                    bg={resolvedBg}
+                    _hover={{ bg: resolvedHoverBg }}
+                    transition="all 0.2s ease"
+                    fontWeight={isActive ? "bold" : "semibold"}
+                    borderWidth={isActive ? "1px" : "0px"}
+                    borderColor={isActive ? "brand.500" : "transparent"}
+                    opacity={isSelected ? 1 : 0.7}
+                    aria-pressed={isActive}
+                  >
+                    {sheetLabel}
+                  </Button>
+                </HStack>
               </Tooltip>
             </WrapItem>
           )
@@ -869,6 +953,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [
       activeSheetIndex,
       handleActiveSheetChange,
+      handleToggleSheetSelection,
       sheetConfigs,
       sheetInactiveBg,
       sheetInactiveHover,
@@ -886,7 +971,20 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       )
       return
     }
-    const invalidSheet = sheetValidationResults.find((result) => !result.isValid)
+    const sheetsToSubmit = sheetConfigs
+      .map((sheet, index) => ({ sheet, index }))
+      .filter(({ sheet }) => sheet.isSelected)
+    if (sheetsToSubmit.length === 0) {
+      showToast(
+        "No Sheets Selected",
+        "Select at least one sheet before submitting.",
+        "warning",
+      )
+      return
+    }
+    const invalidSheet = sheetValidationResults
+      .filter((result) => sheetConfigs[result.sheetIndex]?.isSelected)
+      .find((result) => !result.isValid)
     if (invalidSheet) {
       const sheetName =
         sheetConfigs[invalidSheet.sheetIndex]?.name ||
@@ -919,7 +1017,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
 
     setIsLoading(true)
     try {
-      for (const [index, sheet] of sheetConfigs.entries()) {
+      for (const { index, sheet } of sheetsToSubmit) {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
@@ -1009,7 +1107,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
 
       showToast(
         "Success",
-        `${sheetConfigs.length} job(s) submitted successfully`,
+        `${sheetsToSubmit.length} job(s) submitted successfully`,
         "success",
       )
       setTimeout(() => window.location.reload(), 1000)
@@ -1147,7 +1245,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                   isLoading={isLoading}
                   size="sm"
                   isDisabled={
-                    !validateForm.isValid || !sendToEmail || !isEmailValid
+                    !validateForm.isValid ||
+                    !sendToEmail ||
+                    !isEmailValid ||
+                    selectedSheetCount === 0 ||
+                    hasInvalidSelectedSheet
                   }
                 >
                   Submit
@@ -1192,10 +1294,15 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                   <VStack align="stretch" spacing={2}>
                     <HStack justify="space-between" align="center">
                       <Text fontWeight="semibold">Sheets</Text>
-                      <Text fontSize="xs" color="subtle">
-                        Viewing {sheetConfigs[activeSheetIndex]?.name ||
-                          `Sheet ${activeSheetIndex + 1}`}
-                      </Text>
+                      <HStack spacing={2} align="center">
+                        <Badge colorScheme="brand" variant="subtle">
+                          {selectedSheetCount} selected
+                        </Badge>
+                        <Text fontSize="xs" color="subtle">
+                          Viewing {sheetConfigs[activeSheetIndex]?.name ||
+                            `Sheet ${activeSheetIndex + 1}`}
+                        </Text>
+                      </HStack>
                     </HStack>
                     {renderSheetButtons("xs")}
                     <Tooltip
@@ -1219,6 +1326,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                     </Tooltip>
                     <Text fontSize="xs" color="subtle">
                       Select a sheet to preview its header row and sample data.
+                    </Text>
+                    <Text fontSize="xs" color="subtle">
+                      Use the checkbox to include or exclude sheets from submission.
                     </Text>
                   </VStack>
                 </CardBody>
@@ -1326,6 +1436,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                             Pick a sheet to adjust its column mapping.
                           </Text>
                         </Box>
+                        <Badge colorScheme="brand" variant="subtle">
+                          {selectedSheetCount} selected
+                        </Badge>
                       </Flex>
                       {renderSheetButtons("sm")}
                       <Tooltip
@@ -1352,6 +1465,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                           sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`
                         }`}
+                      </Text>
+                      <Text fontSize="xs" color="subtle">
+                        Toggle a checkbox to include or exclude a sheet from the submission.
                       </Text>
                     </VStack>
                   </CardBody>
@@ -1756,6 +1872,29 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         {step === "submit" && (
           <VStack spacing={4} align="stretch">
             <VStack align="start" spacing={4}>
+              {hasMultipleSheets && (
+                <Box>
+                  <Text fontWeight="semibold">
+                    Sheets to submit ({selectedSheetCount}/{sheetConfigs.length})
+                  </Text>
+                  {selectedSheetCount > 0 ? (
+                    <UnorderedList mt={1} pl={4} styleType="disc">
+                      {sheetConfigs
+                        .map((sheet, index) => ({ sheet, index }))
+                        .filter(({ sheet }) => sheet.isSelected)
+                        .map(({ sheet, index }) => (
+                          <ListItem key={sheet.name || index}>
+                            {sheet.name || `Sheet ${index + 1}`}
+                          </ListItem>
+                        ))}
+                    </UnorderedList>
+                  ) : (
+                    <Text fontSize="sm" color="red.500" mt={1}>
+                      Select at least one sheet before submitting.
+                    </Text>
+                  )}
+                </Box>
+              )}
               <Text>Rows: {excelData.rows.length}</Text>
               <FormControl isRequired>
                 <FormLabel>User:</FormLabel>
