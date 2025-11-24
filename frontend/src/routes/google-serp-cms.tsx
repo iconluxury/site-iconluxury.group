@@ -41,7 +41,19 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { LuSearch, LuDatabase, LuLink, LuCrop, LuEraser, LuFileText, LuWand2 } from "react-icons/lu"
+import type { IconType } from "react-icons"
+import {
+  LuSearch,
+  LuDatabase,
+  LuLink,
+  LuCrop,
+  LuEraser,
+  LuFileText,
+  LuWand2,
+  LuImage,
+  LuDollarSign,
+  LuLayers,
+} from "react-icons/lu"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
@@ -80,6 +92,59 @@ type ToastFunction = (
 
 type FormWithBackProps = {
   onBack?: () => void
+  backLabel?: string
+}
+
+type DataWarehouseMode = "imagesAndMsrp" | "imagesOnly" | "msrpOnly"
+
+type DataWarehouseModeConfig = {
+  label: string
+  description: string
+  requiredColumns: ColumnType[]
+  optionalColumns: ColumnType[]
+  requireImageColumn: boolean
+  allowImageColumnMapping: boolean
+  icon: IconType
+}
+
+const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeConfig> = {
+  imagesAndMsrp: {
+    label: "Images + MSRP",
+    description: "Pull images and price data in one pass.",
+    requiredColumns: ["style", "msrp"],
+    optionalColumns: ["brand"],
+    requireImageColumn: false,
+    allowImageColumnMapping: true,
+    icon: LuLayers,
+  },
+  imagesOnly: {
+    label: "Images only",
+    description: "Grab product imagery without pricing fields.",
+    requiredColumns: ["style"],
+    optionalColumns: ["brand", "msrp"],
+    requireImageColumn: true,
+    allowImageColumnMapping: true,
+    icon: LuImage,
+  },
+  msrpOnly: {
+    label: "MSRP only",
+    description: "Validate MSRP data without touching images.",
+    requiredColumns: ["style", "msrp"],
+    optionalColumns: ["brand"],
+    requireImageColumn: false,
+    allowImageColumnMapping: false,
+    icon: LuDollarSign,
+  },
+}
+
+const formatMappingFieldLabel = (field: ColumnType | "imageColumn") => {
+  if (field === "imageColumn") return "image column"
+  if (field === "msrp") return "MSRP"
+  if (field === "style") return "style"
+  if (field === "brand") return "brand"
+  if (field === "category") return "category"
+  if (field === "colorName") return "color"
+  return field
 }
 
 const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style"]
@@ -92,13 +157,6 @@ const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
 const GOOGLE_IMAGES_ALL_COLUMNS: ColumnType[] = [
   ...GOOGLE_IMAGES_REQUIRED_COLUMNS,
   ...GOOGLE_IMAGES_OPTIONAL_COLUMNS,
-]
-
-const DATA_WAREHOUSE_REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
-const DATA_WAREHOUSE_OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
-const DATA_WAREHOUSE_ALL_COLUMNS: ColumnType[] = [
-  ...DATA_WAREHOUSE_REQUIRED_COLUMNS,
-  ...DATA_WAREHOUSE_OPTIONAL_COLUMNS,
 ]
 
 const MANUAL_BRAND_HEADER = "BRAND (Manual)"
@@ -364,7 +422,7 @@ const useIframeEmail = (): string | null => {
 }
 
 // Google Images Form Component
-const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -402,6 +460,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     const sanitized: XLSX.WorkSheet = { ...worksheet }
 
     const sanitizeDimensionEntries = (entries: any[] | undefined) => {
+      
       if (!Array.isArray(entries)) return entries
       return entries.map((entry) => {
         if (!entry || typeof entry !== "object") return entry
@@ -758,7 +817,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
-
   const selectedColumnIndex =
     activeMappingField !== null ? columnMapping[activeMappingField] : null
   const headersAreValid = useMemo(
@@ -1284,7 +1342,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
               onBack()
             }}
           >
-            Back to tools
+            {backLabel ?? "Back to tools"}
           </Button>
         )}
         <HStack
@@ -1611,7 +1669,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
               )}
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
-                  Missing required columns: {validateForm.missing.join(", ")}.
+                  Missing required columns: {validateForm.missing
+                    .map((field) => formatMappingFieldLabel(field))
+                    .join(", ")}.
                   Please map all required columns.
                 </Text>
               )}
@@ -2140,7 +2200,26 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   )
 }
 // Data Warehouse Form Component
-const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+type DataWarehouseFormProps = FormWithBackProps & {
+  mode: DataWarehouseMode
+}
+
+type DataWarehouseMappingField = ColumnType | "imageColumn"
+
+const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
+  onBack,
+  backLabel,
+  mode,
+}) => {
+  const modeConfig = DATA_WAREHOUSE_MODE_CONFIG[mode]
+  const REQUIRED_COLUMNS = modeConfig.requiredColumns
+  const OPTIONAL_COLUMNS = modeConfig.optionalColumns
+  const ALL_COLUMNS = useMemo<ColumnType[]>(
+    () => [...modeConfig.requiredColumns, ...modeConfig.optionalColumns],
+    [mode],
+  )
+  const allowImageColumnMapping = modeConfig.allowImageColumnMapping
+  const requireImageColumn = modeConfig.requireImageColumn
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -2162,7 +2241,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     imageAdd: null,
   })
   const [activeMappingField, setActiveMappingField] =
-    useState<ColumnType | null>(null)
+    useState<DataWarehouseMappingField | null>(null)
   const [manualBrand, setManualBrand] = useState("")
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
   const [isNewDistro, setIsNewDistro] = useState(false)
@@ -2178,10 +2257,6 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     if (!emailRecipient) return false
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient)
   }, [emailRecipient])
-
-  const REQUIRED_COLUMNS: ColumnType[] = ["style", "msrp"]
-  const OPTIONAL_COLUMNS: ColumnType[] = ["brand"]
-  const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
 
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2297,37 +2372,58 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     [rawData],
   )
 
-  const handleColumnMap = useCallback((index: number, field: string) => {
-    if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
-    setColumnMapping((prev) => {
-      const newMapping = { ...prev }
-      ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-        if (
-          newMapping[key] === index &&
-          key !== "readImage" &&
-          key !== "imageAdd"
-        ) {
-          newMapping[key] = null
+  const handleDataColumnMap = useCallback(
+    (index: number, field: ColumnType) => {
+      if (field && !ALL_COLUMNS.includes(field)) return
+      setColumnMapping((prev) => {
+        const newMapping = { ...prev }
+        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach(
+          (key) => {
+            if (
+              newMapping[key] === index &&
+              key !== "readImage" &&
+              key !== "imageAdd"
+            ) {
+              newMapping[key] = null
+              if (key === "brand") {
+                setManualBrand("")
+                setIsManualBrandApplied(false)
+              }
+            }
+          },
+        )
+        if (field && ALL_COLUMNS.includes(field)) {
+          newMapping[field as keyof ColumnMapping] = index
+          if (field === "brand") {
+            setManualBrand("")
+            setIsManualBrandApplied(false)
+          }
         }
+        return newMapping
       })
-      if (field && ALL_COLUMNS.includes(field as ColumnType)) {
-        newMapping[field as keyof ColumnMapping] = index
-        if (field === "brand") {
-          setManualBrand("")
-          setIsManualBrandApplied(false)
-        }
-      }
-      return newMapping
-    })
+    },
+    [ALL_COLUMNS],
+  )
+
+  const handleImageColumnMap = useCallback((index: number | null) => {
+    setColumnMapping((prev) => ({
+      ...prev,
+      readImage: index,
+      imageAdd: index,
+    }))
   }, [])
 
   const handleColumnMapFromGrid = useCallback(
     (index: number) => {
       if (activeMappingField === null) return
-      handleColumnMap(index, activeMappingField)
+      if (activeMappingField === "imageColumn") {
+        handleImageColumnMap(index)
+      } else {
+        handleDataColumnMap(index, activeMappingField)
+      }
       setActiveMappingField(null)
     },
-    [activeMappingField, handleColumnMap],
+    [activeMappingField, handleDataColumnMap, handleImageColumnMap],
   )
 
   const handleClearMapping = useCallback((index: number) => {
@@ -2350,6 +2446,10 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     })
   }, [])
 
+  const handleClearImageMapping = useCallback(() => {
+    handleImageColumnMap(null)
+  }, [handleImageColumnMap])
+
   const mappedDataColumns = useMemo(() => {
     const keys: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
     return new Set(
@@ -2367,9 +2467,15 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
+  const imageColumnIndex = columnMapping.readImage ?? columnMapping.imageAdd
 
-  const selectedColumnIndex =
-    activeMappingField !== null ? columnMapping[activeMappingField] : null
+  const selectedColumnIndex = useMemo(() => {
+    if (!activeMappingField) return null
+    if (activeMappingField === "imageColumn") {
+      return imageColumnIndex
+    }
+    return columnMapping[activeMappingField]
+  }, [activeMappingField, columnMapping, imageColumnIndex])
 
   const applyManualBrand = useCallback(() => {
     if (!manualBrand.trim()) {
@@ -2414,24 +2520,40 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   }, [showToast])
 
   const validateForm = useMemo(() => {
-    const missing = REQUIRED_COLUMNS.filter(
+    const missing: (ColumnType | "imageColumn")[] = REQUIRED_COLUMNS.filter(
       (col) => columnMapping[col] === null,
     )
+    if (requireImageColumn && imageColumnIndex === null) {
+      missing.push("imageColumn")
+    }
+    const isValid =
+      missing.length === 0 &&
+      Boolean(file) &&
+      excelData.rows.length > 0 &&
+      dataHeadersAreValid
+
     return {
-      isValid:
-        missing.length === 0 &&
-        file &&
-        excelData.rows.length > 0 &&
-        dataHeadersAreValid,
+      isValid,
       missing,
     }
-  }, [columnMapping, file, excelData.rows.length, dataHeadersAreValid])
+  }, [
+    REQUIRED_COLUMNS,
+    columnMapping,
+    dataHeadersAreValid,
+    excelData.rows.length,
+    file,
+    imageColumnIndex,
+    mode,
+    requireImageColumn,
+  ])
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm.isValid) {
       showToast(
         "Validation Error",
-        `Missing required columns: ${validateForm.missing.join(", ")}`,
+        `Missing required columns: ${validateForm.missing
+          .map((field) => formatMappingFieldLabel(field))
+          .join(", ")}`,
         "warning",
       )
       return
@@ -2465,8 +2587,22 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     const formData = new FormData()
 
     formData.append("fileUploadImage", file!)
-    formData.append("searchColImage", indexToColumnLetter(columnMapping.style!))
-    formData.append("msrpColImage", indexToColumnLetter(columnMapping.msrp!))
+    if (columnMapping.style !== null) {
+      formData.append(
+        "searchColImage",
+        indexToColumnLetter(columnMapping.style),
+      )
+    } else {
+      formData.append("searchColImage", "")
+    }
+    if (columnMapping.msrp !== null) {
+      formData.append(
+        "msrpColImage",
+        indexToColumnLetter(columnMapping.msrp),
+      )
+    } else {
+      formData.append("msrpColImage", "")
+    }
 
     if (isManualBrandApplied) {
       formData.append("brandColImage", "MANUAL")
@@ -2477,20 +2613,19 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
       formData.append("brandColImage", indexToColumnLetter(columnMapping.brand))
     }
 
-    const fallbackImageColumnIndex = determineFallbackImageColumnIndex(
-      excelData.headers,
-      excelData.rows,
-    )
-    const imageColumnIndex =
-      columnMapping.readImage ??
-      columnMapping.imageAdd ??
-      fallbackImageColumnIndex
+    const fallbackImageColumnIndex = allowImageColumnMapping
+      ? determineFallbackImageColumnIndex(excelData.headers, excelData.rows)
+      : null
+    const imageColumnIndexForSubmit = allowImageColumnMapping
+      ? imageColumnIndex ?? fallbackImageColumnIndex
+      : null
 
-    if (imageColumnIndex !== null) {
-      formData.append("imageColumnImage", indexToColumnLetter(imageColumnIndex))
-    } else {
-      formData.append("imageColumnImage", "")
-    }
+    formData.append(
+      "imageColumnImage",
+      imageColumnIndexForSubmit !== null
+        ? indexToColumnLetter(imageColumnIndexForSubmit)
+        : "",
+    )
     if (columnMapping.colorName !== null) {
       formData.append(
         "ColorColImage",
@@ -2507,6 +2642,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     formData.append("sendToEmail", emailRecipient)
     formData.append("isNewDistro", String(isNewDistro))
     formData.append("currency", currency)
+    formData.append("dataWarehouseMode", mode)
 
     try {
       const response = await fetch(`${SERVER_URL}/datawarehouse`, {
@@ -2537,12 +2673,15 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
     validateForm,
     file,
     columnMapping,
+    allowImageColumnMapping,
     isManualBrandApplied,
     headerIndex,
     isNewDistro,
     currency,
     emailRecipient,
+    imageColumnIndex,
     isEmailValid,
+    mode,
     showToast,
     excelData,
     dataHeadersAreValid,
@@ -2562,7 +2701,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
               onBack()
             }}
           >
-            Back to tools
+            {backLabel ?? "Back to tools"}
           </Button>
         )}
         <HStack
@@ -2675,7 +2814,10 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
         {step === "upload" && (
           <VStack spacing={4} align="stretch">
             <Text fontSize="lg" fontWeight="bold">
-              Upload Excel File for Data Warehouse Scrape
+              Upload Excel File · {modeConfig.label}
+            </Text>
+            <Text fontSize="sm" color="subtle">
+              {modeConfig.description}
             </Text>
             <FormControl>
               <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
@@ -2825,7 +2967,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                           : ""
                       }
                       onChange={(e) =>
-                        handleColumnMap(Number(e.target.value), field)
+                        handleDataColumnMap(Number(e.target.value), field)
                       }
                       onFocus={() => setActiveMappingField(field)}
                       onClick={() => setActiveMappingField(field)}
@@ -2900,7 +3042,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                           : ""
                       }
                       onChange={(e) =>
-                        handleColumnMap(Number(e.target.value), field)
+                        handleDataColumnMap(Number(e.target.value), field)
                       }
                       onFocus={() => setActiveMappingField(field)}
                       onClick={() => setActiveMappingField(field)}
@@ -3146,6 +3288,18 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
                         <Td>{getColumnPreview(index, excelData.rows)}</Td>
                       </Tr>
                     ))}
+                  {allowImageColumnMapping && imageColumnIndex !== null && (
+                    <Tr>
+                      <Td>Image URL</Td>
+                      <Td>
+                        {excelData.headers[imageColumnIndex] ||
+                          `Column ${indexToColumnLetter(imageColumnIndex)}`}
+                      </Td>
+                      <Td>
+                        {getColumnPreview(imageColumnIndex, excelData.rows)}
+                      </Td>
+                    </Tr>
+                  )}
                   {isManualBrandApplied && (
                     <Tr>
                       <Td>Manual Brand</Td>
@@ -3166,7 +3320,7 @@ const DataWarehouseForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   )
 }
 
-const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -3178,7 +3332,7 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             leftIcon={<ArrowBackIcon />}
             onClick={onBack}
           >
-            Back to tools
+            {backLabel ?? "Back to tools"}
           </Button>
         )}
         <SubmitImageLinkForm />
@@ -3187,7 +3341,7 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack }) => {
   )
 }
 
-const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
+const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -3199,7 +3353,7 @@ const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack }) => {
             leftIcon={<ArrowBackIcon />}
             onClick={onBack}
           >
-            Back to tools
+            {backLabel ?? "Back to tools"}
           </Button>
         )}
         <SubmitCropForm />
@@ -3213,9 +3367,12 @@ const CMSGoogleSerpForm: React.FC = () => {
   const [selectedType, setSelectedType] = useState<
     "images" | "data" | "imageLinks" | "crop" | null
   >(null)
+  const [dataWarehouseMode, setDataWarehouseMode] =
+    useState<DataWarehouseMode | null>(null)
 
   const handleBackToTools = useCallback(() => {
     setSelectedType(null)
+    setDataWarehouseMode(null)
   }, [])
 
   if (selectedType === "images") {
@@ -3223,7 +3380,73 @@ const CMSGoogleSerpForm: React.FC = () => {
   }
 
   if (selectedType === "data") {
-    return <DataWarehouseForm onBack={handleBackToTools} />
+    if (dataWarehouseMode) {
+      return (
+        <DataWarehouseForm
+          mode={dataWarehouseMode}
+          onBack={() => setDataWarehouseMode(null)}
+          backLabel="Back to Data Warehouse options"
+        />
+      )
+    }
+
+    return (
+      <Container maxW="container.xl" p={4} bg="white" color="black">
+        <VStack spacing={6} align="stretch">
+          <Button
+            alignSelf="flex-start"
+            variant="ghost"
+            size="sm"
+            leftIcon={<ArrowBackIcon />}
+            onClick={handleBackToTools}
+          >
+            Back to tools
+          </Button>
+          <VStack align="start" spacing={1}>
+            <Text fontSize="lg" fontWeight="bold">
+              Choose a Data Warehouse job
+            </Text>
+            <Text fontSize="sm" color="subtle">
+              Pick the workflow you need for this upload.
+            </Text>
+          </VStack>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+            {(Object.entries(DATA_WAREHOUSE_MODE_CONFIG) as [
+              DataWarehouseMode,
+              DataWarehouseModeConfig,
+            ][]).map(([modeKey, config]) => (
+              <Card
+                key={modeKey}
+                cursor="pointer"
+                onClick={() => setDataWarehouseMode(modeKey)}
+                borderWidth={modeKey === "imagesAndMsrp" ? "2px" : "1px"}
+                borderColor={
+                  modeKey === "imagesAndMsrp" ? "brand.200" : "border"
+                }
+                _hover={{ shadow: "md", borderColor: "brand.400" }}
+              >
+                <CardHeader>
+                  <HStack>
+                    <Icon as={config.icon} boxSize={6} color="gray.600" />
+                    <Text fontSize="xl" fontWeight="semibold">
+                      {config.label}
+                    </Text>
+                    {modeKey === "imagesAndMsrp" && (
+                      <Badge colorScheme="brand" ml="auto">
+                        Default
+                      </Badge>
+                    )}
+                  </HStack>
+                </CardHeader>
+                <CardBody>
+                  <Text>{config.description}</Text>
+                </CardBody>
+              </Card>
+            ))}
+          </SimpleGrid>
+        </VStack>
+      </Container>
+    )
   }
 
   if (selectedType === "imageLinks") {
@@ -3251,7 +3474,13 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Search and collect images from Google.</Text>
             </CardBody>
           </Card>
-          <Card cursor="pointer" onClick={() => setSelectedType("data")}>
+          <Card
+            cursor="pointer"
+            onClick={() => {
+              setDataWarehouseMode(null)
+              setSelectedType("data")
+            }}
+          >
             <CardHeader>
               <HStack>
                 <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
@@ -3259,7 +3488,7 @@ const CMSGoogleSerpForm: React.FC = () => {
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Internal product database (images, MSRP).</Text>
+              <Text>Internal product database jobs (choose a mode).</Text>
             </CardBody>
           </Card>
           {/* Reverse Image Search (Locked) */}
