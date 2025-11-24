@@ -128,7 +128,7 @@ const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeCon
   },
   msrpOnly: {
     label: "MSRP only",
-    description: "Validate MSRP data without touching images.",
+    description: "Pull msrp data.",
     requiredColumns: ["style", "msrp"],
     optionalColumns: ["brand"],
     requireImageColumn: false,
