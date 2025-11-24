@@ -3300,7 +3300,7 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Image URL downloader</Text>
+                <Text fontSize="xl" fontWeight="semibold">Image URL Download</Text>
                 {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
@@ -3320,14 +3320,14 @@ const CMSGoogleSerpForm: React.FC = () => {
             <CardHeader>
               <HStack>
                 <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Image cropper</Text>
+                <Text fontSize="xl" fontWeight="semibold">Image crop</Text>
                 {showDevUI() && (
                   <Badge colorScheme="red" ml="auto">DEV</Badge>
                 )}
               </HStack>
             </CardHeader>
             <CardBody>
-              <Text>Submit Distro to remove whitespace from Excel pictures.</Text>
+              <Text>Remove whitespace from Excel pictures.</Text>
             </CardBody>
           </Card>
           <Card
