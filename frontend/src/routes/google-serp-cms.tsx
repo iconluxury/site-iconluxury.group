@@ -110,7 +110,7 @@ type DataWarehouseModeConfig = {
 const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeConfig> = {
   imagesAndMsrp: {
     label: "Images + MSRP",
-    description: "Pull images and price data in one pass.",
+    description: "Pull images and price data.",
     requiredColumns: ["style", "msrp"],
     optionalColumns: ["brand"],
     requireImageColumn: false,
@@ -119,9 +119,9 @@ const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeCon
   },
   imagesOnly: {
     label: "Images only",
-    description: "Grab product imagery without pricing fields.",
+    description: "Pull images.",
     requiredColumns: ["style"],
-    optionalColumns: ["brand", "msrp"],
+    optionalColumns: [],
     requireImageColumn: true,
     allowImageColumnMapping: true,
     icon: LuImage,
@@ -2641,7 +2641,9 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     formData.append("header_index", String(headerIndex + 1))
     formData.append("sendToEmail", emailRecipient)
     formData.append("isNewDistro", String(isNewDistro))
-    formData.append("currency", currency)
+    if (mode !== "imagesOnly") {
+      formData.append("currency", currency)
+    }
     formData.append("dataWarehouseMode", mode)
 
     try {
@@ -3007,82 +3009,88 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   </Box>
                 </HStack>
               ))}
-              <Text fontWeight="bold" mt={4}>
-                Optional Columns
-              </Text>
-              {OPTIONAL_COLUMNS.map((field) => (
-                <HStack
-                  key={field}
-                  gap={2}
-                  align="center"
-                  p={2}
-                  borderRadius="md"
-                  borderWidth={activeMappingField === field ? "2px" : "1px"}
-                  borderColor={
-                    activeMappingField === field
-                      ? SELECTED_BORDER_COLOR
-                      : "transparent"
-                  }
-                  bg={
-                    activeMappingField === field
-                      ? SELECTED_BG_SUBTLE
-                      : "transparent"
-                  }
-                  cursor="pointer"
-                  onClick={() => setActiveMappingField(field)}
-                >
-                  <Text w="120px" fontWeight="semibold">
-                    {field}:
+              {OPTIONAL_COLUMNS.length > 0 && (
+                <>
+                  <Text fontWeight="bold" mt={4}>
+                    Optional Columns
                   </Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={
-                        columnMapping[field] !== null
-                          ? columnMapping[field]!
-                          : ""
+                  {OPTIONAL_COLUMNS.map((field) => (
+                    <HStack
+                      key={field}
+                      gap={2}
+                      align="center"
+                      p={2}
+                      borderRadius="md"
+                      borderWidth={activeMappingField === field ? "2px" : "1px"}
+                      borderColor={
+                        activeMappingField === field
+                          ? SELECTED_BORDER_COLOR
+                          : "transparent"
                       }
-                      onChange={(e) =>
-                        handleDataColumnMap(Number(e.target.value), field)
+                      bg={
+                        activeMappingField === field
+                          ? SELECTED_BG_SUBTLE
+                          : "transparent"
                       }
-                      onFocus={() => setActiveMappingField(field)}
+                      cursor="pointer"
                       onClick={() => setActiveMappingField(field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
                     >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={
-                            mappedDataColumns.has(index) &&
-                            columnMapping[field] !== index
+                      <Text w="120px" fontWeight="semibold">
+                        {field}:
+                      </Text>
+                      <Tooltip label={`Select Excel column for ${field}`}>
+                        <Select
+                          value={
+                            columnMapping[field] !== null
+                              ? columnMapping[field]!
+                              : ""
                           }
+                          onChange={(e) =>
+                            handleDataColumnMap(Number(e.target.value), field)
+                          }
+                          onFocus={() => setActiveMappingField(field)}
+                          onClick={() => setActiveMappingField(field)}
+                          placeholder="Unmapped"
+                          aria-label={`Map ${field} column`}
+                          flex="1"
                         >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() =>
-                          handleClearMapping(columnMapping[field]!)
-                        }
-                      />
-                    </Tooltip>
-                  )}
-                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
-                    {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
-              ))}
-              {columnMapping.brand === null && !isManualBrandApplied && (
+                          <option value="">Unmapped</option>
+                          {excelData.headers.map((header, index) => (
+                            <option
+                              key={index}
+                              value={index}
+                              disabled={
+                                mappedDataColumns.has(index) &&
+                                columnMapping[field] !== index
+                              }
+                            >
+                              {header || `Column ${indexToColumnLetter(index)}`}
+                            </option>
+                          ))}
+                        </Select>
+                      </Tooltip>
+                      {columnMapping[field] !== null && (
+                        <Tooltip label="Clear mapping">
+                          <IconButton
+                            aria-label={`Clear ${field} mapping`}
+                            icon={<CloseIcon />}
+                            size="sm"
+                            onClick={() =>
+                              handleClearMapping(columnMapping[field]!)
+                            }
+                          />
+                        </Tooltip>
+                      )}
+                      <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                        {getColumnPreview(columnMapping[field], excelData.rows)}
+                      </Box>
+                    </HStack>
+                  ))}
+                </>
+              )}
+              {OPTIONAL_COLUMNS.includes("brand") &&
+                columnMapping.brand === null &&
+                !isManualBrandApplied && (
                 <FormControl>
                   <HStack gap={2}>
                     <Text w="120px">Add Brand Column:</Text>
@@ -3250,17 +3258,21 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   </Text>
                 )}
               </FormControl>
-              <HStack>
-                <Text>Currency:</Text>
-                <Select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value as "USD" | "EUR")}
-                  w="100px"
-                >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                </Select>
-              </HStack>
+              {mode !== "imagesOnly" && (
+                <HStack>
+                  <Text>Currency:</Text>
+                  <Select
+                    value={currency}
+                    onChange={(e) =>
+                      setCurrency(e.target.value as "USD" | "EUR")
+                    }
+                    w="100px"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </Select>
+                </HStack>
+              )}
               <Text>Mapped Columns:</Text>
               <Table variant="simple" size="sm">
                 <Thead>
