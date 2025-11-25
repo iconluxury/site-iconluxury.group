@@ -52,7 +52,6 @@ type CellValue = string | number | boolean | null
 type ExcelData = { headers: string[]; rows: CellValue[][] }
 type ColumnMapping = {
   style: number | null
-  image: number | null
 }
 type SheetConfig = {
   name: string
@@ -163,18 +162,13 @@ const getColumnPreview = (
 }
 
 const autoMapColumns = (headers: string[]): ColumnMapping => {
-  const mapping: ColumnMapping = { style: null, image: null }
-  const patterns = {
-    style:
-      /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
-    image: /(picture|image|photo|img)/i,
-  }
+  const mapping: ColumnMapping = { style: null }
+  const pattern =
+    /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i
   headers.forEach((header, index) => {
     const h = header.trim()
     if (!h) return
-    if (patterns.style.test(h) && mapping.style === null) mapping.style = index
-    else if (patterns.image.test(h) && mapping.image === null)
-      mapping.image = index
+    if (pattern.test(h) && mapping.style === null) mapping.style = index
   })
   return mapping
 }
@@ -198,7 +192,6 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const headerIndex = activeSheet?.headerIndex ?? 0
   const columnMapping = activeSheet?.columnMapping ?? {
     style: null,
-    image: null,
   }
   const hasMultipleSheets = sheetConfigs.length > 1
 
@@ -399,10 +392,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   const mappedColumnsForHighlight = useMemo(() => {
     const set = new Set<number>()
-    ;(["style", "image"] as (keyof ColumnMapping)[]).forEach((k) => {
-      const v = columnMapping[k]
-      if (typeof v === "number") set.add(v)
-    })
+    const v = columnMapping.style
+    if (typeof v === "number") set.add(v)
     return set
   }, [columnMapping])
 
@@ -445,16 +436,12 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
   const activeSheetStatusLabel = activeSheetIsReady
-    ? columnMapping.image === null
-      ? "Ready (embedded images)"
-      : "Ready"
+    ? "Ready"
     : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
   const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
   const activeSheetStatusTooltip = activeSheetIsReady
-    ? columnMapping.image === null
-      ? "Style column mapped. Image column optional; embedded images will be detected."
-      : "Style and image columns are mapped."
+    ? "Style column mapped. Image columns are detected automatically when present."
     : activeSheetMissingColumns.length > 0
       ? `Missing required columns: ${activeSheetMissingColumns.join(", ")}`
       : "Map all required columns before submitting."
@@ -474,9 +461,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           )
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
-            ? sheet.columnMapping.image === null
-              ? "Style mapped; embedded images will be auto-detected"
-              : "Style and image columns mapped"
+            ? "Style column mapped; images auto-detected"
             : hasMissing
               ? `Missing: ${(validation?.missing ?? []).join(", ")}`
               : "Map required columns"
@@ -607,9 +592,6 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         const formData = new FormData()
         formData.append("fileUploadCrop", originalFile)
         formData.append("searchColCrop", indexToColumnLetter(mapping.style))
-        if (typeof mapping.image === "number") {
-          formData.append("cropColumn", indexToColumnLetter(mapping.image))
-        }
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
         formData.append("sheetIndex", String(index + 1))
@@ -1028,9 +1010,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   <VStack align="start" spacing={0} fontSize="sm">
                     <AlertTitle fontSize="sm">Mapping tips</AlertTitle>
                     <AlertDescription fontSize="xs">
-                      Map the style column (required). Map the image column only
-                      if your sheet has one—embedded images without a column are
-                      detected automatically.
+                      Map the style column (required). Image columns, including
+                      embedded images, are detected automatically when present.
                     </AlertDescription>
                   </VStack>
                 </Alert>
@@ -1048,79 +1029,74 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   </Text>
                 )}
                 <Text fontSize="sm" color="subtle">
-                  Select a field below, then click a column in the preview grid
-                  to map it instantly.
+                  Select the style field below, then click a column in the
+                  preview grid to map it instantly.
                 </Text>
 
-                {(["style", "image"] as (keyof ColumnMapping)[]).map(
-                  (field) => (
-                    <HStack
-                      key={field}
-                      gap={2}
-                      align="center"
-                      p={2}
-                      borderRadius="md"
-                      borderWidth={activeMappingField === field ? "2px" : "1px"}
-                      borderColor={
-                        activeMappingField === field
-                          ? SELECTED_BORDER_COLOR
-                          : "transparent"
-                      }
-                      bg={
-                        activeMappingField === field
-                          ? SELECTED_BG_SUBTLE
-                          : "transparent"
-                      }
-                      cursor="pointer"
-                      onClick={() => setActiveMappingField(field)}
-                    >
-                      <Text w="180px" fontWeight="semibold">
-                        {field === "style"
-                          ? "Style # Column"
-                          : "Image Column (pictures)"}
-                        :
-                      </Text>
-                      <Tooltip label={`Select Excel column for ${field}`}>
-                        <Select
-                          value={
-                            columnMapping[field] !== null
-                              ? columnMapping[field]!
-                              : ""
+                {(["style"] as (keyof ColumnMapping)[]).map((field) => (
+                  <HStack
+                    key={field}
+                    gap={2}
+                    align="center"
+                    p={2}
+                    borderRadius="md"
+                    borderWidth={activeMappingField === field ? "2px" : "1px"}
+                    borderColor={
+                      activeMappingField === field
+                        ? SELECTED_BORDER_COLOR
+                        : "transparent"
+                    }
+                    bg={
+                      activeMappingField === field
+                        ? SELECTED_BG_SUBTLE
+                        : "transparent"
+                    }
+                    cursor="pointer"
+                    onClick={() => setActiveMappingField(field)}
+                  >
+                    <Text w="180px" fontWeight="semibold">
+                      Style # Column:
+                    </Text>
+                    <Tooltip label="Select Excel column for style">
+                      <Select
+                        value={
+                          columnMapping[field] !== null
+                            ? columnMapping[field]!
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleColumnMap(Number(e.target.value), field)
+                        }
+                        onFocus={() => setActiveMappingField(field)}
+                        onClick={() => setActiveMappingField(field)}
+                        placeholder="Unmapped"
+                        flex="1"
+                      >
+                        <option value="">Unmapped</option>
+                        {excelData.headers.map((header, index) => (
+                          <option key={index} value={index}>
+                            {header || `Column ${indexToColumnLetter(index)}`}
+                          </option>
+                        ))}
+                      </Select>
+                    </Tooltip>
+                    {columnMapping[field] !== null && (
+                      <Tooltip label="Clear mapping">
+                        <IconButton
+                          aria-label="Clear style mapping"
+                          icon={<CloseIcon />}
+                          size="sm"
+                          onClick={() =>
+                            handleClearMapping(columnMapping[field]!)
                           }
-                          onChange={(e) =>
-                            handleColumnMap(Number(e.target.value), field)
-                          }
-                          onFocus={() => setActiveMappingField(field)}
-                          onClick={() => setActiveMappingField(field)}
-                          placeholder="Unmapped"
-                          flex="1"
-                        >
-                          <option value="">Unmapped</option>
-                          {excelData.headers.map((header, index) => (
-                            <option key={index} value={index}>
-                              {header || `Column ${indexToColumnLetter(index)}`}
-                            </option>
-                          ))}
-                        </Select>
+                        />
                       </Tooltip>
-                      {columnMapping[field] !== null && (
-                        <Tooltip label="Clear mapping">
-                          <IconButton
-                            aria-label={`Clear ${field} mapping`}
-                            icon={<CloseIcon />}
-                            size="sm"
-                            onClick={() =>
-                              handleClearMapping(columnMapping[field]!)
-                            }
-                          />
-                        </Tooltip>
-                      )}
-                      <Box w="150px" fontSize="sm" color="subtle" isTruncated>
-                        {getColumnPreview(columnMapping[field], excelData.rows)}
-                      </Box>
-                    </HStack>
-                  ),
-                )}
+                    )}
+                    <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                      {getColumnPreview(columnMapping[field], excelData.rows)}
+                    </Box>
+                  </HStack>
+                ))}
               </VStack>
 
               <Box
@@ -1265,8 +1241,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   </Checkbox>
                   <Text fontSize="sm" color="subtle" mt={1}>
                     {replaceImageColumn
-                      ? "Only the cropped images will remain in the mapped column."
-                      : "Deselect to keep both the input column and the new cropped images column."}
+                      ? "Only the cropped images will remain in the detected image column."
+                      : "Deselect to keep both the original and cropped image columns."}
                   </Text>
                 </FormControl>
                 <Text>Mapped Columns:</Text>
@@ -1279,15 +1255,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {(["style", "image"] as (keyof ColumnMapping)[])
+                    {(["style"] as (keyof ColumnMapping)[])
                       .filter((key) => columnMapping[key] !== null)
                       .map((key) => (
                         <Tr key={key}>
-                          <Td>
-                            {key === "image"
-                              ? "Image Column (pictures)"
-                              : "Style # Column"}
-                          </Td>
+                          <Td>Style # Column</Td>
                           <Td>
                             {excelData.headers[columnMapping[key] as number] ||
                               `Column ${indexToColumnLetter(
@@ -1304,6 +1276,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                       ))}
                   </Tbody>
                 </Table>
+                <Text fontSize="sm" color="subtle">
+                  Image columns are detected automatically when present; no
+                  mapping required.
+                </Text>
               </VStack>
             </VStack>
           )}
