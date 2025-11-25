@@ -1000,21 +1000,6 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     </CardBody>
                   </Card>
                 )}
-                <Alert
-                  status="info"
-                  variant="subtle"
-                  borderRadius="md"
-                  alignItems="flex-start"
-                >
-                  <AlertIcon />
-                  <VStack align="start" spacing={0} fontSize="sm">
-                    <AlertTitle fontSize="sm">Mapping tips</AlertTitle>
-                    <AlertDescription fontSize="xs">
-                      Map the style column (required). Image columns, including
-                      embedded images, are detected automatically when present.
-                    </AlertDescription>
-                  </VStack>
-                </Alert>
 
                 {!validateForm.isValid && (
                   <Text color="red.500" fontSize="sm" fontWeight="medium">
