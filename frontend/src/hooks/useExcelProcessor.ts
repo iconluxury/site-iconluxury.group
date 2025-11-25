@@ -1,10 +1,16 @@
-import { useState, useCallback } from "react"
+import { useCallback, useState } from "react"
 import * as XLSX from "xlsx"
 
 type CellValue = string | number | boolean | null
 type ExcelData = { headers: string[]; rows: CellValue[][] }
 type ColumnMapping = Record<
-  "style" | "brand" | "category" | "colorName" | "msrp" | "readImage" | "imageAdd",
+  | "style"
+  | "brand"
+  | "category"
+  | "colorName"
+  | "msrp"
+  | "readImage"
+  | "imageAdd",
   number | null
 >
 

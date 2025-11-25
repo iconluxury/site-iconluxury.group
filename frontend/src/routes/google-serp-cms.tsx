@@ -2924,7 +2924,9 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             >
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
-                  Missing required columns: {validateForm.missing.join(", ")}.
+                  Missing required columns: {validateForm.missing
+                    .map((field) => formatMappingFieldLabel(field))
+                    .join(", ")}.
                   Please map all required columns.
                 </Text>
               )}
@@ -3130,6 +3132,75 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     </Badge>
                   )}
                 </FormControl>
+              )}
+              {allowImageColumnMapping && (
+                <>
+                  <Text fontWeight="bold" mt={4}>
+                    Image Column
+                  </Text>
+                  <HStack
+                    gap={2}
+                    align="center"
+                    p={2}
+                    borderRadius="md"
+                    borderWidth={
+                      activeMappingField === "imageColumn" ? "2px" : "1px"
+                    }
+                    borderColor={
+                      activeMappingField === "imageColumn"
+                        ? SELECTED_BORDER_COLOR
+                        : "transparent"
+                    }
+                    bg={
+                      activeMappingField === "imageColumn"
+                        ? SELECTED_BG_SUBTLE
+                        : "transparent"
+                    }
+                    cursor="pointer"
+                    onClick={() => setActiveMappingField("imageColumn")}
+                  >
+                    <Text w="120px" fontWeight="semibold">
+                      Image URL:
+                    </Text>
+                    <Tooltip label="Select Excel column with image URLs">
+                      <Select
+                        value={imageColumnIndex ?? ""}
+                        onChange={(e) =>
+                          handleImageColumnMap(
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                          )
+                        }
+                        onFocus={() => setActiveMappingField("imageColumn")}
+                        onClick={() => setActiveMappingField("imageColumn")}
+                        placeholder="Unmapped"
+                        aria-label="Map image column"
+                        flex="1"
+                      >
+                        <option value="">Unmapped</option>
+                        {excelData.headers.map((header, index) => (
+                          <option key={index} value={index}>
+                            {header || `Column ${indexToColumnLetter(index)}`}
+                          </option>
+                        ))}
+                      </Select>
+                    </Tooltip>
+                    {imageColumnIndex !== null && (
+                      <Tooltip label="Clear mapping">
+                        <IconButton
+                          aria-label="Clear image column mapping"
+                          icon={<CloseIcon />}
+                          size="sm"
+                          onClick={() => handleImageColumnMap(null)}
+                        />
+                      </Tooltip>
+                    )}
+                    <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                      {getColumnPreview(imageColumnIndex, excelData.rows)}
+                    </Box>
+                  </HStack>
+                </>
               )}
             </VStack>
             <Box

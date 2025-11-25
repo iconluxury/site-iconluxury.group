@@ -339,7 +339,9 @@ const LogsDetails: React.FC = () => {
                             <Tr
                               key={index}
                               bg={
-                                log.status === "error" ? "red.900" : "transparent"
+                                log.status === "error"
+                                  ? "red.900"
+                                  : "transparent"
                               }
                             >
                               {showTimestamps && (
@@ -350,7 +352,9 @@ const LogsDetails: React.FC = () => {
                               <Td {...wrappingCellProps}>{log.endpoint}</Td>
                               <Td {...wrappingCellProps}>{log.query}</Td>
                               <Td {...wrappingCellProps}>{log.status}</Td>
-                              <Td {...wrappingCellProps}>{log.responseTime} ms</Td>
+                              <Td {...wrappingCellProps}>
+                                {log.responseTime} ms
+                              </Td>
                             </Tr>
                           ))
                         })()}

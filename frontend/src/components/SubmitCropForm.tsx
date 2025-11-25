@@ -1,5 +1,16 @@
+import {
+  ArrowBackIcon,
+  CheckIcon,
+  CloseIcon,
+  WarningIcon,
+} from "@chakra-ui/icons"
 // components/SubmitCropForm.tsx
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Badge,
   Box,
   Button,
   Card,
@@ -27,15 +38,10 @@ import {
   Wrap,
   WrapItem,
   useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  Badge,
 } from "@chakra-ui/react"
-import { ArrowBackIcon, CheckIcon, CloseIcon, WarningIcon } from "@chakra-ui/icons"
+import type React from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
 import useCustomToast from "../hooks/useCustomToast"
 import { showDevUI } from "../utils"
 
@@ -76,7 +82,9 @@ const getIframeEmailParameter = (): string | null => {
   return null
 }
 const useIframeEmail = (): string | null => {
-  const [email, setEmail] = useState<string | null>(() => getIframeEmailParameter())
+  const [email, setEmail] = useState<string | null>(() =>
+    getIframeEmailParameter(),
+  )
   useEffect(() => {
     if (!email) {
       const e = getIframeEmailParameter()
@@ -91,7 +99,8 @@ const getDisplayValue = (value: any): string => {
   if (value instanceof Date) return value.toLocaleString()
   if (typeof value === "object") {
     if ((value as any).error) return (value as any).error
-    if ((value as any).result !== undefined) return getDisplayValue((value as any).result)
+    if ((value as any).result !== undefined)
+      return getDisplayValue((value as any).result)
     if ((value as any).text) return (value as any).text
     if ((value as any).link) return (value as any).text || (value as any).link
     return JSON.stringify(value)
@@ -111,7 +120,8 @@ const indexToColumnLetter = (index: number): string => {
 
 const detectHeaderRow = (rows: CellValue[][]): number => {
   const patterns = {
-    style: /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
+    style:
+      /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
     image: /(picture|image|photo|img)/i,
   }
   let bestIndex = 0
@@ -134,8 +144,15 @@ const detectHeaderRow = (rows: CellValue[][]): number => {
   return bestIndex
 }
 
-const getColumnPreview = (columnIndex: number | null, rows: CellValue[][]): string => {
-  if (columnIndex === null || columnIndex < 0 || columnIndex >= (rows[0]?.length ?? 0))
+const getColumnPreview = (
+  columnIndex: number | null,
+  rows: CellValue[][],
+): string => {
+  if (
+    columnIndex === null ||
+    columnIndex < 0 ||
+    columnIndex >= (rows[0]?.length ?? 0)
+  )
     return "No values"
   const values = rows
     .map((row) => getDisplayValue(row[columnIndex]))
@@ -147,31 +164,40 @@ const getColumnPreview = (columnIndex: number | null, rows: CellValue[][]): stri
 const autoMapColumns = (headers: string[]): ColumnMapping => {
   const mapping: ColumnMapping = { style: null, image: null }
   const patterns = {
-    style: /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
+    style:
+      /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
     image: /(picture|image|photo|img)/i,
   }
   headers.forEach((header, index) => {
     const h = header.trim()
     if (!h) return
     if (patterns.style.test(h) && mapping.style === null) mapping.style = index
-    else if (patterns.image.test(h) && mapping.image === null) mapping.image = index
+    else if (patterns.image.test(h) && mapping.image === null)
+      mapping.image = index
   })
   return mapping
 }
 
 const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
-  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">("upload")
+  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
+    "upload",
+  )
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
-  const [activeMappingField, setActiveMappingField] = useState<keyof ColumnMapping | null>(null)
+  const [activeMappingField, setActiveMappingField] = useState<
+    keyof ColumnMapping | null
+  >(null)
 
   const activeSheet = sheetConfigs[activeSheetIndex] ?? null
   const excelData = activeSheet?.excelData ?? { headers: [], rows: [] }
   const rawData = activeSheet?.rawData ?? []
   const headerIndex = activeSheet?.headerIndex ?? 0
-  const columnMapping = activeSheet?.columnMapping ?? { style: null, image: null }
+  const columnMapping = activeSheet?.columnMapping ?? {
+    style: null,
+    image: null,
+  }
   const hasMultipleSheets = sheetConfigs.length > 1
 
   const mappingPanelBg = useColorModeValue("white", "gray.800")
@@ -231,11 +257,19 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           "application/vnd.ms-excel",
         ].includes(selectedFile.type)
       ) {
-        showToast("File Error", "Please upload an Excel file (.xlsx or .xls)", "error")
+        showToast(
+          "File Error",
+          "Please upload an Excel file (.xlsx or .xls)",
+          "error",
+        )
         return
       }
       if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        showToast("File Error", `File size exceeds ${MAX_FILE_SIZE_MB}MB`, "error")
+        showToast(
+          "File Error",
+          `File size exceeds ${MAX_FILE_SIZE_MB}MB`,
+          "error",
+        )
         return
       }
 
@@ -304,9 +338,12 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const handleHeaderChange = useCallback(
     (newHeaderIndex: number) => {
       if (!activeSheet) return
-      if (newHeaderIndex < 0 || newHeaderIndex >= activeSheet.rawData.length) return
+      if (newHeaderIndex < 0 || newHeaderIndex >= activeSheet.rawData.length)
+        return
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const headers = sheet.rawData[newHeaderIndex].map((cell) => String(cell ?? ""))
+        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
+          String(cell ?? ""),
+        )
         const rows = sheet.rawData.slice(newHeaderIndex + 1) as CellValue[][]
         return {
           ...sheet,
@@ -367,7 +404,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     return set
   }, [columnMapping])
 
-  const selectedColumnIndex = activeMappingField !== null ? columnMapping[activeMappingField] : null
+  const selectedColumnIndex =
+    activeMappingField !== null ? columnMapping[activeMappingField] : null
 
   const validateForm = useMemo(() => {
     if (!activeSheet) {
@@ -375,7 +413,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }
     const missing = REQUIRED_FIELDS.filter((f) => columnMapping[f] === null)
     return {
-      isValid: missing.length === 0 && excelData.rows.length > 0 && headersAreValid,
+      isValid:
+        missing.length === 0 && excelData.rows.length > 0 && headersAreValid,
       missing,
     }
   }, [activeSheet, columnMapping, excelData.rows.length, headersAreValid])
@@ -385,11 +424,16 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       sheetConfigs.map((sheet, index) => {
         const mapping = sheet.columnMapping
         const missing = REQUIRED_FIELDS.filter((f) => mapping[f] === null)
-        const headersValid = sheet.excelData.headers.some((h) => String(h).trim() !== "")
+        const headersValid = sheet.excelData.headers.some(
+          (h) => String(h).trim() !== "",
+        )
         return {
           sheetIndex: index,
           missing,
-          isValid: missing.length === 0 && sheet.excelData.rows.length > 0 && headersValid,
+          isValid:
+            missing.length === 0 &&
+            sheet.excelData.rows.length > 0 &&
+            headersValid,
         }
       }),
     [REQUIRED_FIELDS, sheetConfigs],
@@ -421,7 +465,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           const validation = sheetValidationResults[index]
           const isComplete = validation?.isValid
           const hasMissing = (validation?.missing ?? []).length > 0
-          const icon = isComplete ? <CheckIcon boxSize={3} /> : <WarningIcon boxSize={3} />
+          const icon = isComplete ? (
+            <CheckIcon boxSize={3} />
+          ) : (
+            <WarningIcon boxSize={3} />
+          )
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
             ? sheet.columnMapping.image === null
@@ -436,13 +484,25 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 <Button
                   size={size}
                   variant={isActive ? "solid" : "ghost"}
-                  colorScheme={isActive ? "brand" : isComplete ? "gray" : "yellow"}
+                  colorScheme={
+                    isActive ? "brand" : isComplete ? "gray" : "yellow"
+                  }
                   rightIcon={icon}
                   onClick={() => handleActiveSheetChange(index)}
                   cursor="pointer"
-                  bg={isActive ? undefined : isComplete ? sheetInactiveBg : sheetWarningHover}
+                  bg={
+                    isActive
+                      ? undefined
+                      : isComplete
+                        ? sheetInactiveBg
+                        : sheetWarningHover
+                  }
                   _hover={{
-                    bg: isActive ? undefined : isComplete ? sheetInactiveHover : sheetWarningHover,
+                    bg: isActive
+                      ? undefined
+                      : isComplete
+                        ? sheetInactiveHover
+                        : sheetWarningHover,
                   }}
                   transition="all 0.2s ease"
                   fontWeight={isActive ? "bold" : "semibold"}
@@ -471,19 +531,31 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   const handleSubmit = useCallback(async () => {
     if (sheetConfigs.length === 0) {
-      showToast("No Data", "Upload an Excel workbook before submitting.", "warning")
+      showToast(
+        "No Data",
+        "Upload an Excel workbook before submitting.",
+        "warning",
+      )
       return
     }
     if (!uploadedFile) {
-      showToast("Missing File", "Original workbook is unavailable. Re-upload the Excel file.", "error")
+      showToast(
+        "Missing File",
+        "Original workbook is unavailable. Re-upload the Excel file.",
+        "error",
+      )
       return
     }
     const invalidSheet = sheetValidationResults.find((r) => !r.isValid)
     if (invalidSheet) {
-      const sheetName = sheetConfigs[invalidSheet.sheetIndex]?.name || `Sheet ${invalidSheet.sheetIndex + 1}`
+      const sheetName =
+        sheetConfigs[invalidSheet.sheetIndex]?.name ||
+        `Sheet ${invalidSheet.sheetIndex + 1}`
       showToast(
         "Validation Error",
-        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
+        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(
+          ", ",
+        )}`,
         "warning",
       )
       setActiveSheetIndex(invalidSheet.sheetIndex)
@@ -505,7 +577,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing the style column mapping.`,
+            `Sheet "${
+              sheet.name || `Sheet ${index + 1}`
+            }" is missing the style column mapping.`,
           )
         }
 
@@ -517,10 +591,16 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           .toLowerCase()
         const fileName = `${baseName}-${sheetLabel}.xlsx`
         const originalFile = uploadedFile
-          ? new File([uploadedFile], fileName, { type: uploadedFile.type || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+          ? new File([uploadedFile], fileName, {
+              type:
+                uploadedFile.type ||
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            })
           : null
         if (!originalFile) {
-          throw new Error("Original file missing. Please re-upload your workbook.")
+          throw new Error(
+            "Original file missing. Please re-upload your workbook.",
+          )
         }
         const formData = new FormData()
         formData.append("fileUploadCrop", originalFile)
@@ -542,23 +622,38 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
-              errorText || response.statusText
-            }`,
+            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${
+              response.status
+            }): ${errorText || response.statusText}`,
           )
         }
       }
 
-      showToast("Success", `${sheetConfigs.length} crop job(s) submitted successfully`, "success")
+      showToast(
+        "Success",
+        `${sheetConfigs.length} crop job(s) submitted successfully`,
+        "success",
+      )
       setTimeout(() => window.location.reload(), 1000)
     } catch (error) {
       console.error("Submission Error:", error)
-      showToast("Submission Error", error instanceof Error ? error.message : "Failed to submit", "error")
+      showToast(
+        "Submission Error",
+        error instanceof Error ? error.message : "Failed to submit",
+        "error",
+      )
       setStep("map")
     } finally {
       setIsLoading(false)
     }
-  }, [isEmailValid, sendToEmail, sheetConfigs, sheetValidationResults, showToast, uploadedFile])
+  }, [
+    isEmailValid,
+    sendToEmail,
+    sheetConfigs,
+    sheetValidationResults,
+    showToast,
+    uploadedFile,
+  ])
 
   const isDev = showDevUI()
 
@@ -580,7 +675,13 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           </Button>
         )}
 
-        <Box bg={isDev ? "red.50" : undefined} borderWidth={isDev ? "1px" : undefined} borderColor={isDev ? "red.200" : undefined} borderRadius="md" p={isDev ? 3 : 0}>
+        <Box
+          bg={isDev ? "red.50" : undefined}
+          borderWidth={isDev ? "1px" : undefined}
+          borderColor={isDev ? "red.200" : undefined}
+          borderRadius="md"
+          p={isDev ? 3 : 0}
+        >
           {isDev && (
             <Alert status="error" variant="subtle" borderRadius="md" mb={3}>
               <AlertIcon />
@@ -592,17 +693,46 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           )}
 
           {/* Stepper */}
-          <HStack justify="space-between" bg="neutral.50" p={2} borderRadius="md" align="center">
+          <HStack
+            justify="space-between"
+            bg="neutral.50"
+            p={2}
+            borderRadius="md"
+            align="center"
+          >
             <HStack spacing={4}>
               {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
                 <Text
                   key={s}
-                  fontWeight={step === s.toLowerCase().replace("header selection", "preview") ? "bold" : "normal"}
-                  color={step === s.toLowerCase().replace("header selection", "preview") ? "brand.600" : "subtle"}
-                  cursor={i < ["upload", "preview", "map", "submit"].indexOf(step) ? "pointer" : "default"}
+                  fontWeight={
+                    step ===
+                    s.toLowerCase().replace("header selection", "preview")
+                      ? "bold"
+                      : "normal"
+                  }
+                  color={
+                    step ===
+                    s.toLowerCase().replace("header selection", "preview")
+                      ? "brand.600"
+                      : "subtle"
+                  }
+                  cursor={
+                    i < ["upload", "preview", "map", "submit"].indexOf(step)
+                      ? "pointer"
+                      : "default"
+                  }
                   onClick={() => {
-                    if (i < ["upload", "preview", "map", "submit"].indexOf(step))
-                      setStep(s.toLowerCase().replace("header selection", "preview") as typeof step)
+                    if (
+                      i < ["upload", "preview", "map", "submit"].indexOf(step)
+                    )
+                      setStep(
+                        s
+                          .toLowerCase()
+                          .replace(
+                            "header selection",
+                            "preview",
+                          ) as typeof step,
+                      )
                   }}
                 >
                   {i + 1}. {s}
@@ -616,7 +746,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     onClick={() =>
                       setStep(
                         ["upload", "preview", "map", "submit"][
-                          ["upload", "preview", "map", "submit"].indexOf(step) - 1
+                          ["upload", "preview", "map", "submit"].indexOf(step) -
+                            1
                         ] as typeof step,
                       )
                     }
@@ -627,7 +758,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   </Button>
                 )}
                 {step === "preview" && (
-                  <Button onClick={() => setStep("upload")} variant="outline" size="sm">
+                  <Button
+                    onClick={() => setStep("upload")}
+                    variant="outline"
+                    size="sm"
+                  >
                     Back
                   </Button>
                 )}
@@ -643,7 +778,12 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     size="sm"
                     isDisabled={step === "map" && !validateForm.isValid}
                   >
-                    Next: {["Header Selection", "Map", "Submit"][["upload", "preview", "map"].indexOf(step)]}
+                    Next:{" "}
+                    {
+                      ["Header Selection", "Map", "Submit"][
+                        ["upload", "preview", "map"].indexOf(step)
+                      ]
+                    }
                   </Button>
                 )}
                 {step === "submit" && (
@@ -689,24 +829,44 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           {step === "preview" && (
             <VStack spacing={4} align="stretch">
               {hasMultipleSheets && (
-                <Card variant="outline" bg={mappingPanelBg} borderColor={mappingPanelBorder}>
+                <Card
+                  variant="outline"
+                  bg={mappingPanelBg}
+                  borderColor={mappingPanelBorder}
+                >
                   <CardBody py={3} px={4}>
                     <VStack align="stretch" spacing={2}>
                       <HStack justify="space-between" align="center">
                         <Text fontWeight="semibold">Sheets</Text>
                         <Text fontSize="xs" color="subtle">
-                          Viewing {sheetConfigs[activeSheetIndex]?.name || `Sheet ${activeSheetIndex + 1}`}
+                          Viewing{" "}
+                          {sheetConfigs[activeSheetIndex]?.name ||
+                            `Sheet ${activeSheetIndex + 1}`}
                         </Text>
                       </HStack>
                       {renderSheetButtons("xs")}
-                      <Tooltip label={activeSheetStatusTooltip} placement="top" hasArrow>
-                        <HStack spacing={2} fontSize="xs" color="subtle" align="center">
-                          <Icon as={ActiveSheetStatusIcon} boxSize={3} color={activeSheetStatusColor} />
+                      <Tooltip
+                        label={activeSheetStatusTooltip}
+                        placement="top"
+                        hasArrow
+                      >
+                        <HStack
+                          spacing={2}
+                          fontSize="xs"
+                          color="subtle"
+                          align="center"
+                        >
+                          <Icon
+                            as={ActiveSheetStatusIcon}
+                            boxSize={3}
+                            color={activeSheetStatusColor}
+                          />
                           <Text>{activeSheetStatusLabel}</Text>
                         </HStack>
                       </Tooltip>
                       <Text fontSize="xs" color="subtle">
-                        Select a sheet to preview its header row and sample data.
+                        Select a sheet to preview its header row and sample
+                        data.
                       </Text>
                     </VStack>
                   </CardBody>
@@ -714,10 +874,15 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               )}
               <HStack>
                 <Text>Select Header Row:</Text>
-                <Select value={headerIndex} onChange={(e) => handleHeaderChange(Number(e.target.value))} w="150px">
+                <Select
+                  value={headerIndex}
+                  onChange={(e) => handleHeaderChange(Number(e.target.value))}
+                  w="150px"
+                >
                   {rawData.slice(0, 20).map((_, index) => (
                     <option key={index} value={index}>
-                      Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
+                      Row {index + 1}{" "}
+                      {index === headerIndex ? "(Selected)" : ""}
                     </option>
                   ))}
                 </Select>
@@ -728,20 +893,35 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     {rawData.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
                       <Tr
                         key={rowIndex}
-                        bg={rowIndex === headerIndex ? "primary.100" : undefined}
-                        fontWeight={rowIndex === headerIndex ? "bold" : "normal"}
+                        bg={
+                          rowIndex === headerIndex ? "primary.100" : undefined
+                        }
+                        fontWeight={
+                          rowIndex === headerIndex ? "bold" : "normal"
+                        }
                         cursor="pointer"
                         onClick={() => handleHeaderChange(rowIndex)}
                         role="button"
-                        _hover={{ bg: rowIndex === headerIndex ? "primary.200" : "primary.50" }}
+                        _hover={{
+                          bg:
+                            rowIndex === headerIndex
+                              ? "primary.200"
+                              : "primary.50",
+                        }}
                       >
                         {row.map((cell, cellIndex) => (
                           <Td
                             key={cellIndex}
                             maxW="200px"
                             isTruncated
-                            border={rowIndex === headerIndex ? "2px solid" : "1px solid"}
-                            borderColor={rowIndex === headerIndex ? "brand.600" : "border"}
+                            border={
+                              rowIndex === headerIndex
+                                ? "2px solid"
+                                : "1px solid"
+                            }
+                            borderColor={
+                              rowIndex === headerIndex ? "brand.600" : "border"
+                            }
                           >
                             {getDisplayValue(cell)}
                           </Td>
@@ -752,7 +932,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 </Table>
                 {rawData.length > MAX_PREVIEW_ROWS && (
                   <Text fontSize="sm" color="subtle" mt={2}>
-                    Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length} total rows
+                    Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length}{" "}
+                    total rows
                   </Text>
                 )}
               </Box>
@@ -761,7 +942,13 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
           {/* Map */}
           {step === "map" && (
-            <Flex direction={{ base: "column", md: "row" }} gap={4} align="stretch" maxH="70vh" overflow="auto">
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              gap={4}
+              align="stretch"
+              maxH="70vh"
+              overflow="auto"
+            >
               <VStack
                 gap={4}
                 align="stretch"
@@ -774,105 +961,170 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 overflowY="auto"
               >
                 {hasMultipleSheets && (
-                  <Card variant="outline" bg={mappingPanelBg} borderColor={mappingPanelBorder} shadow="xs">
+                  <Card
+                    variant="outline"
+                    bg={mappingPanelBg}
+                    borderColor={mappingPanelBorder}
+                    shadow="xs"
+                  >
                     <CardBody p={4}>
                       <VStack align="stretch" spacing={3}>
-                        <Flex direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "flex-start", md: "center" }} gap={3}>
+                        <Flex
+                          direction={{ base: "column", md: "row" }}
+                          justify="space-between"
+                          align={{ base: "flex-start", md: "center" }}
+                          gap={3}
+                        >
                           <Box>
                             <Text fontWeight="semibold">Sheets</Text>
-                            <Text fontSize="xs" color="subtle">Pick a sheet to adjust its column mapping.</Text>
+                            <Text fontSize="xs" color="subtle">
+                              Pick a sheet to adjust its column mapping.
+                            </Text>
                           </Box>
                         </Flex>
                         {renderSheetButtons("sm")}
-                        <Tooltip label={activeSheetStatusTooltip} placement="top" hasArrow>
-                          <HStack spacing={2} fontSize="xs" color="subtle" align="center">
-                            <Icon as={ActiveSheetStatusIcon} boxSize={3} color={activeSheetStatusColor} />
+                        <Tooltip
+                          label={activeSheetStatusTooltip}
+                          placement="top"
+                          hasArrow
+                        >
+                          <HStack
+                            spacing={2}
+                            fontSize="xs"
+                            color="subtle"
+                            align="center"
+                          >
+                            <Icon
+                              as={ActiveSheetStatusIcon}
+                              boxSize={3}
+                              color={activeSheetStatusColor}
+                            />
                             <Text>{activeSheetStatusLabel}</Text>
                           </HStack>
                         </Tooltip>
                         <Text fontSize="xs" color="subtle">
-                          Currently editing: {sheetConfigs[activeSheetIndex]?.name || `Sheet ${activeSheetIndex + 1}`}
+                          Currently editing:{" "}
+                          {sheetConfigs[activeSheetIndex]?.name ||
+                            `Sheet ${activeSheetIndex + 1}`}
                         </Text>
                       </VStack>
                     </CardBody>
                   </Card>
                 )}
-                <Alert status="info" variant="subtle" borderRadius="md" alignItems="flex-start">
+                <Alert
+                  status="info"
+                  variant="subtle"
+                  borderRadius="md"
+                  alignItems="flex-start"
+                >
                   <AlertIcon />
                   <VStack align="start" spacing={0} fontSize="sm">
                     <AlertTitle fontSize="sm">Mapping tips</AlertTitle>
                     <AlertDescription fontSize="xs">
-                      Map the style column (required). Map the image column only if your sheet has one—embedded images without a column are detected automatically.
+                      Map the style column (required). Map the image column only
+                      if your sheet has one—embedded images without a column are
+                      detected automatically.
                     </AlertDescription>
                   </VStack>
                 </Alert>
 
                 {!validateForm.isValid && (
                   <Text color="red.500" fontSize="sm" fontWeight="medium">
-                    Missing required columns: {validateForm.missing.join(", ")}. Please map all required columns.
+                    Missing required columns: {validateForm.missing.join(", ")}.
+                    Please map all required columns.
                   </Text>
                 )}
                 {!headersAreValid && (
                   <Text color="red.500" fontSize="sm" fontWeight="medium">
-                    Selected header row is empty. Choose a different header row before mapping.
+                    Selected header row is empty. Choose a different header row
+                    before mapping.
                   </Text>
                 )}
                 <Text fontSize="sm" color="subtle">
-                  Select a field below, then click a column in the preview grid to map it instantly.
+                  Select a field below, then click a column in the preview grid
+                  to map it instantly.
                 </Text>
 
-                {(["style", "image"] as (keyof ColumnMapping)[]).map((field) => (
-                  <HStack
-                    key={field}
-                    gap={2}
-                    align="center"
-                    p={2}
-                    borderRadius="md"
-                    borderWidth={activeMappingField === field ? "2px" : "1px"}
-                    borderColor={activeMappingField === field ? SELECTED_BORDER_COLOR : "transparent"}
-                    bg={activeMappingField === field ? SELECTED_BG_SUBTLE : "transparent"}
-                    cursor="pointer"
-                    onClick={() => setActiveMappingField(field)}
-                  >
-                    <Text w="180px" fontWeight="semibold">
-                      {field === "style" ? "Style # Column" : "Image Column (pictures)"}:
-                    </Text>
-                    <Tooltip label={`Select Excel column for ${field}`}>
-                      <Select
-                        value={columnMapping[field] !== null ? columnMapping[field]! : ""}
-                        onChange={(e) => handleColumnMap(Number(e.target.value), field)}
-                        onFocus={() => setActiveMappingField(field)}
-                        onClick={() => setActiveMappingField(field)}
-                        placeholder="Unmapped"
-                        flex="1"
-                      >
-                        <option value="">Unmapped</option>
-                        {excelData.headers.map((header, index) => (
-                          <option key={index} value={index}>
-                            {header || `Column ${indexToColumnLetter(index)}`}
-                          </option>
-                        ))}
-                      </Select>
-                    </Tooltip>
-                    {columnMapping[field] !== null && (
-                      <Tooltip label="Clear mapping">
-                        <IconButton
-                          aria-label={`Clear ${field} mapping`}
-                          icon={<CloseIcon />}
-                          size="sm"
-                          onClick={() => handleClearMapping(columnMapping[field]!)}
-                        />
+                {(["style", "image"] as (keyof ColumnMapping)[]).map(
+                  (field) => (
+                    <HStack
+                      key={field}
+                      gap={2}
+                      align="center"
+                      p={2}
+                      borderRadius="md"
+                      borderWidth={activeMappingField === field ? "2px" : "1px"}
+                      borderColor={
+                        activeMappingField === field
+                          ? SELECTED_BORDER_COLOR
+                          : "transparent"
+                      }
+                      bg={
+                        activeMappingField === field
+                          ? SELECTED_BG_SUBTLE
+                          : "transparent"
+                      }
+                      cursor="pointer"
+                      onClick={() => setActiveMappingField(field)}
+                    >
+                      <Text w="180px" fontWeight="semibold">
+                        {field === "style"
+                          ? "Style # Column"
+                          : "Image Column (pictures)"}
+                        :
+                      </Text>
+                      <Tooltip label={`Select Excel column for ${field}`}>
+                        <Select
+                          value={
+                            columnMapping[field] !== null
+                              ? columnMapping[field]!
+                              : ""
+                          }
+                          onChange={(e) =>
+                            handleColumnMap(Number(e.target.value), field)
+                          }
+                          onFocus={() => setActiveMappingField(field)}
+                          onClick={() => setActiveMappingField(field)}
+                          placeholder="Unmapped"
+                          flex="1"
+                        >
+                          <option value="">Unmapped</option>
+                          {excelData.headers.map((header, index) => (
+                            <option key={index} value={index}>
+                              {header || `Column ${indexToColumnLetter(index)}`}
+                            </option>
+                          ))}
+                        </Select>
                       </Tooltip>
-                    )}
-                    <Box w="150px" fontSize="sm" color="subtle" isTruncated>
-                      {getColumnPreview(columnMapping[field], excelData.rows)}
-                    </Box>
-                  </HStack>
-                ))}
-
+                      {columnMapping[field] !== null && (
+                        <Tooltip label="Clear mapping">
+                          <IconButton
+                            aria-label={`Clear ${field} mapping`}
+                            icon={<CloseIcon />}
+                            size="sm"
+                            onClick={() =>
+                              handleClearMapping(columnMapping[field]!)
+                            }
+                          />
+                        </Tooltip>
+                      )}
+                      <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                        {getColumnPreview(columnMapping[field], excelData.rows)}
+                      </Box>
+                    </HStack>
+                  ),
+                )}
               </VStack>
 
-              <Box overflow="auto" borderWidth="1px" borderRadius="md" p={2} w={{ base: "100%", md: "60%" }} maxH="70vh" mt={{ base: 4, md: 0 }}>
+              <Box
+                overflow="auto"
+                borderWidth="1px"
+                borderRadius="md"
+                p={2}
+                w={{ base: "100%", md: "60%" }}
+                maxH="70vh"
+                mt={{ base: 4, md: 0 }}
+              >
                 <Table size="sm">
                   <Thead>
                     <Tr>
@@ -882,11 +1134,23 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                         return (
                           <Th
                             key={index}
-                            bg={isSelected ? SELECTED_BG_STRONG : isMapped ? MAPPED_BG : "neutral.100"}
+                            bg={
+                              isSelected
+                                ? SELECTED_BG_STRONG
+                                : isMapped
+                                  ? MAPPED_BG
+                                  : "neutral.100"
+                            }
                             position="sticky"
                             top={0}
-                            border={isSelected || isMapped ? "2px solid" : undefined}
-                            borderColor={isSelected || isMapped ? SELECTED_BORDER_COLOR : "transparent"}
+                            border={
+                              isSelected || isMapped ? "2px solid" : undefined
+                            }
+                            borderColor={
+                              isSelected || isMapped
+                                ? SELECTED_BORDER_COLOR
+                                : "transparent"
+                            }
                             cursor={activeMappingField ? "pointer" : "default"}
                             onClick={() => handleColumnMapFromGrid(index)}
                             tabIndex={activeMappingField ? 0 : undefined}
@@ -901,7 +1165,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                             aria-pressed={isSelected}
                             _hover={
                               activeMappingField
-                                ? { bg: isSelected ? SELECTED_BG_STRONG : SELECTED_BG_SUBTLE }
+                                ? {
+                                    bg: isSelected
+                                      ? SELECTED_BG_STRONG
+                                      : SELECTED_BG_SUBTLE,
+                                  }
                                 : undefined
                             }
                           >
@@ -912,36 +1180,46 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {excelData.rows.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                      <Tr key={rowIndex}>
-                        {row.map((cell, cellIndex) => {
-                          const isMissingRequired = REQUIRED_FIELDS.some(
-                            (requiredField) => columnMapping[requiredField] === cellIndex && !cell,
-                          )
-                          const isSelectedColumn = selectedColumnIndex === cellIndex
-                          const isMappedColumn = mappedColumnsForHighlight.has(cellIndex)
-                          const bgColor = isMissingRequired
-                            ? "danger.100"
-                            : isSelectedColumn
-                              ? SELECTED_BG_SUBTLE
-                              : isMappedColumn
-                                ? MAPPED_BG
-                                : undefined
-                          return (
-                            <Td
-                              key={cellIndex}
-                              maxW="200px"
-                              isTruncated
-                              bg={bgColor}
-                              cursor={activeMappingField ? "pointer" : "default"}
-                              onClick={() => handleColumnMapFromGrid(cellIndex)}
-                            >
-                              {getDisplayValue(cell)}
-                            </Td>
-                          )
-                        })}
-                      </Tr>
-                    ))}
+                    {excelData.rows
+                      .slice(0, MAX_PREVIEW_ROWS)
+                      .map((row, rowIndex) => (
+                        <Tr key={rowIndex}>
+                          {row.map((cell, cellIndex) => {
+                            const isMissingRequired = REQUIRED_FIELDS.some(
+                              (requiredField) =>
+                                columnMapping[requiredField] === cellIndex &&
+                                !cell,
+                            )
+                            const isSelectedColumn =
+                              selectedColumnIndex === cellIndex
+                            const isMappedColumn =
+                              mappedColumnsForHighlight.has(cellIndex)
+                            const bgColor = isMissingRequired
+                              ? "danger.100"
+                              : isSelectedColumn
+                                ? SELECTED_BG_SUBTLE
+                                : isMappedColumn
+                                  ? MAPPED_BG
+                                  : undefined
+                            return (
+                              <Td
+                                key={cellIndex}
+                                maxW="200px"
+                                isTruncated
+                                bg={bgColor}
+                                cursor={
+                                  activeMappingField ? "pointer" : "default"
+                                }
+                                onClick={() =>
+                                  handleColumnMapFromGrid(cellIndex)
+                                }
+                              >
+                                {getDisplayValue(cell)}
+                              </Td>
+                            )
+                          })}
+                        </Tr>
+                      ))}
                   </Tbody>
                 </Table>
               </Box>
@@ -959,7 +1237,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     <Text fontWeight="medium">{sendToEmail}</Text>
                   ) : (
                     <Text fontSize="sm" color="red.500">
-                      No email parameter detected. Add ?sendToEmail=example@domain.com to the iframe URL.
+                      No email parameter detected. Add
+                      ?sendToEmail=example@domain.com to the iframe URL.
                     </Text>
                   )}
                   {!isEmailValid && sendToEmail && (
@@ -982,9 +1261,23 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                       .filter((key) => columnMapping[key] !== null)
                       .map((key) => (
                         <Tr key={key}>
-                          <Td>{key === "image" ? "Image Column (pictures)" : "Style # Column"}</Td>
-                          <Td>{excelData.headers[columnMapping[key] as number] || `Column ${indexToColumnLetter(columnMapping[key] as number)}`}</Td>
-                          <Td>{getColumnPreview(columnMapping[key], excelData.rows)}</Td>
+                          <Td>
+                            {key === "image"
+                              ? "Image Column (pictures)"
+                              : "Style # Column"}
+                          </Td>
+                          <Td>
+                            {excelData.headers[columnMapping[key] as number] ||
+                              `Column ${indexToColumnLetter(
+                                columnMapping[key] as number,
+                              )}`}
+                          </Td>
+                          <Td>
+                            {getColumnPreview(
+                              columnMapping[key],
+                              excelData.rows,
+                            )}
+                          </Td>
                         </Tr>
                       ))}
                   </Tbody>
