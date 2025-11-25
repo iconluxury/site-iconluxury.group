@@ -2645,6 +2645,8 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       formData.append("currency", currency)
     }
     formData.append("dataWarehouseMode", mode)
+    formData.append("isImagesOnly", String(mode === "imagesOnly"))
+    formData.append("isMsrpOnly", String(mode === "msrpOnly"))
 
     try {
       const response = await fetch(`${SERVER_URL}/datawarehouse`, {
