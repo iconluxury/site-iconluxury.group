@@ -138,7 +138,7 @@ const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeCon
 }
 
 const formatMappingFieldLabel = (field: ColumnType | "imageColumn") => {
-  if (field === "imageColumn") return "image column"
+  if (field === "imageColumn") return "image target column"
   if (field === "msrp") return "MSRP"
   if (field === "style") return "style"
   if (field === "brand") return "brand"
@@ -2220,6 +2220,8 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   )
   const allowImageColumnMapping = modeConfig.allowImageColumnMapping
   const requireImageColumn = modeConfig.requireImageColumn
+  const isImagesOnlyMode = mode === "imagesOnly"
+  const enableImageTargetMapping = allowImageColumnMapping && isImagesOnlyMode
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -2405,13 +2407,16 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     [ALL_COLUMNS],
   )
 
-  const handleImageColumnMap = useCallback((index: number | null) => {
-    setColumnMapping((prev) => ({
-      ...prev,
-      readImage: index,
-      imageAdd: index,
-    }))
-  }, [])
+  const handleImageColumnMap = useCallback(
+    (index: number | null) => {
+      setColumnMapping((prev) => ({
+        ...prev,
+        imageAdd: index,
+        ...(enableImageTargetMapping ? {} : { readImage: index }),
+      }))
+    },
+    [enableImageTargetMapping],
+  )
 
   const handleColumnMapFromGrid = useCallback(
     (index: number) => {
@@ -2467,7 +2472,16 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
-  const imageColumnIndex = columnMapping.readImage ?? columnMapping.imageAdd
+  const imageColumnIndex = useMemo(() => {
+    if (!allowImageColumnMapping) return null
+    if (enableImageTargetMapping) return columnMapping.imageAdd
+    return columnMapping.readImage ?? columnMapping.imageAdd
+  }, [
+    allowImageColumnMapping,
+    columnMapping.imageAdd,
+    columnMapping.readImage,
+    enableImageTargetMapping,
+  ])
 
   const selectedColumnIndex = useMemo(() => {
     if (!activeMappingField) return null
@@ -2613,12 +2627,15 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       formData.append("brandColImage", indexToColumnLetter(columnMapping.brand))
     }
 
-    const fallbackImageColumnIndex = allowImageColumnMapping
-      ? determineFallbackImageColumnIndex(excelData.headers, excelData.rows)
-      : null
-    const imageColumnIndexForSubmit = allowImageColumnMapping
-      ? imageColumnIndex ?? fallbackImageColumnIndex
-      : null
+    const fallbackImageColumnIndex =
+      allowImageColumnMapping && !enableImageTargetMapping
+        ? determineFallbackImageColumnIndex(excelData.headers, excelData.rows)
+        : null
+    const imageColumnIndexForSubmit = enableImageTargetMapping
+      ? columnMapping.imageAdd
+      : allowImageColumnMapping
+        ? columnMapping.readImage ?? columnMapping.imageAdd ?? fallbackImageColumnIndex
+        : null
 
     formData.append(
       "imageColumnImage",
@@ -2678,12 +2695,12 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     file,
     columnMapping,
     allowImageColumnMapping,
+    enableImageTargetMapping,
     isManualBrandApplied,
     headerIndex,
     isNewDistro,
     currency,
     emailRecipient,
-    imageColumnIndex,
     isEmailValid,
     mode,
     showToast,
@@ -3133,10 +3150,10 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   )}
                 </FormControl>
               )}
-              {allowImageColumnMapping && (
+              {enableImageTargetMapping && (
                 <>
                   <Text fontWeight="bold" mt={4}>
-                    Image Column
+                    Image Target Column
                   </Text>
                   <HStack
                     gap={2}
@@ -3160,9 +3177,9 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     onClick={() => setActiveMappingField("imageColumn")}
                   >
                     <Text w="120px" fontWeight="semibold">
-                      Image URL:
+                      Target Anchor:
                     </Text>
-                    <Tooltip label="Select Excel column with image URLs">
+                    <Tooltip label="Select the column that contains the target anchor used to place downloaded images">
                       <Select
                         value={imageColumnIndex ?? ""}
                         onChange={(e) =>
@@ -3373,9 +3390,9 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         <Td>{getColumnPreview(index, excelData.rows)}</Td>
                       </Tr>
                     ))}
-                  {allowImageColumnMapping && imageColumnIndex !== null && (
+                  {enableImageTargetMapping && imageColumnIndex !== null && (
                     <Tr>
-                      <Td>Image URL</Td>
+                      <Td>Image Target</Td>
                       <Td>
                         {excelData.headers[imageColumnIndex] ||
                           `Column ${indexToColumnLetter(imageColumnIndex)}`}
