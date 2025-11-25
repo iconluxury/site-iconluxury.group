@@ -3471,7 +3471,6 @@ const CMSGoogleSerpForm: React.FC = () => {
   >(null)
   const [dataWarehouseMode, setDataWarehouseMode] =
     useState<DataWarehouseMode | null>(null)
-  const devUIEnabled = showDevUI()
 
   const handleBackToTools = useCallback(() => {
     setSelectedType(null)
@@ -3565,7 +3564,7 @@ const CMSGoogleSerpForm: React.FC = () => {
       <VStack spacing={6} align="stretch">
   {/* Mine Data */}
   <Text fontSize="lg" fontWeight="bold">Mine Data</Text>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("images")}>
             <CardHeader>
               <HStack>
@@ -3594,146 +3593,52 @@ const CMSGoogleSerpForm: React.FC = () => {
               <Text>Internal product database jobs (choose a mode).</Text>
             </CardBody>
           </Card>
-          {devUIEnabled && (
-            <Card
-              cursor="not-allowed"
-              aria-disabled
-              bg="gray.100"
-              borderColor="gray.200"
-              color="gray.500"
-            >
-              <CardHeader>
-                <HStack>
-                  <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                  <Text fontSize="xl" fontWeight="semibold">Reverse Image Search</Text>
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
-                </HStack>
-              </CardHeader>
-              <CardBody>
-                <Text>
-                  Image search using a reference photo and reverse image search.
-                </Text>
-              </CardBody>
-            </Card>
-          )}
         </SimpleGrid>
 
-        {devUIEnabled && (
-          <>
-            {/* Transform Excel */}
-            <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-              <Card
-                cursor="pointer"
-                onClick={() => setSelectedType("imageLinks")}
-                bg={devUIEnabled ? "red.50" : undefined}
-                borderWidth={devUIEnabled ? "1px" : undefined}
-                borderColor={devUIEnabled ? "red.200" : undefined}
-              >
-                <CardHeader>
-                  <HStack>
-                    <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                    <Text fontSize="xl" fontWeight="semibold">Image URL Download</Text>
-                    <Badge colorScheme="red" ml="auto">DEV</Badge>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <Text>Convert image links to excel pictures.</Text>
-                </CardBody>
-              </Card>
-              <Card
-                cursor="pointer"
-                onClick={() => setSelectedType("crop")}
-                bg={devUIEnabled ? "red.50" : undefined}
-                borderWidth={devUIEnabled ? "1px" : undefined}
-                borderColor={devUIEnabled ? "red.200" : undefined}
-              >
-                <CardHeader>
-                  <HStack>
-                    <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                    <Text fontSize="xl" fontWeight="semibold">Image crop</Text>
-                    <Badge colorScheme="red" ml="auto">DEV</Badge>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <Text>Remove whitespace from Excel pictures.</Text>
-                </CardBody>
-              </Card>
-              <Card
-                cursor="not-allowed"
-                aria-disabled
-                bg="gray.100"
-                borderColor="gray.200"
-                color="gray.500"
-              >
-                <CardHeader>
-                  <HStack>
-                    <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                    <Text fontSize="xl" fontWeight="semibold">PDF → Excel</Text>
-                    <Badge colorScheme="red" ml="auto">DEV</Badge>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <Text>
-                    Convert PDFs (catalogs, invoices, spec sheets) into structured
-                    Excel/CSV data.
-                  </Text>
-                </CardBody>
-              </Card>
-            </SimpleGrid>
-
-            {/* Enhance Images (Gen AI) - coming soon */}
-            <Text fontSize="lg" fontWeight="bold" mt={2}>Enhance Images (Gen AI)</Text>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-              <Card
-                cursor="not-allowed"
-                aria-disabled
-                bg="gray.100"
-                borderColor="gray.200"
-                color="gray.500"
-              >
-                <CardHeader>
-                  <HStack>
-                    <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                    <Text fontSize="xl" fontWeight="semibold">Background remover</Text>
-                    <Badge colorScheme="red" ml="auto">DEV</Badge>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <Text>Remove image backgrounds. (Nano Banana)</Text>
-                </CardBody>
-              </Card>
-
-              <Card
-                cursor="not-allowed"
-                aria-disabled
-                bg="gray.100"
-                borderColor="gray.200"
-                color="gray.500"
-              >
-                <CardHeader>
-                  <HStack>
-                    <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                    <Text fontSize="xl" fontWeight="semibold">Image generator</Text>
-                    <Badge colorScheme="red" ml="auto">DEV</Badge>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <VStack align="start" spacing={1}>
-                    <Text>
-                      Generate studio-style product photos from reference shots. (Nano Banana)
-                    </Text>
-                    <Text fontWeight="semibold">Convert:</Text>
-                    <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text>
-                      Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
-                      <Text as="span" mx={2}>•</Text> Low‑quality product photos
-                    </Text>
-                  </VStack>
-                </CardBody>
-              </Card>
-            </SimpleGrid>
-          </>
-        )}
+  {/* Transform Excel */}
+  <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+          <Card
+            cursor="pointer"
+            onClick={() => setSelectedType("imageLinks")}
+            bg={showDevUI() ? "red.50" : undefined}
+            borderWidth={showDevUI() ? "1px" : undefined}
+            borderColor={showDevUI() ? "red.200" : undefined}
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Image URL Download</Text>
+                {showDevUI() && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Convert image links to excel pictures.</Text>
+            </CardBody>
+          </Card>
+          <Card
+            cursor="pointer"
+            onClick={() => setSelectedType("crop")}
+            bg={showDevUI() ? "red.50" : undefined}
+            borderWidth={showDevUI() ? "1px" : undefined}
+            borderColor={showDevUI() ? "red.200" : undefined}
+          >
+            <CardHeader>
+              <HStack>
+                <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
+                <Text fontSize="xl" fontWeight="semibold">Image crop</Text>
+                {showDevUI() && (
+                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                )}
+              </HStack>
+            </CardHeader>
+            <CardBody>
+              <Text>Remove whitespace from Excel pictures.</Text>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
       </VStack>
     </Container>
   )
