@@ -56,7 +56,17 @@ export const handleError = (err: ApiError, showToast: any) => {
 // - Shows in Vite dev server automatically (import.meta.env.DEV)
 // - Can be forced on in production builds by setting VITE_SHOW_DEV_UI to a truthy value
 //   accepted values: "true", "1", "yes", "on" (case-insensitive)
+const DEV_UI_TRUE_VALUES = new Set(["true", "1", "yes", "on"])
+
 export const showDevUI = (): boolean => {
-  // Hardcoded ON per request: always show developer UI in all environments
-  return true
+  if (import.meta?.env?.DEV) {
+    return true
+  }
+
+  const override = import.meta?.env?.VITE_SHOW_DEV_UI
+  if (typeof override === "string") {
+    return DEV_UI_TRUE_VALUES.has(override.trim().toLowerCase())
+  }
+
+  return false
 }
