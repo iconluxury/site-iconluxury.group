@@ -13,6 +13,7 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Card,
   CardBody,
   Container,
@@ -189,6 +190,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeMappingField, setActiveMappingField] = useState<
     keyof ColumnMapping | null
   >(null)
+  const [replaceImageColumn, setReplaceImageColumn] = useState(true)
 
   const activeSheet = sheetConfigs[activeSheetIndex] ?? null
   const excelData = activeSheet?.excelData ?? { headers: [], rows: [] }
@@ -614,6 +616,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         if (sendToEmail) {
           formData.append("sendToEmail", sendToEmail)
         }
+        formData.append(
+          "replaceImageColumn",
+          replaceImageColumn ? "true" : "false",
+        )
 
         const response = await fetch(`${SERVER_URL}/submitCrop`, {
           method: "POST",
@@ -648,6 +654,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }
   }, [
     isEmailValid,
+    replaceImageColumn,
     sendToEmail,
     sheetConfigs,
     sheetValidationResults,
@@ -1246,6 +1253,21 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                       Invalid email. Please update the iframe URL.
                     </Text>
                   )}
+                </FormControl>
+                <FormControl>
+                  <Checkbox
+                    isChecked={replaceImageColumn}
+                    onChange={(event) =>
+                      setReplaceImageColumn(event.target.checked)
+                    }
+                  >
+                    Replace original image column with cropped output
+                  </Checkbox>
+                  <Text fontSize="sm" color="subtle" mt={1}>
+                    {replaceImageColumn
+                      ? "Only the cropped images will remain in the mapped column."
+                      : "Deselect to keep both the input column and the new cropped images column."}
+                  </Text>
                 </FormControl>
                 <Text>Mapped Columns:</Text>
                 <Table variant="simple" size="sm">
