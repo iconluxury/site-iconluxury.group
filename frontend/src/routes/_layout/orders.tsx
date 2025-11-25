@@ -1,18 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Box,
   Container,
-  Text,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Divider,
-} from "@chakra-ui/react";
-import { createFileRoute } from "@tanstack/react-router";
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react"
+import { useQuery } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 
 // Reuse the mock data fetching functions from the dashboard
 const fetchCustomers = async () => {
@@ -22,40 +22,83 @@ const fetchCustomers = async () => {
     { id: "3", name: "Bob Johnson", joined: "2025-03-20" },
     { id: "4", name: "Alice Brown", joined: "2025-05-10" },
     { id: "5", name: "Charlie Davis", joined: "2025-04-01" },
-  ];
-};
+  ]
+}
 
 const fetchOrders = async () => {
   return [
-    { id: "1", customerId: "1", date: "2025-05-10", amount: 100, quantity: 5, units: "items", source: "standard" },
-    { id: "2", customerId: "2", date: "2025-05-05", amount: 200, quantity: 10, units: "boxes", source: "standard" },
-    { id: "3", customerId: "1", date: "2025-04-25", amount: 150, quantity: 8, units: "items", source: "standard" },
-    { id: "4", customerId: "3", date: "2025-03-15", amount: 300, quantity: 15, units: "units", source: "standard" },
-    { id: "5", customerId: "4", date: "2025-05-15", amount: 250, quantity: 12, units: "boxes", source: "standard" },
-  ];
-};
+    {
+      id: "1",
+      customerId: "1",
+      date: "2025-05-10",
+      amount: 100,
+      quantity: 5,
+      units: "items",
+      source: "standard",
+    },
+    {
+      id: "2",
+      customerId: "2",
+      date: "2025-05-05",
+      amount: 200,
+      quantity: 10,
+      units: "boxes",
+      source: "standard",
+    },
+    {
+      id: "3",
+      customerId: "1",
+      date: "2025-04-25",
+      amount: 150,
+      quantity: 8,
+      units: "items",
+      source: "standard",
+    },
+    {
+      id: "4",
+      customerId: "3",
+      date: "2025-03-15",
+      amount: 300,
+      quantity: 15,
+      units: "units",
+      source: "standard",
+    },
+    {
+      id: "5",
+      customerId: "4",
+      date: "2025-05-15",
+      amount: 250,
+      quantity: 12,
+      units: "boxes",
+      source: "standard",
+    },
+  ]
+}
 
 export const Route = createFileRoute("/_layout/orders")({
   component: OrdersPage,
-});
+})
 
 function OrdersPage() {
   // Fetch orders and customers
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: fetchOrders,
-  });
+  })
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: fetchCustomers,
-  });
+  })
 
   // Create a customer ID to name map
-  const customerMap = customers.reduce((acc, customer) => {
-    acc[customer.id] = customer.name;
-    return acc;
-  }, {} as Record<string, string>);
+  const customerMap = customers.reduce(
+    (acc, customer) => {
+      acc[customer.id] = customer.name
+      return acc
+    },
+    {} as Record<string, string>,
+  )
 
   return (
     <Container maxW="full" bg="gray.50" minH="100vh" p={4}>
@@ -97,13 +140,17 @@ function OrdersPage() {
               {ordersLoading || customersLoading ? (
                 <Tr>
                   <Td colSpan={7} textAlign="center">
-                    <Text fontSize="sm" color="gray.600">Loading...</Text>
+                    <Text fontSize="sm" color="gray.600">
+                      Loading...
+                    </Text>
                   </Td>
                 </Tr>
               ) : orders.length === 0 ? (
                 <Tr>
                   <Td colSpan={7} textAlign="center">
-                    <Text fontSize="sm" color="gray.600">No orders found.</Text>
+                    <Text fontSize="sm" color="gray.600">
+                      No orders found.
+                    </Text>
                   </Td>
                 </Tr>
               ) : (
@@ -124,7 +171,7 @@ function OrdersPage() {
         </TableContainer>
       </Box>
     </Container>
-  );
+  )
 }
 
-export default OrdersPage;
+export default OrdersPage

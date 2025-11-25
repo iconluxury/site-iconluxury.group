@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   Button,
   Checkbox,
@@ -14,47 +13,48 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-} from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type SubmitHandler, useForm } from "react-hook-form";
+} from "@chakra-ui/react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { type SubmitHandler, useForm } from "react-hook-form"
 
 import {
   type ApiError,
   type UserPublic as BaseUserPublic, // Rename to avoid conflict
   type UserUpdate as BaseUserUpdate,
   UsersService,
-} from "../../client";
-import useCustomToast from "../../hooks/useCustomToast";
-import { emailPattern, handleError } from "../../utils";
+} from "../../client"
+import useCustomToast from "../../hooks/useCustomToast"
+import { emailPattern, handleError } from "../../utils"
 
 // Extend UserPublic to match database schema
 interface ExtendedUserPublic extends BaseUserPublic {
-  has_subscription?: boolean;
-  is_trial?: boolean;
-  is_deactivated?: boolean;
+  has_subscription?: boolean
+  is_trial?: boolean
+  is_deactivated?: boolean
 }
 
 interface UserUpdate extends BaseUserUpdate {
-  has_subscription?: boolean;
-  is_trial?: boolean;
-  is_deactivated?: boolean;
+  has_subscription?: boolean
+  is_trial?: boolean
+  is_deactivated?: boolean
 }
 
 interface EditUserProps {
-  user: ExtendedUserPublic;
-  isOpen: boolean;
-  onClose: () => void;
+  user: ExtendedUserPublic
+  isOpen: boolean
+  onClose: () => void
 }
 
 interface UserUpdateForm extends UserUpdate {
-  confirm_password: string;
+  confirm_password: string
 }
 
 const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
-  const queryClient = useQueryClient();
-  const showToast = useCustomToast();
+  const queryClient = useQueryClient()
+  const showToast = useCustomToast()
 
-  console.log("Initial user prop:", JSON.stringify(user, null, 2));
+  console.log("Initial user prop:", JSON.stringify(user, null, 2))
 
   const {
     register,
@@ -71,17 +71,17 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
       is_trial: user.is_trial || false,
       is_deactivated: user.is_deactivated || false,
     },
-  });
+  })
 
   useEffect(() => {
-    console.log("Resetting form with user:", JSON.stringify(user, null, 2));
+    console.log("Resetting form with user:", JSON.stringify(user, null, 2))
     reset({
       ...user,
       has_subscription: user.has_subscription || false,
       is_trial: user.is_trial || false,
       is_deactivated: user.is_deactivated || false,
-    });
-  }, [user, reset]);
+    })
+  }, [user, reset])
 
   const mutation = useMutation({
     mutationFn: (data: UserUpdateForm) => {
@@ -90,43 +90,43 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
         has_subscription: data.has_subscription || false,
         is_trial: data.is_trial || false,
         is_deactivated: data.is_deactivated || false,
-      };
-      delete (requestData as any).confirm_password;
-      console.log("Sending to API:", JSON.stringify(requestData, null, 2));
+      }
+      ;(requestData as any).confirm_password = undefined
+      console.log("Sending to API:", JSON.stringify(requestData, null, 2))
       return UsersService.updateUser({
         userId: user.id,
         requestBody: requestData,
-      });
+      })
     },
     onSuccess: (response) => {
-      console.log("API response:", JSON.stringify(response, null, 2));
-      showToast("Success!", "User updated successfully.", "success");
-      queryClient.refetchQueries({ queryKey: ["users"] });
-      onClose();
+      console.log("API response:", JSON.stringify(response, null, 2))
+      showToast("Success!", "User updated successfully.", "success")
+      queryClient.refetchQueries({ queryKey: ["users"] })
+      onClose()
     },
     onError: (err: ApiError) => {
-      console.log("Mutation error:", err);
-      handleError(err, showToast);
+      console.log("Mutation error:", err)
+      handleError(err, showToast)
     },
     onSettled: () => {
-      console.log("Invalidating users query");
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      console.log("Invalidating users query")
+      queryClient.invalidateQueries({ queryKey: ["users"] })
     },
-  });
+  })
 
   const onSubmit: SubmitHandler<UserUpdateForm> = async (data) => {
     if (data.password === "") {
-      data.password = undefined;
+      data.password = undefined
     }
-    console.log("Form submitted with data:", JSON.stringify(data, null, 2));
-    mutation.mutate(data);
-  };
+    console.log("Form submitted with data:", JSON.stringify(data, null, 2))
+    mutation.mutate(data)
+  }
 
   const onCancel = () => {
-    console.log("Cancel clicked, resetting form");
-    reset();
-    onClose();
-  };
+    console.log("Cancel clicked, resetting form")
+    reset()
+    onClose()
+  }
 
   return (
     <Modal
@@ -182,13 +182,16 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
               id="confirm_password"
               {...register("confirm_password", {
                 validate: (value) =>
-                  value === getValues().password || "The passwords do not match",
+                  value === getValues().password ||
+                  "The passwords do not match",
               })}
               placeholder="Password"
               type="password"
             />
             {errors.confirm_password && (
-              <FormErrorMessage>{errors.confirm_password.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.confirm_password.message}
+              </FormErrorMessage>
             )}
           </FormControl>
           <Flex gap={4} mt={4}>
@@ -206,7 +209,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
           <Flex direction="column" mt={4} gap={2}>
             <FormControl>
               <Checkbox {...register("has_subscription")} colorScheme="teal">
-              Supplier
+                Supplier
               </Checkbox>
             </FormControl>
             <FormControl>
@@ -216,7 +219,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
             </FormControl>
             <FormControl>
               <Checkbox {...register("is_deactivated")} colorScheme="teal">
-              Restricted
+                Restricted
               </Checkbox>
             </FormControl>
           </Flex>
@@ -234,7 +237,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  );
-};
+  )
+}
 
-export default EditUser;
+export default EditUser

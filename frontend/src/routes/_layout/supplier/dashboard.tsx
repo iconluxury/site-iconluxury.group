@@ -1,51 +1,52 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Avatar,
   Box,
-  Container,
-  Text,
-  VStack,
   Button,
+  Container,
+  Flex,
+  Icon,
+  IconButton,
+  Input,
   SimpleGrid,
   Stat,
   StatLabel,
-  Icon,
   StatNumber,
-  Flex,
-  Input,
-  Tabs,
-  TabList,
   Tab,
-  IconButton,
-  Avatar,
-} from "@chakra-ui/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Bar } from "react-chartjs-2";
+  TabList,
+  Tabs,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
-} from "chart.js";
-import { FiFilter, FiMoreVertical, FiArrowUp, FiArrowDown, FiShoppingCart, FiMessageSquare, FiUpload, FiTag } from "react-icons/fi";
-import type { UserPublic } from "../../../client";
+} from "chart.js"
+import { Bar } from "react-chartjs-2"
+import {
+  FiArrowDown,
+  FiArrowUp,
+  FiFilter,
+  FiMessageSquare,
+  FiMoreVertical,
+  FiShoppingCart,
+  FiTag,
+  FiUpload,
+} from "react-icons/fi"
+import type { UserPublic } from "../../../client"
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export const Route = createFileRoute("/_layout/supplier/dashboard")({
   component: Dashboard,
-});
+})
 
 // Mock data fetching functions
 const fetchCustomers = async () => {
@@ -70,15 +71,27 @@ const fetchCustomers = async () => {
     { id: "18", name: "Oscar Cyan", joined: "2024-06-20" },
     { id: "19", name: "Paul Magenta", joined: "2024-05-30" },
     { id: "20", name: "Quinn Teal", joined: "2024-04-10" },
-  ];
-};
+  ]
+}
 
 const fetchOrders = async () => {
   return [
-    { id: "1", customerId: "1", date: "2024-10-18", amount: 50000, source: "Credit Card" },
-    { id: "2", customerId: "2", date: "2024-05-24", amount: 50000, source: "Bank Transfer" },
-  ];
-};
+    {
+      id: "1",
+      customerId: "1",
+      date: "2024-10-18",
+      amount: 50000,
+      source: "Credit Card",
+    },
+    {
+      id: "2",
+      customerId: "2",
+      date: "2024-05-24",
+      amount: 50000,
+      source: "Bank Transfer",
+    },
+  ]
+}
 
 const fetchCashFlow = async () => {
   return [
@@ -87,71 +100,110 @@ const fetchCashFlow = async () => {
     { date: "2024-11-02", amount: 4000 },
     { date: "2024-11-09", amount: 2000 },
     { date: "2024-11-18", amount: 3000 },
-  ];
-};
+  ]
+}
 
 const fetchActivity = async () => {
   return [
-    { type: "Order", name: "Theo Lawrence", date: "2024-10-18", amount: 120, currency: "USD" },
-    { type: "Message", name: "Amy March", date: "2024-05-24", amount: 150, currency: "USD" },
-    { type: "Upload", name: "Theo Lawrence", date: "2024-10-19", amount: 0, currency: "USD" },
-    { type: "Offer", name: "Amy March", date: "2024-05-25", amount: 200, currency: "USD" },
-  ];
-};
+    {
+      type: "Order",
+      name: "Theo Lawrence",
+      date: "2024-10-18",
+      amount: 120,
+      currency: "USD",
+    },
+    {
+      type: "Message",
+      name: "Amy March",
+      date: "2024-05-24",
+      amount: 150,
+      currency: "USD",
+    },
+    {
+      type: "Upload",
+      name: "Theo Lawrence",
+      date: "2024-10-19",
+      amount: 0,
+      currency: "USD",
+    },
+    {
+      type: "Offer",
+      name: "Amy March",
+      date: "2024-05-25",
+      amount: 200,
+      currency: "USD",
+    },
+  ]
+}
 
 const fetchMessages = async () => {
   return [
-    { customer: "Theo Lawrence", message: "Can you update my order status?", date: "2024-10-18" },
-    { customer: "Amy March", message: "I need assistance with payment.", date: "2024-05-24" },
-  ];
-};
+    {
+      customer: "Theo Lawrence",
+      message: "Can you update my order status?",
+      date: "2024-10-18",
+    },
+    {
+      customer: "Amy March",
+      message: "I need assistance with payment.",
+      date: "2024-05-24",
+    },
+  ]
+}
 
 function Dashboard() {
-  const queryClient = useQueryClient();
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"]);
-  const userName = currentUser?.full_name || currentUser?.email || "Young Alaska";
+  const queryClient = useQueryClient()
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const userName =
+    currentUser?.full_name || currentUser?.email || "Young Alaska"
 
   // Fetch data
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: fetchCustomers,
-  });
+  })
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: fetchOrders,
-  });
+  })
 
   const { data: cashFlow = [], isLoading: cashFlowLoading } = useQuery({
     queryKey: ["cashFlow"],
     queryFn: fetchCashFlow,
-  });
+  })
 
   const { data: activity = [], isLoading: activityLoading } = useQuery({
     queryKey: ["activity"],
     queryFn: fetchActivity,
-  });
+  })
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: ["messages"],
     queryFn: fetchMessages,
-  });
+  })
 
   // Calculate summary metrics
-  const totalCustomers = customers.length;
-  const totalOrders = orders.length;
-  const totalMerchandiseValue = 320845.20; // As per screenshot
-  const totalOffers = 10;
-  const totalCustomersCount = customers.length;
-  const totalOpenOrders = 14376.16;
+  const totalCustomers = customers.length
+  const totalOrders = orders.length
+  const totalMerchandiseValue = 320845.2 // As per screenshot
+  const totalOffers = 10
+  const totalCustomersCount = customers.length
+  const totalOpenOrders = 14376.16
 
   // Use all cash flow data (no filtering)
-  const dates = cashFlow.map(item => item.date);
-  const amounts = cashFlow.map(item => item.amount);
-  const highestPoint = amounts.length > 0 ? Math.max(...amounts) : 0;
-  const lowestPoint = amounts.length > 0 ? Math.min(...amounts) : 0;
-  const increaseValue = highestPoint > 0 ? `${highestPoint} on ${dates[amounts.indexOf(highestPoint)]}` : "N/A";
-  const dropValue = lowestPoint < 0 ? `${lowestPoint} on ${dates[amounts.indexOf(lowestPoint)]}` : "N/A";
+  const dates = cashFlow.map((item) => item.date)
+  const amounts = cashFlow.map((item) => item.amount)
+  const highestPoint = amounts.length > 0 ? Math.max(...amounts) : 0
+  const lowestPoint = amounts.length > 0 ? Math.min(...amounts) : 0
+  const increaseValue =
+    highestPoint > 0
+      ? `${highestPoint} on ${dates[amounts.indexOf(highestPoint)]}`
+      : "N/A"
+  const dropValue =
+    lowestPoint < 0
+      ? `${lowestPoint} on ${dates[amounts.indexOf(lowestPoint)]}`
+      : "N/A"
 
   // Map activity types to icons
   const activityIcons = {
@@ -159,7 +211,7 @@ function Dashboard() {
     Message: FiMessageSquare,
     Upload: FiUpload,
     Offer: FiTag,
-  };
+  }
 
   return (
     <Container maxW="full" bg="gray.50" minH="100vh" p={4}>
@@ -175,32 +227,71 @@ function Dashboard() {
               <Tab>Yearly</Tab>
             </TabList>
           </Tabs>
-          <Button size="sm" variant="outline" borderRadius="md" ml={4}>Export</Button>
+          <Button size="sm" variant="outline" borderRadius="md" ml={4}>
+            Export
+          </Button>
         </Flex>
       </Flex>
 
       {/* Total Merchandise Value */}
-      <Box p={4} bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md" mb={4}>
+      <Box
+        p={4}
+        bg="white"
+        shadow="sm"
+        borderWidth="1px"
+        borderColor="gray.200"
+        borderRadius="md"
+        mb={4}
+      >
         <Flex justify="space-between" align="center">
           <Box>
-            <Text fontSize="sm" color="gray.600">TOTAL MERCHANDISE VALUE</Text>
-            <Text fontSize="2xl" fontWeight="bold">€ {totalMerchandiseValue.toLocaleString()}</Text>
+            <Text fontSize="sm" color="gray.600">
+              TOTAL MERCHANDISE VALUE
+            </Text>
+            <Text fontSize="2xl" fontWeight="bold">
+              € {totalMerchandiseValue.toLocaleString()}
+            </Text>
             <Text fontSize="sm" color="green.500">
               16.50% <Icon as={FiArrowUp} color="green.500" />
             </Text>
           </Box>
           <Flex>
-            <IconButton aria-label="Add" icon={<Text fontSize="lg">+</Text>} size="sm" mr={2} bg="white" color="gray.800" borderWidth="1px" borderColor="gray.200" borderRadius="full" />
-            <IconButton aria-label="More" icon={<FiMoreVertical />} size="sm" bg="gray.600" color="white" borderRadius="full" />
+            <IconButton
+              aria-label="Add"
+              icon={<Text fontSize="lg">+</Text>}
+              size="sm"
+              mr={2}
+              bg="white"
+              color="gray.800"
+              borderWidth="1px"
+              borderColor="gray.200"
+              borderRadius="full"
+            />
+            <IconButton
+              aria-label="More"
+              icon={<FiMoreVertical />}
+              size="sm"
+              bg="gray.600"
+              color="white"
+              borderRadius="full"
+            />
           </Flex>
         </Flex>
       </Box>
 
       {/* Sales Chart with High/Low Points */}
       <Box mb={4}>
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Flex justify="space-between" align="center" p={4} pb={0}>
-            <Text fontSize="md" fontWeight="bold" color="gray.800">Total Sales</Text>
+            <Text fontSize="md" fontWeight="bold" color="gray.800">
+              Total Sales
+            </Text>
           </Flex>
           <Flex p={4}>
             <Box flex="3">
@@ -211,8 +302,16 @@ function Dashboard() {
                     {
                       label: "Sales",
                       data: amounts,
-                      backgroundColor: amounts.map(amount => amount >= 0 ? "rgba(75, 192, 192, 0.6)" : "rgba(255, 99, 132, 0.6)"),
-                      borderColor: amounts.map(amount => amount >= 0 ? "rgba(75, 192, 192, 1)" : "rgba(255, 99, 132, 1)"),
+                      backgroundColor: amounts.map((amount) =>
+                        amount >= 0
+                          ? "rgba(75, 192, 192, 0.6)"
+                          : "rgba(255, 99, 132, 0.6)",
+                      ),
+                      borderColor: amounts.map((amount) =>
+                        amount >= 0
+                          ? "rgba(75, 192, 192, 1)"
+                          : "rgba(255, 99, 132, 1)",
+                      ),
                       borderWidth: 1,
                     },
                   ],
@@ -225,24 +324,45 @@ function Dashboard() {
                     title: { display: false },
                   },
                   scales: {
-                    y: { beginAtZero: true, title: { display: false }, grid: { display: false } },
+                    y: {
+                      beginAtZero: true,
+                      title: { display: false },
+                      grid: { display: false },
+                    },
                     x: { title: { display: false }, grid: { display: false } },
                   },
                 }}
                 height={150}
               />
             </Box>
-            <Box flex="1" ml={4} bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md" p={3}>
+            <Box
+              flex="1"
+              ml={4}
+              bg="white"
+              shadow="sm"
+              borderWidth="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+              p={3}
+            >
               <Box mb={4}>
-                <Text fontSize="sm" color="gray.600">Peak Value</Text>
-                <Text fontSize="xl" fontWeight="bold">€ {highestPoint}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Peak Value
+                </Text>
+                <Text fontSize="xl" fontWeight="bold">
+                  € {highestPoint}
+                </Text>
                 <Text fontSize="xs" color="green.500">
                   45.00% <Icon as={FiArrowUp} color="green.500" />
                 </Text>
               </Box>
               <Box>
-                <Text fontSize="sm" color="gray.600">Lowest Value</Text>
-                <Text fontSize="xl" fontWeight="bold">€ {lowestPoint}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Lowest Value
+                </Text>
+                <Text fontSize="xl" fontWeight="bold">
+                  € {lowestPoint}
+                </Text>
                 <Text fontSize="xs" color="red.500">
                   12.50% <Icon as={FiArrowDown} color="red.500" />
                 </Text>
@@ -254,36 +374,67 @@ function Dashboard() {
 
       {/* Summary Metrics */}
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} mb={4}>
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Stat p={3}>
-            <StatLabel fontSize="sm" color="gray.600">Total Offers</StatLabel>
+            <StatLabel fontSize="sm" color="gray.600">
+              Total Offers
+            </StatLabel>
             <StatNumber fontSize="lg" color="gray.800">
-              {customersLoading ? "Loading..." : `${totalOffers.toLocaleString()}`}
+              {customersLoading
+                ? "Loading..."
+                : `${totalOffers.toLocaleString()}`}
             </StatNumber>
             <Text fontSize="xs" color="green.500">
-              16.50% <Icon as={FiArrowUp} color="green.500" /> vs. 7,120.14 Last Period
+              16.50% <Icon as={FiArrowUp} color="green.500" /> vs. 7,120.14 Last
+              Period
             </Text>
           </Stat>
         </Box>
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Stat p={3}>
-            <StatLabel fontSize="sm" color="gray.600">Total Customers</StatLabel>
+            <StatLabel fontSize="sm" color="gray.600">
+              Total Customers
+            </StatLabel>
             <StatNumber fontSize="lg" color="gray.800">
               {customersLoading ? "Loading..." : `${totalCustomersCount}`}
             </StatNumber>
             <Text fontSize="xs" color="red.500">
-              8.21% <Icon as={FiArrowDown} color="red.500" /> vs. 4,116.50 Last Period
+              8.21% <Icon as={FiArrowDown} color="red.500" /> vs. 4,116.50 Last
+              Period
             </Text>
           </Stat>
         </Box>
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Stat p={3}>
-            <StatLabel fontSize="sm" color="gray.600">Open Orders</StatLabel>
+            <StatLabel fontSize="sm" color="gray.600">
+              Open Orders
+            </StatLabel>
             <StatNumber fontSize="lg" color="gray.800">
-              {ordersLoading ? "Loading..." : `€ ${totalOpenOrders.toLocaleString()}`}
+              {ordersLoading
+                ? "Loading..."
+                : `€ ${totalOpenOrders.toLocaleString()}`}
             </StatNumber>
             <Text fontSize="xs" color="green.500">
-              35.16% <Icon as={FiArrowUp} color="green.500" /> vs. 10,236.46 Last Period
+              35.16% <Icon as={FiArrowUp} color="green.500" /> vs. 10,236.46
+              Last Period
             </Text>
           </Stat>
         </Box>
@@ -292,30 +443,70 @@ function Dashboard() {
       {/* Recent Activity and Communication in Two Columns */}
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
         {/* Recent Activity */}
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Flex justify="space-between" align="center" p={4} pb={0}>
-            <Text fontSize="md" fontWeight="bold" color="gray.800">Recent Activity</Text>
+            <Text fontSize="md" fontWeight="bold" color="gray.800">
+              Recent Activity
+            </Text>
             <Flex>
-              <IconButton aria-label="Filter" icon={<FiFilter />} size="sm" variant="outline" mr={2} />
-              <Button size="sm" variant="outline">Sort</Button>
+              <IconButton
+                aria-label="Filter"
+                icon={<FiFilter />}
+                size="sm"
+                variant="outline"
+                mr={2}
+              />
+              <Button size="sm" variant="outline">
+                Sort
+              </Button>
             </Flex>
           </Flex>
           <Box p={4} pt={2}>
             <VStack spacing={3} align="stretch">
               {activity.length === 0 ? (
-                <Text fontSize="sm" color="gray.600">No recent activity.</Text>
+                <Text fontSize="sm" color="gray.600">
+                  No recent activity.
+                </Text>
               ) : (
                 activity.map((item, index) => (
-                  <Box key={index} p={3} shadow="sm" borderWidth="1px" borderRadius="md" bg="white" borderColor="gray.200">
+                  <Box
+                    key={index}
+                    p={3}
+                    shadow="sm"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    bg="white"
+                    borderColor="gray.200"
+                  >
                     <Flex justify="space-between" align="center">
                       <Flex align="center">
-                        <Icon as={activityIcons[item.type]} color="gray.600" mr={3} />
+                        <Icon
+                          as={activityIcons[item.type]}
+                          color="gray.600"
+                          mr={3}
+                        />
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" color="gray.800">{item.type}</Text>
-                          <Text fontSize="xs" color="gray.600">{item.name} • {item.date}</Text>
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            color="gray.800"
+                          >
+                            {item.type}
+                          </Text>
+                          <Text fontSize="xs" color="gray.600">
+                            {item.name} • {item.date}
+                          </Text>
                         </Box>
                       </Flex>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.800">{item.amount} {item.currency}</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.800">
+                        {item.amount} {item.currency}
+                      </Text>
                     </Flex>
                   </Box>
                 ))
@@ -325,18 +516,38 @@ function Dashboard() {
         </Box>
 
         {/* Communication Card */}
-        <Box bg="white" shadow="sm" borderWidth="1px" borderColor="gray.200" borderRadius="md">
+        <Box
+          bg="white"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+        >
           <Flex justify="space-between" align="center" p={4} pb={0}>
-            <Text fontSize="md" fontWeight="bold" color="gray.800">Communication</Text>
-            <Button size="sm" variant="outline">See All</Button>
+            <Text fontSize="md" fontWeight="bold" color="gray.800">
+              Communication
+            </Text>
+            <Button size="sm" variant="outline">
+              See All
+            </Button>
           </Flex>
           <Box p={4} pt={2}>
             <VStack spacing={3} align="stretch">
               {messages.length === 0 ? (
-                <Text fontSize="sm" color="gray.600">No recent messages.</Text>
+                <Text fontSize="sm" color="gray.600">
+                  No recent messages.
+                </Text>
               ) : (
                 messages.map((msg, index) => (
-                  <Box key={index} p={3} shadow="sm" borderWidth="1px" borderRadius="md" bg="white" borderColor="gray.200">
+                  <Box
+                    key={index}
+                    p={3}
+                    shadow="sm"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    bg="white"
+                    borderColor="gray.200"
+                  >
                     <Flex justify="space-between" align="center">
                       <Flex align="center">
                         <Avatar
@@ -346,11 +557,21 @@ function Dashboard() {
                           mr={3}
                         />
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" color="gray.800">{msg.customer}</Text>
-                          <Text fontSize="xs" color="gray.600">{msg.message}</Text>
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            color="gray.800"
+                          >
+                            {msg.customer}
+                          </Text>
+                          <Text fontSize="xs" color="gray.600">
+                            {msg.message}
+                          </Text>
                         </Box>
                       </Flex>
-                      <Text fontSize="xs" color="gray.600">{msg.date}</Text>
+                      <Text fontSize="xs" color="gray.600">
+                        {msg.date}
+                      </Text>
                     </Flex>
                   </Box>
                 ))
@@ -360,7 +581,7 @@ function Dashboard() {
         </Box>
       </SimpleGrid>
     </Container>
-  );
+  )
 }
 
-export default Dashboard;
+export default Dashboard

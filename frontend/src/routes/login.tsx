@@ -2,6 +2,7 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import {
   Button,
   Container,
+  Flex,
   FormControl,
   FormErrorMessage,
   Icon,
@@ -11,10 +12,13 @@ import {
   InputRightElement,
   Link,
   Text,
-  Flex,
   useBoolean,
 } from "@chakra-ui/react"
-import { Link as RouterLink, createFileRoute, redirect } from "@tanstack/react-router"
+import {
+  Link as RouterLink,
+  createFileRoute,
+  redirect,
+} from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
 import Logo from "/assets/images/lm-logo-blk.svg"
@@ -90,126 +94,103 @@ function Login() {
       href="https://twitter.com/iconluxurygroup"
       target="_blank"
       rel="noopener noreferrer"
-     >
-      <Image
-        src="/assets/images/twitter-x.svg"
-        alt="X Logo"
-        boxSize="32px"
-      />
+    >
+      <Image src="/assets/images/twitter-x.svg" alt="X Logo" boxSize="32px" />
     </Link>
   )
 
   return (
-    <Container
-      as="form"
-      onSubmit={handleSubmit(onSubmit)}
-      maxW="sm"
-      p={10}
-      centerContent
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      height="100vh"
-      gap={6}
-    >
-      <Link href="https://iconluxury.group" target="_blank" rel="noopener noreferrer">
-        <Image
-          src={Logo}
-          alt="iconluxurygroup logo"
-          height="auto"
-          maxW="180px"
-          p={6}
-        />
-      </Link>
-      <FormControl id="username" isInvalid={!!errors.username || !!error}>
-        <Input
-          id="username"
-          {...register("username", {
-            required: "Username is required",
-            pattern: emailPattern,
-          })}
-          placeholder="Email"
-          type="email"
-          required
-          bg="gray.700"
-          color="gray.100"
-          _placeholder={{ color: "gray.400" }}
-          borderColor="gray.600"
-          _focus={{ borderColor: "#FFD700" }}
-        />
-        {errors.username && (
-          <FormErrorMessage>{errors.username.message}</FormErrorMessage>
-        )}
-      </FormControl>
-
-      <FormControl id="password" isInvalid={!!error}>
-        <InputGroup>
-          <Input
-            {...register("password", { required: "Password is required" })}
-            type={show ? "text" : "password"}
-            placeholder="Password"
-            required
-            bg="gray.700"
-            color="gray.100"
-            _placeholder={{ color: "gray.400" }}
-            borderColor="gray.600"
-            _focus={{ borderColor: "#FFD700" }}
+    <Flex minH="100vh" align="center" justify="center" py={16} px={4}>
+      <Container
+        as="form"
+        onSubmit={handleSubmit(onSubmit)}
+        maxW="md"
+        bg="surface"
+        borderWidth="1px"
+        borderColor="border"
+        borderRadius="xl"
+        boxShadow="none"
+        py={10}
+        px={{ base: 6, md: 10 }}
+        display="flex"
+        flexDir="column"
+        gap={6}
+      >
+        <Link
+          href="https://iconluxury.group"
+          target="_blank"
+          rel="noopener noreferrer"
+          alignSelf="center"
+        >
+          <Image
+            src={Logo}
+            alt="iconluxurygroup logo"
+            height="auto"
+            maxW="180px"
           />
-          <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
-            <Icon
-              as={show ? ViewOffIcon : ViewIcon}
-              onClick={setShow.toggle}
-              aria-label={show ? "Hide password" : "Show password"}
+        </Link>
+        <FormControl id="username" isInvalid={!!errors.username || !!error}>
+          <Input
+            id="username"
+            {...register("username", {
+              required: "Username is required",
+              pattern: emailPattern,
+            })}
+            placeholder="Email"
+            type="email"
+            required
+          />
+          {errors.username && (
+            <FormErrorMessage>{errors.username.message}</FormErrorMessage>
+          )}
+        </FormControl>
+
+        <FormControl id="password" isInvalid={!!error}>
+          <InputGroup>
+            <Input
+              {...register("password", { required: "Password is required" })}
+              type={show ? "text" : "password"}
+              placeholder="Password"
+              required
             />
-          </InputRightElement>
-        </InputGroup>
-        {error && <FormErrorMessage>{error}</FormErrorMessage>}
-      </FormControl>
+            <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
+              <Icon
+                as={show ? ViewOffIcon : ViewIcon}
+                onClick={setShow.toggle}
+                aria-label={show ? "Hide password" : "Show password"}
+              />
+            </InputRightElement>
+          </InputGroup>
+          {error && <FormErrorMessage>{error}</FormErrorMessage>}
+        </FormControl>
 
-      <Link
-        as={RouterLink}
-        to="/recover-password"
-        color="gray.100"
-        _hover={{ borderBottom: "1px solid #FFD700" }}
-        fontWeight="bold"
-      >
-        Forgot password?
-      </Link>
-
-      <Button
-        variant="primary"
-        type="submit"
-        isLoading={isSubmitting}
-        w="full"
-        bg="gray.700"
-        color="gray.100"
-        border="2px solid"
-        borderColor="#FFD700"
-        _hover={{ bg: "gray.600" }}
-      >
-        Log In
-      </Button>
-
-      <Text color="gray.100">
-        Don't have an account?{" "}
         <Link
           as={RouterLink}
-          to="/signup"
-          color="gray.100"
-          _hover={{ borderBottom: "1px solid #FFD700" }}
-          fontWeight="bold"
+          to="/recover-password"
+          fontWeight="600"
+          alignSelf="flex-end"
         >
-          Sign up
+          Forgot password?
         </Link>
-      </Text>
 
-      <Flex direction="row" justify="center" align="center" gap={4} mt={8}>
-        <GitHubLogo />
-        <LinkedInLogo />
-        <XLogo />
-      </Flex>
-    </Container>
+        <Button type="submit" isLoading={isSubmitting} w="full">
+          Log In
+        </Button>
+
+        <Text color="subtle" textAlign="center">
+          Don't have an account?{" "}
+          <Link as={RouterLink} to="/signup" fontWeight="600">
+            Sign up
+          </Link>
+        </Text>
+
+        <Flex direction="row" justify="center" align="center" gap={4} mt={8}>
+          <GitHubLogo />
+          <LinkedInLogo />
+          <XLogo />
+        </Flex>
+      </Container>
+    </Flex>
   )
 }
 

@@ -13,12 +13,14 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as SignupImport } from './routes/signup'
 import { Route as ResetPasswordImport } from './routes/reset-password'
+import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
 import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
+import { Route as LayoutSubmitCropImport } from './routes/_layout/submit-crop'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutOrdersImport } from './routes/_layout/orders'
 import { Route as LayoutOffersImport } from './routes/_layout/offers'
@@ -48,6 +50,12 @@ const SignupRoute = SignupImport.update({
 const ResetPasswordRoute = ResetPasswordImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ReformatExcelRoute = ReformatExcelImport.update({
+  id: '/reformat-excel',
+  path: '/reformat-excel',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -84,6 +92,12 @@ const ProgressJobIdRoute = ProgressJobIdImport.update({
   id: '/progress/$jobId',
   path: '/progress/$jobId',
   getParentRoute: () => rootRoute,
+} as any)
+
+const LayoutSubmitCropRoute = LayoutSubmitCropImport.update({
+  id: '/submit-crop',
+  path: '/submit-crop',
+  getParentRoute: () => LayoutRoute,
 } as any)
 
 const LayoutSettingsRoute = LayoutSettingsImport.update({
@@ -224,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecoverPasswordImport
       parentRoute: typeof rootRoute
     }
+    '/reformat-excel': {
+      id: '/reformat-excel'
+      path: '/reformat-excel'
+      fullPath: '/reformat-excel'
+      preLoaderRoute: typeof ReformatExcelImport
+      parentRoute: typeof rootRoute
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -285,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof LayoutSettingsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/submit-crop': {
+      id: '/_layout/submit-crop'
+      path: '/submit-crop'
+      fullPath: '/submit-crop'
+      preLoaderRoute: typeof LayoutSubmitCropImport
       parentRoute: typeof LayoutImport
     }
     '/progress/$jobId': {
@@ -384,6 +412,7 @@ interface LayoutRouteChildren {
   LayoutOffersRoute: typeof LayoutOffersRoute
   LayoutOrdersRoute: typeof LayoutOrdersRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutSubmitCropRoute: typeof LayoutSubmitCropRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiExploreRoute: typeof LayoutScrapingApiExploreRoute
   LayoutScrapingApiGoogleSerpRoute: typeof LayoutScrapingApiGoogleSerpRoute
@@ -405,6 +434,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutOffersRoute: LayoutOffersRoute,
   LayoutOrdersRoute: LayoutOrdersRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutSubmitCropRoute: LayoutSubmitCropRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiExploreRoute: LayoutScrapingApiExploreRoute,
   LayoutScrapingApiGoogleSerpRoute: LayoutScrapingApiGoogleSerpRoute,
@@ -428,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
@@ -437,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
+  '/submit-crop': typeof LayoutSubmitCropRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
@@ -455,6 +487,7 @@ export interface FileRoutesByTo {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
@@ -464,6 +497,7 @@ export interface FileRoutesByTo {
   '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
+  '/submit-crop': typeof LayoutSubmitCropRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
@@ -484,6 +518,7 @@ export interface FileRoutesById {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
+  '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
@@ -493,6 +528,7 @@ export interface FileRoutesById {
   '/_layout/offers': typeof LayoutOffersRoute
   '/_layout/orders': typeof LayoutOrdersRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/submit-crop': typeof LayoutSubmitCropRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
@@ -514,6 +550,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/admin'
@@ -523,6 +560,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/orders'
     | '/settings'
+    | '/submit-crop'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
@@ -540,6 +578,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/admin'
@@ -549,6 +588,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/orders'
     | '/settings'
+    | '/submit-crop'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
@@ -567,6 +607,7 @@ export interface FileRouteTypes {
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
+    | '/reformat-excel'
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
@@ -576,6 +617,7 @@ export interface FileRouteTypes {
     | '/_layout/offers'
     | '/_layout/orders'
     | '/_layout/settings'
+    | '/_layout/submit-crop'
     | '/progress/$jobId'
     | '/_layout/'
     | '/_layout/scraping-api/explore'
@@ -596,6 +638,7 @@ export interface RootRouteChildren {
   GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
+  ReformatExcelRoute: typeof ReformatExcelRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   ProgressJobIdRoute: typeof ProgressJobIdRoute
@@ -606,6 +649,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoogleSerpCmsRoute: GoogleSerpCmsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
+  ReformatExcelRoute: ReformatExcelRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   ProgressJobIdRoute: ProgressJobIdRoute,
@@ -625,6 +669,7 @@ export const routeTree = rootRoute
         "/google-serp-cms",
         "/login",
         "/recover-password",
+        "/reformat-excel",
         "/reset-password",
         "/signup",
         "/progress/$jobId"
@@ -640,6 +685,7 @@ export const routeTree = rootRoute
         "/_layout/offers",
         "/_layout/orders",
         "/_layout/settings",
+        "/_layout/submit-crop",
         "/_layout/",
         "/_layout/scraping-api/explore",
         "/_layout/scraping-api/google-serp",
@@ -661,6 +707,9 @@ export const routeTree = rootRoute
     },
     "/recover-password": {
       "filePath": "recover-password.tsx"
+    },
+    "/reformat-excel": {
+      "filePath": "reformat-excel.tsx"
     },
     "/reset-password": {
       "filePath": "reset-password.tsx"
@@ -694,6 +743,10 @@ export const routeTree = rootRoute
     },
     "/_layout/settings": {
       "filePath": "_layout/settings.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/submit-crop": {
+      "filePath": "_layout/submit-crop.tsx",
       "parent": "/_layout"
     },
     "/progress/$jobId": {

@@ -1,26 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
+import { ChevronDownIcon, ChevronUpIcon, SearchIcon } from "@chakra-ui/icons"
 import {
   Box,
+  Button,
   Container,
-  Text,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Divider,
+  Flex,
+  Icon,
   Input,
   InputGroup,
   InputLeftElement,
-  Icon,
-  Flex,
-  Button,
-} from "@chakra-ui/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { SearchIcon, ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import { useState, useMemo } from "react";
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react"
+import { useQuery } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
+import { useMemo, useState } from "react"
 
 // Reuse mock data fetching functions
 const fetchCustomers = async () => {
@@ -30,81 +30,126 @@ const fetchCustomers = async () => {
     { id: "3", name: "Bob Johnson", joined: "2025-03-20" },
     { id: "4", name: "Alice Brown", joined: "2025-05-10" },
     { id: "5", name: "Charlie Davis", joined: "2025-04-01" },
-  ];
-};
+  ]
+}
 
 const fetchOrders = async () => {
   return [
-    { id: "1", customerId: "1", date: "2025-05-10", amount: 100, quantity: 5, units: "items", source: "standard" },
-    { id: "2", customerId: "2", date: "2025-05-05", amount: 200, quantity: 10, units: "boxes", source: "standard" },
-    { id: "3", customerId: "1", date: "2025-04-25", amount: 150, quantity: 8, units: "items", source: "standard" },
-    { id: "4", customerId: "3", date: "2025-03-15", amount: 300, quantity: 15, units: "units", source: "standard" },
-    { id: "5", customerId: "4", date: "2025-05-15", amount: 250, quantity: 12, units: "boxes", source: "standard" },
-  ];
-};
+    {
+      id: "1",
+      customerId: "1",
+      date: "2025-05-10",
+      amount: 100,
+      quantity: 5,
+      units: "items",
+      source: "standard",
+    },
+    {
+      id: "2",
+      customerId: "2",
+      date: "2025-05-05",
+      amount: 200,
+      quantity: 10,
+      units: "boxes",
+      source: "standard",
+    },
+    {
+      id: "3",
+      customerId: "1",
+      date: "2025-04-25",
+      amount: 150,
+      quantity: 8,
+      units: "items",
+      source: "standard",
+    },
+    {
+      id: "4",
+      customerId: "3",
+      date: "2025-03-15",
+      amount: 300,
+      quantity: 15,
+      units: "units",
+      source: "standard",
+    },
+    {
+      id: "5",
+      customerId: "4",
+      date: "2025-05-15",
+      amount: 250,
+      quantity: 12,
+      units: "boxes",
+      source: "standard",
+    },
+  ]
+}
 
 export const Route = createFileRoute("/_layout/customers")({
   component: CustomersPage,
-});
+})
 
 function CustomersPage() {
   // Fetch customers and orders
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: fetchCustomers,
-  });
+  })
 
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: fetchOrders,
-  });
+  })
 
   // State for search and sorting
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<"name" | "joined">("name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortField, setSortField] = useState<"name" | "joined">("name")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
 
   // Calculate order count per customer
   const orderCountMap = useMemo(() => {
-    return orders.reduce((acc, order) => {
-      acc[order.customerId] = (acc[order.customerId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [orders]);
+    return orders.reduce(
+      (acc, order) => {
+        acc[order.customerId] = (acc[order.customerId] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+  }, [orders])
 
   // Filter and sort customers
   const filteredCustomers = useMemo(() => {
-    let result = [...customers];
+    let result = [...customers]
 
     // Apply search filter
     if (searchTerm) {
       result = result.filter((customer) =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+        customer.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
     }
 
     // Apply sorting
     result.sort((a, b) => {
-      const multiplier = sortDirection === "asc" ? 1 : -1;
+      const multiplier = sortDirection === "asc" ? 1 : -1
       if (sortField === "name") {
-        return multiplier * a.name.localeCompare(b.name);
-      } else {
-        return multiplier * (new Date(a.joined).getTime() - new Date(b.joined).getTime());
+        return multiplier * a.name.localeCompare(b.name)
       }
-    });
+      return (
+        multiplier *
+        (new Date(a.joined).getTime() - new Date(b.joined).getTime())
+      )
+    })
 
-    return result;
-  }, [customers, searchTerm, sortField, sortDirection]);
+    return result
+  }, [customers, searchTerm, sortField, sortDirection])
 
   // Handle sort toggle
   const handleSort = (field: "name" | "joined") => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
     } else {
-      setSortField(field);
-      setSortDirection("asc");
+      setSortField(field)
+      setSortDirection("asc")
     }
-  };
+  }
 
   return (
     <Container maxW="full" bg="gray.50" minH="100vh" p={4}>
@@ -149,20 +194,20 @@ function CustomersPage() {
               <Tr>
                 <Th>
                   <Button
-  variant="ghost"
-  onClick={() => handleSort("name")}
-  rightIcon={
-    sortField === "name" ? (
-      sortDirection === "asc" ? (
-        <ChevronUpIcon />
-      ) : (
-        <ChevronDownIcon />
-      )
-    ) : undefined 
-  }
->
-  Name
-</Button>
+                    variant="ghost"
+                    onClick={() => handleSort("name")}
+                    rightIcon={
+                      sortField === "name" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        )
+                      ) : undefined
+                    }
+                  >
+                    Name
+                  </Button>
                 </Th>
                 <Th>ID</Th>
                 <Th>
@@ -170,17 +215,17 @@ function CustomersPage() {
                     variant="ghost"
                     onClick={() => handleSort("joined")}
                     rightIcon={
-                        sortField === "joined" ? (
+                      sortField === "joined" ? (
                         sortDirection === "asc" ? (
-                            <ChevronUpIcon />
+                          <ChevronUpIcon />
                         ) : (
-                            <ChevronDownIcon />
+                          <ChevronDownIcon />
                         )
-                        ) : undefined // Changed from null to undefined
+                      ) : undefined // Changed from null to undefined
                     }
-                    >
+                  >
                     Joined Date
-                    </Button>
+                  </Button>
                 </Th>
                 <Th>Order Count</Th>
               </Tr>
@@ -189,14 +234,18 @@ function CustomersPage() {
               {customersLoading || ordersLoading ? (
                 <Tr>
                   <Td colSpan={4} textAlign="center">
-                    <Text fontSize="sm" color="gray.600">Loading...</Text>
+                    <Text fontSize="sm" color="gray.600">
+                      Loading...
+                    </Text>
                   </Td>
                 </Tr>
               ) : filteredCustomers.length === 0 ? (
                 <Tr>
                   <Td colSpan={4} textAlign="center">
                     <Text fontSize="sm" color="gray.600">
-                      {searchTerm ? "No customers match your search." : "No customers found."}
+                      {searchTerm
+                        ? "No customers match your search."
+                        : "No customers found."}
                     </Text>
                   </Td>
                 </Tr>
@@ -215,7 +264,7 @@ function CustomersPage() {
         </TableContainer>
       </Box>
     </Container>
-  );
+  )
 }
 
-export default CustomersPage;
+export default CustomersPage
