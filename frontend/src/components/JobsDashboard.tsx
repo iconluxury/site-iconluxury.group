@@ -167,12 +167,17 @@ export default function JobsDashboard() {
           <div className="space-y-1">
             <CardTitle className="text-xl">Google SERP CMS</CardTitle>
             <CardDescription>
-              Access the legacy CMS tools and new insights dashboard.
+              Access scraping tools, data warehouse, and analytics.
+              {inProgressJobs > 0 && (
+                <span className="ml-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                  {inProgressJobs} Jobs Running
+                </span>
+              )}
             </CardDescription>
           </div>
           <Button onClick={() => navigate({ to: "/google-serp-cms" })}>
             <LuLayoutGrid className="mr-2 h-4 w-4" />
-            Open Tools
+            Open Tools & Reports
           </Button>
         </CardHeader>
       </Card>

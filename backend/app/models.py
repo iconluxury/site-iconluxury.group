@@ -151,3 +151,33 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+# S3 Configuration Models
+class S3ConfigurationBase(SQLModel):
+    name: str = Field(unique=True, index=True, max_length=255)
+    bucket_name: str = Field(max_length=255)
+    endpoint_url: str = Field(max_length=512)
+    region_name: str = Field(default="auto", max_length=100)
+    access_key_id: str = Field(max_length=255)
+    secret_access_key: str = Field(max_length=255)
+
+class S3Configuration(S3ConfigurationBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+class S3ConfigurationCreate(S3ConfigurationBase):
+    pass
+
+class S3ConfigurationUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    bucket_name: str | None = Field(default=None, max_length=255)
+    endpoint_url: str | None = Field(default=None, max_length=512)
+    region_name: str | None = Field(default=None, max_length=100)
+    access_key_id: str | None = Field(default=None, max_length=255)
+    secret_access_key: str | None = Field(default=None, max_length=255)
+
+class S3ConfigurationPublic(S3ConfigurationBase):
+    id: uuid.UUID
+
+class S3ConfigurationsPublic(SQLModel):
+    data: list[S3ConfigurationPublic]
+    count: int

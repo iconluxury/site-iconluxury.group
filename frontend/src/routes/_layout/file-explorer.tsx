@@ -54,6 +54,7 @@ import {
   FiInfo,
   FiList,
   FiSettings,
+  FiTrash2,
 } from "react-icons/fi"
 import * as XLSX from "xlsx"
 import ExcelDataTable, {
@@ -92,6 +93,16 @@ interface S3ConfigStatus {
   bucket_name: string
 }
 
+interface S3Configuration {
+  id: string
+  name: string
+  bucket_name: string
+  endpoint_url: string
+  region_name: string
+  access_key_id: string
+  secret_access_key?: string
+}
+
 // API Functions
 async function checkS3Config(): Promise<S3ConfigStatus> {
   const response = await fetch(`${API_BASE_URL}/s3/config`)
@@ -120,6 +131,7 @@ async function listS3Objects(
   page: number,
   pageSize = 10,
   continuationToken: string | null = null,
+  configId: string | null = null,
 ): Promise<S3ListResponse> {
   try {
     const url = new URL(`${API_BASE_URL}/s3/list`)
@@ -128,6 +140,9 @@ async function listS3Objects(
     url.searchParams.append("pageSize", pageSize.toString())
     if (continuationToken) {
       url.searchParams.append("continuation_token", continuationToken)
+    }
+    if (configId) {
+      url.searchParams.append("config_id", configId)
     }
 
     const response = await fetch(url)
@@ -168,13 +183,16 @@ async function listS3Objects(
 async function getSignedUrl(
   key: string,
   expiresIn: number = DEFAULT_EXPIRES_IN,
+  configId: string | null = null,
 ): Promise<string> {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/s3/sign?key=${encodeURIComponent(
-        key,
-      )}&expires_in=${expiresIn}`,
-    )
+    const url = new URL(`${API_BASE_URL}/s3/sign`)
+    url.searchParams.append("key", key)
+    url.searchParams.append("expires_in", expiresIn.toString())
+    if (configId) {
+      url.searchParams.append("config_id", configId)
+    }
+    const response = await fetch(url.toString())
     if (!response.ok) {
       const errorText = await response.text()
       let errorMessage = errorText || response.statusText
@@ -204,6 +222,29 @@ async function getFileContent(
   const response = await fetch(url)
   if (!response.ok) throw new Error("Failed to fetch file content")
   return fileType === "excel" ? response.arrayBuffer() : response.text()
+}
+
+async function getS3Configs(): Promise<{ data: S3Configuration[]; count: number }> {
+  const response = await fetch(`${API_BASE_URL}/s3/configs`)
+  if (!response.ok) throw new Error("Failed to fetch configs")
+  return response.json()
+}
+
+async function createS3Config(config: Omit<S3Configuration, "id">): Promise<S3Configuration> {
+  const response = await fetch(`${API_BASE_URL}/s3/configs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  })
+  if (!response.ok) throw new Error("Failed to create config")
+  return response.json()
+}
+
+async function deleteS3Config(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/s3/configs/${id}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) throw new Error("Failed to delete config")
 }
 
 // Utility Functions
@@ -713,92 +754,119 @@ interface ConfigModalProps {
 }
 
 const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [config, setConfig] = useState<S3Config>({
+  const toast = useToast()
+  const queryClient = useQueryClient()
+  const [newConfig, setNewConfig] = useState<Partial<S3Configuration>>({
+    name: "",
     endpoint_url: "",
     access_key_id: "",
     secret_access_key: "",
-    bucket_name: "iconluxurygroup",
+    bucket_name: "",
+    region_name: "auto"
   })
-  const toast = useToast()
-  const queryClient = useQueryClient()
 
-  const mutation = useMutation({
-    mutationFn: updateS3Config,
+  const { data: configs, refetch } = useQuery({
+    queryKey: ["s3Configs"],
+    queryFn: getS3Configs,
+    enabled: isOpen
+  })
+
+  const createMutation = useMutation({
+    mutationFn: createS3Config,
     onSuccess: () => {
-      toast({
-        title: "Configuration Updated",
-        status: "success",
-        duration: 3000,
-      })
-      queryClient.invalidateQueries({ queryKey: ["s3Config"] })
+      toast({ title: "Config Added", status: "success", duration: 3000 })
+      queryClient.invalidateQueries({ queryKey: ["s3Configs"] })
+      setNewConfig({ name: "", endpoint_url: "", access_key_id: "", secret_access_key: "", bucket_name: "", region_name: "auto" })
+      refetch()
       onSuccess()
-      onClose()
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Configuration Failed",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-      })
-    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, status: "error" })
   })
 
-  const handleSubmit = () => {
-    mutation.mutate(config)
-  }
+  const deleteMutation = useMutation({
+    mutationFn: deleteS3Config,
+    onSuccess: () => {
+      toast({ title: "Config Deleted", status: "success", duration: 3000 })
+      queryClient.invalidateQueries({ queryKey: ["s3Configs"] })
+      refetch()
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, status: "error" })
+  })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl" closeOnOverlayClick={false}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>S3/R2 Configuration</ModalHeader>
+        <ModalHeader>Manage S3 Sources</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <VStack spacing={4}>
-            <Text fontSize="sm" color="gray.600">
-              Please configure your S3 or Cloudflare R2 credentials to access the file explorer.
-            </Text>
-            <FormControl isRequired>
-              <FormLabel>Endpoint URL</FormLabel>
-              <Input
-                value={config.endpoint_url}
-                onChange={(e) => setConfig({ ...config, endpoint_url: e.target.value })}
-                placeholder="https://<accountid>.r2.cloudflarestorage.com"
-              />
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel>Access Key ID</FormLabel>
-              <Input
-                value={config.access_key_id}
-                onChange={(e) => setConfig({ ...config, access_key_id: e.target.value })}
-                type="password"
-              />
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel>Secret Access Key</FormLabel>
-              <Input
-                value={config.secret_access_key}
-                onChange={(e) => setConfig({ ...config, secret_access_key: e.target.value })}
-                type="password"
-              />
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel>Bucket Name</FormLabel>
-              <Input
-                value={config.bucket_name}
-                onChange={(e) => setConfig({ ...config, bucket_name: e.target.value })}
-              />
-            </FormControl>
+          <VStack spacing={6} align="stretch">
+            <Box>
+              <Text fontWeight="bold" mb={2}>Existing Sources</Text>
+              {configs?.data.length === 0 ? (
+                <Text color="gray.500">No sources configured.</Text>
+              ) : (
+                <VStack align="stretch" spacing={2}>
+                  {configs?.data.map(config => (
+                    <Flex key={config.id} justify="space-between" align="center" p={2} borderWidth="1px" borderRadius="md">
+                      <Box>
+                        <Text fontWeight="bold">{config.name}</Text>
+                        <Text fontSize="sm" color="gray.600">{config.bucket_name}</Text>
+                      </Box>
+                      <IconButton
+                        aria-label="Delete"
+                        icon={<FiTrash2 />}
+                        size="sm"
+                        colorScheme="red"
+                        onClick={() => deleteMutation.mutate(config.id)}
+                        isLoading={deleteMutation.isPending}
+                      />
+                    </Flex>
+                  ))}
+                </VStack>
+              )}
+            </Box>
+            <Divider />
+            <Box>
+              <Text fontWeight="bold" mb={2}>Add New Source</Text>
+              <VStack spacing={3}>
+                <FormControl isRequired>
+                  <FormLabel>Name</FormLabel>
+                  <Input value={newConfig.name} onChange={e => setNewConfig({...newConfig, name: e.target.value})} placeholder="My R2 Bucket" />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Endpoint URL</FormLabel>
+                  <Input value={newConfig.endpoint_url} onChange={e => setNewConfig({...newConfig, endpoint_url: e.target.value})} placeholder="https://<accountid>.r2.cloudflarestorage.com" />
+                </FormControl>
+                <HStack>
+                  <FormControl isRequired>
+                    <FormLabel>Access Key ID</FormLabel>
+                    <Input value={newConfig.access_key_id} onChange={e => setNewConfig({...newConfig, access_key_id: e.target.value})} type="password" />
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Secret Access Key</FormLabel>
+                    <Input type="password" value={newConfig.secret_access_key} onChange={e => setNewConfig({...newConfig, secret_access_key: e.target.value})} />
+                  </FormControl>
+                </HStack>
+                <HStack>
+                  <FormControl isRequired>
+                    <FormLabel>Bucket Name</FormLabel>
+                    <Input value={newConfig.bucket_name} onChange={e => setNewConfig({...newConfig, bucket_name: e.target.value})} />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Region</FormLabel>
+                    <Input value={newConfig.region_name} onChange={e => setNewConfig({...newConfig, region_name: e.target.value})} placeholder="auto" />
+                  </FormControl>
+                </HStack>
+                <Button colorScheme="blue" width="full" onClick={() => createMutation.mutate(newConfig as any)} isLoading={createMutation.isPending}>
+                  Add Source
+                </Button>
+              </VStack>
+            </Box>
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button colorScheme="blue" onClick={handleSubmit} isLoading={mutation.isPending}>
-            Save Configuration
-          </Button>
+          <Button onClick={onClose}>Close</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
@@ -840,6 +908,7 @@ function FileExplorer() {
   const [selectedFile, setSelectedFile] = useState<S3Object | null>(null)
   const [previewUrl, setPreviewUrl] = useState("")
   const [previewContent, setPreviewContent] = useState<string | ExcelData>("")
+  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null)
 
   // Check Config
   const { data: configStatus, isLoading: isConfigLoading } = useQuery({
@@ -859,13 +928,24 @@ function FileExplorer() {
     error: s3Error,
     refetch,
   } = useQuery<S3ListResponse, Error>({
-    queryKey: ["s3Objects", state.currentPath, state.page, continuationToken],
+    queryKey: ["s3Objects", state.currentPath, state.page, continuationToken, selectedConfigId],
     queryFn: () =>
-      listS3Objects(state.currentPath, state.page, 10, continuationToken),
+      listS3Objects(state.currentPath, state.page, 10, continuationToken, selectedConfigId),
     placeholderData: keepPreviousData,
     retry: 1,
-    enabled: !!configStatus?.configured,
+    enabled: !!configStatus?.configured || !!selectedConfigId,
   })
+
+  const { data: configs, refetch: refetchConfigs } = useQuery({
+    queryKey: ["s3Configs"],
+    queryFn: getS3Configs,
+  })
+
+  useEffect(() => {
+    if (configs?.data && configs.data.length > 0 && !selectedConfigId) {
+      setSelectedConfigId(configs.data[0].id)
+    }
+  }, [configs, selectedConfigId])
 
   useEffect(() => {
     if (data?.objects) {
@@ -899,7 +979,7 @@ function FileExplorer() {
   ) => {
     setSelectedFile(obj)
     try {
-      const url = await getSignedUrl(obj.path)
+      const url = await getSignedUrl(obj.path, DEFAULT_EXPIRES_IN, selectedConfigId)
       setPreviewUrl(url)
       if (action === "details") {
         onDetailsOpen()
@@ -1089,6 +1169,23 @@ function FileExplorer() {
           </Text>
         </Box>
         <HStack>
+          <Select
+            size="sm"
+            maxW="200px"
+            value={selectedConfigId || ""}
+            onChange={(e) => {
+              setSelectedConfigId(e.target.value)
+              setState(prev => ({ ...prev, currentPath: "", page: 1 }))
+              setObjects([])
+            }}
+            placeholder="Select Source"
+          >
+            {configs?.data.map((config) => (
+              <option key={config.id} value={config.id}>
+                {config.name} ({config.bucket_name})
+              </option>
+            ))}
+          </Select>
           <Tooltip label="Settings">
             <IconButton
               aria-label="Settings"
