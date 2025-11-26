@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -7,6 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+import {
   Table,
   TableBody,
   TableCell,
@@ -14,13 +21,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Line, LineChart } from "recharts"
-import { Loader2, RefreshCw } from "lucide-react"
-import { useState, useEffect, useMemo, useCallback } from "react"
 import useCustomToast from "@/hooks/useCustomToast"
+import { createFileRoute } from "@tanstack/react-router"
+import { Loader2, RefreshCw } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 // Interfaces
 interface TimeSeries {
@@ -77,7 +91,11 @@ function InsightsPage() {
       setEndpointData(data)
     } catch (error) {
       console.error("Error fetching data:", error)
-      showToast("Data Fetch Error", error instanceof Error ? error.message : "Unknown error", "error")
+      showToast(
+        "Data Fetch Error",
+        error instanceof Error ? error.message : "Unknown error",
+        "error",
+      )
     } finally {
       setIsLoading(false)
     }
@@ -93,57 +111,71 @@ function InsightsPage() {
 
   const requestsOverTime = useMemo(() => {
     return Array.from({ length: 24 }, (_, i) => {
-        const hour = `${i}:00`
-        const total = endpointData
-          .flatMap((ep) => ep.queries)
-          .reduce(
-            (sum, q) =>
-              sum + (q.timeSeries?.find((ts) => ts.hour === hour)?.count || 0),
-            0,
-          )
-        return { hour, requests: total }
-      })
+      const hour = `${i}:00`
+      const total = endpointData
+        .flatMap((ep) => ep.queries)
+        .reduce(
+          (sum, q) =>
+            sum + (q.timeSeries?.find((ts) => ts.hour === hour)?.count || 0),
+          0,
+        )
+      return { hour, requests: total }
+    })
   }, [endpointData])
 
   const topQueries = useMemo(() => {
-      const queryMap = new Map<string, any>()
-      endpointData.flatMap(ep => ep.queries).forEach(q => {
-          if (queryMap.has(q.query)) {
-              queryMap.get(q.query).count += q.count
-          } else {
-              queryMap.set(q.query, { ...q })
-          }
+    const queryMap = new Map<string, any>()
+    endpointData
+      .flatMap((ep) => ep.queries)
+      .forEach((q) => {
+        if (queryMap.has(q.query)) {
+          queryMap.get(q.query).count += q.count
+        } else {
+          queryMap.set(q.query, { ...q })
+        }
       })
-      return Array.from(queryMap.values())
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
+    return Array.from(queryMap.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
   }, [endpointData])
 
   return (
     <div className="p-8 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Insights</h1>
-            <p className="text-muted-foreground">Analytics for all apps and services</p>
+          <h1 className="text-3xl font-bold tracking-tight">Insights</h1>
+          <p className="text-muted-foreground">
+            Analytics for all apps and services
+          </p>
         </div>
         <Button onClick={fetchData} disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh
+          {isLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          Refresh
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Requests
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRequests.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {totalRequests.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Endpoints</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Endpoints
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{endpointData.length}</div>
@@ -167,7 +199,11 @@ function InsightsPage() {
                   axisLine={false}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="requests" fill="var(--color-requests)" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="requests"
+                  fill="var(--color-requests)"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -178,22 +214,22 @@ function InsightsPage() {
             <CardDescription>Most frequent search queries</CardDescription>
           </CardHeader>
           <CardContent>
-             <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Query</TableHead>
-                    <TableHead className="text-right">Count</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Query</TableHead>
+                  <TableHead className="text-right">Count</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topQueries.map((query) => (
+                  <TableRow key={query.query}>
+                    <TableCell className="font-medium">{query.query}</TableCell>
+                    <TableCell className="text-right">{query.count}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topQueries.map((query) => (
-                    <TableRow key={query.query}>
-                      <TableCell className="font-medium">{query.query}</TableCell>
-                      <TableCell className="text-right">{query.count}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

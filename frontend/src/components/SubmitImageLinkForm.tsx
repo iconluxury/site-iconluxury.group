@@ -1,3 +1,16 @@
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Info,
+  X,
+} from "lucide-react"
+import type React from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import * as XLSX from "xlsx"
+import useCustomToast from "../hooks/useCustomToast"
+import { showDevUI } from "../utils"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
@@ -25,19 +38,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  Info,
-  X,
-  AlertCircle,
-} from "lucide-react"
-import type React from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import * as XLSX from "xlsx"
-import useCustomToast from "../hooks/useCustomToast"
-import { showDevUI } from "../utils"
 
 // Keep server URL consistent with other tools
 const SERVER_URL = "https://icon5-8005.iconluxury.today"
@@ -484,7 +484,9 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size={size === "xs" ? "sm" : size === "md" ? "default" : size}
+                    size={
+                      size === "xs" ? "sm" : size === "md" ? "default" : size
+                    }
                     variant={isActive ? "default" : "ghost"}
                     className={`${
                       isActive
@@ -793,7 +795,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
               {isLoading && (
                 <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
                 </div>
               )}
             </div>

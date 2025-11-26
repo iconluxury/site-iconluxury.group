@@ -14,18 +14,12 @@ const changes = [
   {
     version: "1.1.0",
     date: "2025-11-20",
-    items: [
-      "Improved scraping job performance",
-      "Added user agent management",
-    ],
+    items: ["Improved scraping job performance", "Added user agent management"],
   },
   {
     version: "1.0.0",
     date: "2025-11-01",
-    items: [
-      "Initial release",
-      "Basic scraping functionality",
-    ],
+    items: ["Initial release", "Basic scraping functionality"],
   },
 ]
 
@@ -40,7 +34,12 @@ export default function Changelog() {
           <div className="space-y-6">
             {changes.map((change, index) => (
               <div key={index}>
-                <h3 className="font-semibold text-lg">{change.version} <span className="text-sm text-muted-foreground font-normal">({change.date})</span></h3>
+                <h3 className="font-semibold text-lg">
+                  {change.version}{" "}
+                  <span className="text-sm text-muted-foreground font-normal">
+                    ({change.date})
+                  </span>
+                </h3>
                 <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
                   {change.items.map((item, i) => (
                     <li key={i}>{item}</li>

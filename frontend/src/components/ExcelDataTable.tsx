@@ -1,3 +1,7 @@
+import { ArrowUpDown } from "lucide-react"
+import { memo, useMemo, useState } from "react"
+import { Badge } from "./ui/badge"
+import { Button } from "./ui/button"
 import {
   Table,
   TableBody,
@@ -6,16 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import { Button } from "./ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-import { Badge } from "./ui/badge"
-import { ArrowUpDown } from "lucide-react"
-import { memo, useMemo, useState } from "react"
 
 export interface ExcelData {
   headers: string[]
@@ -115,18 +115,31 @@ const ExcelDataTable = ({
                   }
                   className={`
                     ${onColumnClick ? "cursor-pointer hover:bg-muted/50" : ""}
-                    ${isMapped ? "bg-yellow-100 dark:bg-yellow-900/20 border-b-2 border-yellow-500" : ""}
+                    ${
+                      isMapped
+                        ? "bg-yellow-100 dark:bg-yellow-900/20 border-b-2 border-yellow-500"
+                        : ""
+                    }
                   `}
                 >
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="flex items-center space-x-2">
-                          <span className={isMapped ? "text-yellow-800 dark:text-yellow-200 font-medium" : ""}>
+                          <span
+                            className={
+                              isMapped
+                                ? "text-yellow-800 dark:text-yellow-200 font-medium"
+                                : ""
+                            }
+                          >
                             {header || `Column ${index + 1}`}
                           </span>
                           {isMapped && (
-                            <Badge variant="outline" className="ml-2 border-yellow-500 text-yellow-700 dark:text-yellow-300 text-[10px] px-1 py-0 h-5">
+                            <Badge
+                              variant="outline"
+                              className="ml-2 border-yellow-500 text-yellow-700 dark:text-yellow-300 text-[10px] px-1 py-0 h-5"
+                            >
                               {mappedField}
                             </Badge>
                           )}
@@ -148,7 +161,9 @@ const ExcelDataTable = ({
                           {onColumnClick
                             ? isMapped
                               ? `Mapped as ${mappedField} (click to remap)`
-                              : `Click to map ${header || `Column ${index + 1}`}`
+                              : `Click to map ${
+                                  header || `Column ${index + 1}`
+                                }`
                             : `Column ${header || index + 1}`}
                         </p>
                       </TooltipContent>
@@ -163,7 +178,14 @@ const ExcelDataTable = ({
           {sortedRows.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {row.row.map((cell, cellIndex) => (
-                <TableCell key={cellIndex} className={isColumnMapped(cellIndex) ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}>
+                <TableCell
+                  key={cellIndex}
+                  className={
+                    isColumnMapped(cellIndex)
+                      ? "bg-yellow-50/50 dark:bg-yellow-900/10"
+                      : ""
+                  }
+                >
                   {getDisplayValue(cell)}
                 </TableCell>
               ))}

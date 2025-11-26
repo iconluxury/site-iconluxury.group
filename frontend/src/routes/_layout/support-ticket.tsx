@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { useForm } from "react-hook-form"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -7,10 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -26,10 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
 import useCustomToast from "@/hooks/useCustomToast"
-import { useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import { Loader2 } from "lucide-react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { TicketsService } from "../../client"
 
 export const Route = createFileRoute("/_layout/support-ticket")({
@@ -44,7 +44,8 @@ type SupportTicketForm = {
 }
 
 function SupportTicketPage() {
-  const { register, handleSubmit, reset, setValue } = useForm<SupportTicketForm>()
+  const { register, handleSubmit, reset, setValue } =
+    useForm<SupportTicketForm>()
   const showToast = useCustomToast()
   const queryClient = useQueryClient()
 

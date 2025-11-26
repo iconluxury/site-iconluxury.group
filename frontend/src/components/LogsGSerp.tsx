@@ -1,10 +1,17 @@
+import debounce from "lodash/debounce"
+import { Download, Loader2 } from "lucide-react"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import useCustomToast from "./../hooks/useCustomToast"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion"
+import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
 import {
   Select,
   SelectContent,
@@ -21,13 +28,6 @@ import {
   TableRow,
 } from "./ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
-import { Card, CardContent } from "./ui/card"
-import { Badge } from "./ui/badge"
-import { Download, Loader2 } from "lucide-react"
-import debounce from "lodash/debounce"
-import type React from "react"
-import { useCallback, useEffect, useState } from "react"
-import useCustomToast from "./../hooks/useCustomToast"
 
 interface LogEntry {
   timestamp: string
@@ -179,7 +179,9 @@ const LogsGSerp: React.FC = () => {
       {isLoading ? (
         <div className="flex justify-center items-center h-[200px]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <span className="ml-4 text-muted-foreground">Loading log files...</span>
+          <span className="ml-4 text-muted-foreground">
+            Loading log files...
+          </span>
         </div>
       ) : logFiles.length === 0 ? (
         <div className="text-center text-muted-foreground">

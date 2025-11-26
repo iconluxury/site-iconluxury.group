@@ -1,10 +1,18 @@
+import { Link } from "@tanstack/react-router"
+import debounce from "lodash/debounce"
+import { Loader2, RefreshCw } from "lucide-react"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import useCustomToast from "./../hooks/useCustomToast"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion"
+import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
 import { Checkbox } from "./ui/checkbox"
 import {
   Select,
@@ -21,20 +29,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import { Card, CardContent } from "./ui/card"
-import { Badge } from "./ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-import { Loader2, RefreshCw } from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import debounce from "lodash/debounce"
-import type React from "react"
-import { useCallback, useEffect, useState } from "react"
-import useCustomToast from "./../hooks/useCustomToast"
 
 interface LogEntry {
   timestamp: string
@@ -212,9 +212,7 @@ const LogsDetails: React.FC = () => {
   return (
     <div className="p-4 w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-        <h2 className="text-lg font-bold">
-          Log Details
-        </h2>
+        <h2 className="text-lg font-bold">Log Details</h2>
         <div className="flex flex-wrap gap-2 items-center justify-end">
           <div className="w-[150px]">
             <Select
@@ -237,7 +235,9 @@ const LogsDetails: React.FC = () => {
             <Checkbox
               id="wrap-lines"
               checked={wrapLongLines}
-              onCheckedChange={(checked) => setWrapLongLines(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setWrapLongLines(checked as boolean)
+              }
             />
             <label
               htmlFor="wrap-lines"
@@ -250,7 +250,9 @@ const LogsDetails: React.FC = () => {
             <Checkbox
               id="reverse-order"
               checked={reverseChronological}
-              onCheckedChange={(checked) => setReverseChronological(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setReverseChronological(checked as boolean)
+              }
             />
             <label
               htmlFor="reverse-order"
@@ -263,7 +265,9 @@ const LogsDetails: React.FC = () => {
             <Checkbox
               id="show-timestamps"
               checked={showTimestamps}
-              onCheckedChange={(checked) => setShowTimestamps(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setShowTimestamps(checked as boolean)
+              }
             />
             <label
               htmlFor="show-timestamps"
@@ -294,13 +298,8 @@ const LogsDetails: React.FC = () => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button
-            size="sm"
-            asChild
-          >
-            <Link to="/scraping-api/log-files">
-              Back to Log Files
-            </Link>
+          <Button size="sm" asChild>
+            <Link to="/scraping-api/log-files">Back to Log Files</Link>
           </Button>
         </div>
       </div>
@@ -308,7 +307,9 @@ const LogsDetails: React.FC = () => {
       {isLoading ? (
         <div className="flex justify-center items-center h-[200px]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <span className="ml-4 text-muted-foreground">Loading log files...</span>
+          <span className="ml-4 text-muted-foreground">
+            Loading log files...
+          </span>
         </div>
       ) : logFiles.length === 0 ? (
         <div className="text-center text-muted-foreground">
@@ -328,7 +329,8 @@ const LogsDetails: React.FC = () => {
                       <span className="font-bold">{file.fileName}</span>
                       <span className="text-sm text-muted-foreground font-normal">
                         Last Modified:{" "}
-                        {new Date(file.lastModified).toLocaleString()} | Entries:{" "}
+                        {new Date(file.lastModified).toLocaleString()} |
+                        Entries:{" "}
                         {file.entries ? file.entries.length : "Not loaded"}
                       </span>
                     </div>
@@ -344,7 +346,9 @@ const LogsDetails: React.FC = () => {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              {showTimestamps && <TableHead>Timestamp</TableHead>}
+                              {showTimestamps && (
+                                <TableHead>Timestamp</TableHead>
+                              )}
                               <TableHead>Endpoint</TableHead>
                               <TableHead>Query</TableHead>
                               <TableHead>Status</TableHead>
@@ -353,7 +357,9 @@ const LogsDetails: React.FC = () => {
                           </TableHeader>
                           <TableBody>
                             {(() => {
-                              const displayEntries = getDisplayEntries(file.entries)
+                              const displayEntries = getDisplayEntries(
+                                file.entries,
+                              )
                               const wrappingClass = wrapLongLines
                                 ? "whitespace-pre-wrap break-all"
                                 : "whitespace-nowrap"
@@ -385,8 +391,12 @@ const LogsDetails: React.FC = () => {
                                       {formatTimestamp(log.timestamp)}
                                     </TableCell>
                                   )}
-                                  <TableCell className={wrappingClass}>{log.endpoint}</TableCell>
-                                  <TableCell className={wrappingClass}>{log.query}</TableCell>
+                                  <TableCell className={wrappingClass}>
+                                    {log.endpoint}
+                                  </TableCell>
+                                  <TableCell className={wrappingClass}>
+                                    {log.query}
+                                  </TableCell>
                                   <TableCell className={wrappingClass}>
                                     <Badge
                                       variant={

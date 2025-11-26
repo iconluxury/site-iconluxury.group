@@ -1,12 +1,14 @@
 import type { ComponentType, ElementType } from "react"
 import { useState } from "react"
 
-import { Button } from "../ui/button"
 import { Plus } from "lucide-react"
+import { Button } from "../ui/button"
 
 interface NavbarProps {
   type: string
-  addModalAs: ComponentType<{ isOpen: boolean; onClose: () => void }> | ElementType
+  addModalAs:
+    | ComponentType<{ isOpen: boolean; onClose: () => void }>
+    | ElementType
 }
 
 const Navbar = ({ type, addModalAs }: NavbarProps) => {

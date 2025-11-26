@@ -1,11 +1,3 @@
-import {
-  ArrowLeft,
-  Check,
-  X,
-  AlertTriangle,
-  Loader2,
-  Info,
-} from "lucide-react"
 // components/SubmitCropForm.tsx
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -36,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { AlertTriangle, ArrowLeft, Check, Info, Loader2, X } from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
@@ -430,7 +423,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
-  const activeSheetStatusColor = activeSheetIsReady ? "text-green-400" : "text-yellow-400"
+  const activeSheetStatusColor = activeSheetIsReady
+    ? "text-green-400"
+    : "text-yellow-400"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "Style column mapped. Image columns are detected automatically when present."
     : activeSheetMissingColumns.length > 0
@@ -463,8 +458,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                       "cursor-pointer transition-all duration-200 font-semibold",
                       isActive ? "font-bold border border-primary" : "border-0",
                       !isActive && isComplete ? sheetInactiveBg : "",
-                      !isActive && !isComplete ? "bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800" : "",
-                      !isActive && isComplete ? sheetInactiveHover : ""
+                      !isActive && !isComplete
+                        ? "bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800"
+                        : "",
+                      !isActive && isComplete ? sheetInactiveHover : "",
                     )}
                     onClick={() => handleActiveSheetChange(index)}
                     aria-pressed={isActive}
@@ -643,7 +640,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
         <div
           className={cn(
-            isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : ""
+            isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",
           )}
         >
           {isDev && (
@@ -664,12 +661,13 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   key={s}
                   className={cn(
                     "text-sm",
-                    step === s.toLowerCase().replace("header selection", "preview")
+                    step ===
+                      s.toLowerCase().replace("header selection", "preview")
                       ? "font-bold text-primary"
                       : "text-muted-foreground",
                     i < ["upload", "preview", "map", "submit"].indexOf(step)
                       ? "cursor-pointer"
-                      : "cursor-default"
+                      : "cursor-default",
                   )}
                   onClick={() => {
                     if (
@@ -739,7 +737,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 {step === "submit" && (
                   <Button
                     onClick={handleSubmit}
-                    disabled={isLoading || !validateForm.isValid || !isEmailValid}
+                    disabled={
+                      isLoading || !validateForm.isValid || !isEmailValid
+                    }
                     size="sm"
                   >
                     {isLoading ? (
@@ -787,7 +787,12 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           {step === "preview" && (
             <div className="flex flex-col gap-4 items-stretch">
               {hasMultipleSheets && (
-                <Card className={cn("bg-white dark:bg-gray-800", mappingPanelBorder)}>
+                <Card
+                  className={cn(
+                    "bg-white dark:bg-gray-800",
+                    mappingPanelBorder,
+                  )}
+                >
                   <CardContent className="py-3 px-4">
                     <div className="flex flex-col gap-2 items-stretch">
                       <div className="flex justify-between items-center">
@@ -804,7 +809,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                           <TooltipTrigger asChild>
                             <div className="flex gap-2 text-xs text-muted-foreground items-center">
                               <ActiveSheetStatusIcon
-                                className={cn("h-3 w-3", activeSheetStatusColor)}
+                                className={cn(
+                                  "h-3 w-3",
+                                  activeSheetStatusColor,
+                                )}
                               />
                               <p>{activeSheetStatusLabel}</p>
                             </div>
@@ -849,7 +857,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                         key={rowIndex}
                         className={cn(
                           "cursor-pointer hover:bg-primary/10",
-                          rowIndex === headerIndex ? "bg-primary/20 font-bold" : ""
+                          rowIndex === headerIndex
+                            ? "bg-primary/20 font-bold"
+                            : "",
                         )}
                         onClick={() => handleHeaderChange(rowIndex)}
                         role="button"
@@ -861,7 +871,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                               "max-w-[200px] truncate border",
                               rowIndex === headerIndex
                                 ? "border-primary border-2"
-                                : "border-border"
+                                : "border-border",
                             )}
                           >
                             {getDisplayValue(cell)}
@@ -887,7 +897,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               <div
                 className={cn(
                   "flex flex-col gap-4 items-stretch bg-transparent p-4 rounded-md border w-full md:w-[40%] overflow-y-auto",
-                  mappingPanelBorder
+                  mappingPanelBorder,
                 )}
               >
                 {hasMultipleSheets && (
@@ -895,7 +905,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     className={cn(
                       "shadow-xs",
                       mappingPanelBg,
-                      mappingPanelBorder
+                      mappingPanelBorder,
                     )}
                   >
                     <CardContent className="p-4">
@@ -914,7 +924,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                             <TooltipTrigger asChild>
                               <div className="flex gap-2 text-xs text-muted-foreground items-center">
                                 <ActiveSheetStatusIcon
-                                  className={cn("h-3 w-3", activeSheetStatusColor)}
+                                  className={cn(
+                                    "h-3 w-3",
+                                    activeSheetStatusColor,
+                                  )}
                                 />
                                 <p>{activeSheetStatusLabel}</p>
                               </div>
@@ -958,7 +971,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                       "flex gap-2 items-center p-2 rounded-md border cursor-pointer",
                       activeMappingField === field
                         ? "border-primary bg-primary/10 border-2"
-                        : "border-transparent bg-transparent border-1"
+                        : "border-transparent bg-transparent border-1",
                     )}
                     onClick={() => setActiveMappingField(field)}
                   >
@@ -1045,7 +1058,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                                 : isMapped
                                   ? "bg-neutral-100 dark:bg-neutral-800"
                                   : "bg-neutral-100 dark:bg-neutral-800",
-                              isSelected || isMapped ? "border-2" : ""
+                              isSelected || isMapped ? "border-2" : "",
                             )}
                             onClick={() => handleColumnMapFromGrid(index)}
                             tabIndex={activeMappingField ? 0 : undefined}
@@ -1091,7 +1104,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                                       ? "bg-primary/10"
                                       : isMappedColumn
                                         ? "bg-neutral-100 dark:bg-neutral-800"
-                                        : ""
+                                        : "",
                                 )}
                                 onClick={() =>
                                   handleColumnMapFromGrid(cellIndex)
@@ -1166,7 +1179,9 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                           <TableRow key={key}>
                             <TableCell>Style # Column</TableCell>
                             <TableCell>
-                              {excelData.headers[columnMapping[key] as number] ||
+                              {excelData.headers[
+                                columnMapping[key] as number
+                              ] ||
                                 `Column ${indexToColumnLetter(
                                   columnMapping[key] as number,
                                 )}`}

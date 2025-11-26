@@ -1,8 +1,8 @@
+import { useTheme } from "next-themes"
+import type React from "react"
 import { Badge } from "../ui/badge"
 import { Label } from "../ui/label"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
-import { useTheme } from "next-themes"
-import type React from "react"
 
 const Appearance: React.FC = () => {
   const { theme, setTheme } = useTheme()

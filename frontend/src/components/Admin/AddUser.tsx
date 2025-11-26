@@ -88,7 +88,9 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
               type="email"
             />
             {errors.email && (
-              <span className="text-red-500 text-sm">{errors.email.message}</span>
+              <span className="text-red-500 text-sm">
+                {errors.email.message}
+              </span>
             )}
           </div>
           <div className="grid gap-2">

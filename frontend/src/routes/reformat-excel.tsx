@@ -1,12 +1,3 @@
-import {
-  AlertTriangle,
-  Check,
-  CheckIcon,
-  Info,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -38,6 +29,15 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { createFileRoute } from "@tanstack/react-router"
+import {
+  AlertTriangle,
+  Check,
+  CheckIcon,
+  Info,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { FaWarehouse } from "react-icons/fa"
@@ -294,10 +294,12 @@ const SubmitStep: React.FC<{
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col gap-4">
-              <Label className="font-semibold">
-                Select Currency
-              </Label>
-              <RadioGroup onValueChange={onCurrencyChange} value={currency} className="flex flex-row gap-6">
+              <Label className="font-semibold">Select Currency</Label>
+              <RadioGroup
+                onValueChange={onCurrencyChange}
+                value={currency}
+                className="flex flex-row gap-6"
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="USD" id="r1" />
                   <Label htmlFor="r1">USD</Label>
@@ -332,19 +334,28 @@ const SubmitStep: React.FC<{
                     const isReady = validation?.isValid ?? false
                     return (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">{sheet.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {sheet.name}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={isReady ? "default" : "destructive"}
-                            className={cn("flex w-fit items-center gap-1", isReady ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600")}
+                            className={cn(
+                              "flex w-fit items-center gap-1",
+                              isReady
+                                ? "bg-green-500 hover:bg-green-600"
+                                : "bg-yellow-500 hover:bg-yellow-600",
+                            )}
                           >
-                            {isReady ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                            {isReady ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <AlertTriangle className="h-3 w-3" />
+                            )}
                             <span>
                               {isReady
                                 ? "Ready"
-                                : `Missing: ${validation?.missing.join(
-                                    ", ",
-                                  )}`}
+                                : `Missing: ${validation?.missing.join(", ")}`}
                             </span>
                           </Badge>
                         </TableCell>
@@ -363,7 +374,9 @@ const SubmitStep: React.FC<{
                               submittingSheetIndex !== null
                             }
                           >
-                            {submittingSheetIndex === index && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {submittingSheetIndex === index && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
                             Submit
                           </Button>
                         </TableCell>
@@ -597,7 +610,7 @@ const ReformatExcelForm: React.FC = () => {
   const manualValues = activeSheet?.manualValues ?? {}
   const isManualBrandApplied = Boolean(manualValues.brand)
   const hasMultipleSheets = sheetConfigs.length > 1
-  
+
   const updateSheetConfig = useCallback(
     (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
       setSheetConfigs((prev) => {
@@ -1009,7 +1022,9 @@ const ReformatExcelForm: React.FC = () => {
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
-  const activeSheetStatusColor = activeSheetIsReady ? "text-green-500" : "text-yellow-500"
+  const activeSheetStatusColor = activeSheetIsReady
+    ? "text-green-500"
+    : "text-yellow-500"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "All required columns are mapped."
     : activeSheetMissingColumns.length > 0
@@ -1041,12 +1056,18 @@ const ReformatExcelForm: React.FC = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      size={size === "xs" ? "sm" : size === "md" ? "default" : size}
+                      size={
+                        size === "xs" ? "sm" : size === "md" ? "default" : size
+                      }
                       variant={isActive ? "default" : "ghost"}
                       className={cn(
                         "gap-2",
-                        isActive ? "" : isComplete ? "text-muted-foreground" : "text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50",
-                        size === "xs" && "h-7 px-2 text-xs"
+                        isActive
+                          ? ""
+                          : isComplete
+                            ? "text-muted-foreground"
+                            : "text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50",
+                        size === "xs" && "h-7 px-2 text-xs",
                       )}
                       onClick={() => handleActiveSheetChange(index)}
                       aria-pressed={isActive}
@@ -1238,12 +1259,13 @@ const ReformatExcelForm: React.FC = () => {
                 key={s}
                 className={cn(
                   "cursor-pointer",
-                  step === s.toLowerCase().replace("header selection", "preview")
+                  step ===
+                    s.toLowerCase().replace("header selection", "preview")
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
                     ? "cursor-pointer"
-                    : "cursor-default"
+                    : "cursor-default",
                 )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
@@ -1310,9 +1332,7 @@ const ReformatExcelForm: React.FC = () => {
 
         {step === "upload" && (
           <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-bold">
-              Upload Excel File
-            </h2>
+            <h2 className="text-lg font-bold">Upload Excel File</h2>
             <div>
               <TooltipProvider>
                 <Tooltip>
@@ -1355,7 +1375,11 @@ const ReformatExcelForm: React.FC = () => {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex gap-2 text-xs text-muted-foreground items-center">
-                            {activeSheetIsReady ? <Check className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+                            {activeSheetIsReady ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <AlertTriangle className="h-3 w-3 text-yellow-500" />
+                            )}
                             <p>{activeSheetStatusLabel}</p>
                           </div>
                         </TooltipTrigger>
@@ -1383,7 +1407,8 @@ const ReformatExcelForm: React.FC = () => {
                 <SelectContent>
                   {rawData.slice(0, 20).map((_, index) => (
                     <SelectItem key={index} value={String(index)}>
-                      Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
+                      Row {index + 1}{" "}
+                      {index === headerIndex ? "(Selected)" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1397,7 +1422,7 @@ const ReformatExcelForm: React.FC = () => {
                       key={rowIndex}
                       className={cn(
                         "cursor-pointer hover:bg-muted/50",
-                        rowIndex === headerIndex && "bg-primary/10 font-bold"
+                        rowIndex === headerIndex && "bg-primary/10 font-bold",
                       )}
                       onClick={() => handleHeaderChange(rowIndex)}
                     >
@@ -1406,7 +1431,9 @@ const ReformatExcelForm: React.FC = () => {
                           key={cellIndex}
                           className={cn(
                             "max-w-[200px] truncate border",
-                            rowIndex === headerIndex ? "border-primary" : "border-border"
+                            rowIndex === headerIndex
+                              ? "border-primary"
+                              : "border-border",
                           )}
                         >
                           {getDisplayValue(cell)}
@@ -1444,7 +1471,11 @@ const ReformatExcelForm: React.FC = () => {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex gap-2 text-xs text-muted-foreground items-center">
-                              {activeSheetIsReady ? <Check className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+                              {activeSheetIsReady ? (
+                                <Check className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <AlertTriangle className="h-3 w-3 text-yellow-500" />
+                              )}
                               <p>{activeSheetStatusLabel}</p>
                             </div>
                           </TooltipTrigger>
@@ -1504,35 +1535,47 @@ const ReformatExcelForm: React.FC = () => {
                         "flex gap-2 items-center p-2 rounded-md border cursor-pointer",
                         activeMappingField === field
                           ? "border-primary bg-primary/10"
-                          : "border-transparent"
+                          : "border-transparent",
                       )}
                       onClick={() =>
                         setActiveMappingField(field as ColumnType | null)
                       }
                     >
-                      <p className="w-[120px] font-semibold">
-                        {label}:
-                      </p>
+                      <p className="w-[120px] font-semibold">{label}:</p>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex-1">
                               <Select
-                                value={columnMapping[typedField] !== null ? String(columnMapping[typedField]) : ""}
+                                value={
+                                  columnMapping[typedField] !== null
+                                    ? String(columnMapping[typedField])
+                                    : ""
+                                }
                                 onValueChange={(val) =>
                                   handleColumnMap(Number(val), field)
                                 }
                                 disabled={isManualApplied}
                               >
-                                <SelectTrigger 
+                                <SelectTrigger
                                   className="w-full"
-                                  onFocus={() => setActiveMappingField(field as ColumnType | null)}
-                                  onClick={() => setActiveMappingField(field as ColumnType | null)}
+                                  onFocus={() =>
+                                    setActiveMappingField(
+                                      field as ColumnType | null,
+                                    )
+                                  }
+                                  onClick={() =>
+                                    setActiveMappingField(
+                                      field as ColumnType | null,
+                                    )
+                                  }
                                 >
                                   <SelectValue placeholder="Unmapped" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="unmapped">Unmapped</SelectItem>
+                                  <SelectItem value="unmapped">
+                                    Unmapped
+                                  </SelectItem>
                                   {excelData.headers.map((header, index) => (
                                     <SelectItem
                                       key={index}
@@ -1542,7 +1585,8 @@ const ReformatExcelForm: React.FC = () => {
                                         columnMapping[typedField] !== index
                                       }
                                     >
-                                      {header || `Column ${indexToColumnLetter(index)}`}
+                                      {header ||
+                                        `Column ${indexToColumnLetter(index)}`}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -1557,9 +1601,7 @@ const ReformatExcelForm: React.FC = () => {
                       {columnMapping[typedField] === null &&
                         !isManualApplied && (
                           <>
-                            <p className="text-sm text-muted-foreground">
-                              Or
-                            </p>
+                            <p className="text-sm text-muted-foreground">Or</p>
                             <Input
                               className="w-[150px] h-8"
                               placeholder={`Add Manual ${label}`}
@@ -1583,7 +1625,10 @@ const ReformatExcelForm: React.FC = () => {
                         )}
                       {isManualApplied && (
                         <>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 hover:bg-green-200"
+                          >
                             Manual: {manualValues[typedField]}
                           </Badge>
                           <Button
@@ -1607,7 +1652,9 @@ const ReformatExcelForm: React.FC = () => {
                                   className="h-8 w-8"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleClearMapping(columnMapping[typedField]!)
+                                    handleClearMapping(
+                                      columnMapping[typedField]!,
+                                    )
                                   }}
                                 >
                                   <X className="h-4 w-4" />
@@ -1630,7 +1677,7 @@ const ReformatExcelForm: React.FC = () => {
                       "flex gap-2 items-center p-2 rounded-md border cursor-pointer",
                       activeMappingField === field
                         ? "border-primary bg-primary/10"
-                        : "border-transparent"
+                        : "border-transparent",
                     )}
                     onClick={() =>
                       setActiveMappingField(field as ColumnType | null)
@@ -1646,34 +1693,51 @@ const ReformatExcelForm: React.FC = () => {
                           <div className="flex-1">
                             <Select
                               value={
-                                columnMapping[field as keyof ColumnMapping] !== null
-                                  ? String(columnMapping[field as keyof ColumnMapping]!)
+                                columnMapping[field as keyof ColumnMapping] !==
+                                null
+                                  ? String(
+                                      columnMapping[
+                                        field as keyof ColumnMapping
+                                      ]!,
+                                    )
                                   : ""
                               }
                               onValueChange={(val) =>
                                 handleColumnMap(Number(val), field)
                               }
                             >
-                              <SelectTrigger 
+                              <SelectTrigger
                                 className="w-full"
-                                onFocus={() => setActiveMappingField(field as ColumnType | null)}
-                                onClick={() => setActiveMappingField(field as ColumnType | null)}
+                                onFocus={() =>
+                                  setActiveMappingField(
+                                    field as ColumnType | null,
+                                  )
+                                }
+                                onClick={() =>
+                                  setActiveMappingField(
+                                    field as ColumnType | null,
+                                  )
+                                }
                               >
                                 <SelectValue placeholder="Unmapped" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="unmapped">Unmapped</SelectItem>
+                                <SelectItem value="unmapped">
+                                  Unmapped
+                                </SelectItem>
                                 {excelData.headers.map((header, index) => (
                                   <SelectItem
                                     key={index}
                                     value={String(index)}
                                     disabled={
                                       mappedDataColumns.has(index) &&
-                                      columnMapping[field as keyof ColumnMapping] !==
-                                        index
+                                      columnMapping[
+                                        field as keyof ColumnMapping
+                                      ] !== index
                                     }
                                   >
-                                    {header || `Column ${indexToColumnLetter(index)}`}
+                                    {header ||
+                                      `Column ${indexToColumnLetter(index)}`}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1735,7 +1799,7 @@ const ReformatExcelForm: React.FC = () => {
                               ? "bg-primary/20 border-2 border-primary"
                               : isMapped
                                 ? "bg-green-100"
-                                : "bg-muted"
+                                : "bg-muted",
                           )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
@@ -1770,7 +1834,7 @@ const ReformatExcelForm: React.FC = () => {
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          
+
                           return (
                             <TableCell
                               key={cellIndex}
@@ -1782,7 +1846,7 @@ const ReformatExcelForm: React.FC = () => {
                                     ? "bg-primary/10"
                                     : isMappedColumn
                                       ? "bg-green-50"
-                                      : ""
+                                      : "",
                               )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >

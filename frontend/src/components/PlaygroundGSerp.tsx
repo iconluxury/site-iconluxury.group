@@ -1,5 +1,8 @@
 import { ExternalLink, Loader2 } from "lucide-react"
+import type React from "react"
+import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import {
@@ -16,9 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
-import type React from "react"
-import { useEffect, useState } from "react"
 
 const proxyData: Record<string, { region: string; url: string }[]> = {
   "Google Cloud": [
@@ -403,13 +403,13 @@ const PlaygroundGSerp: React.FC = () => {
   return (
     <div className="p-4 w-full">
       <div className="mb-6">
-        <h2 className="text-md font-semibold mb-2">
-          Test Parameters
-        </h2>
+        <h2 className="text-md font-semibold mb-2">Test Parameters</h2>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
-              <Label htmlFor="search-url" className="text-sm">Search URL</Label>
+              <Label htmlFor="search-url" className="text-sm">
+                Search URL
+              </Label>
               <Input
                 id="search-url"
                 value={url}
@@ -420,11 +420,10 @@ const PlaygroundGSerp: React.FC = () => {
               />
             </div>
             <div className="w-full md:w-[200px]">
-              <Label htmlFor="provider" className="text-sm">Provider</Label>
-              <Select
-                value={provider}
-                onValueChange={handleProviderChange}
-              >
+              <Label htmlFor="provider" className="text-sm">
+                Provider
+              </Label>
+              <Select value={provider} onValueChange={handleProviderChange}>
                 <SelectTrigger id="provider" className="mt-1">
                   <SelectValue placeholder="Select provider" />
                 </SelectTrigger>
@@ -440,7 +439,9 @@ const PlaygroundGSerp: React.FC = () => {
           </div>
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
-              <Label htmlFor="endpoint-url" className="text-sm">Endpoint URL</Label>
+              <Label htmlFor="endpoint-url" className="text-sm">
+                Endpoint URL
+              </Label>
               <Input
                 id="region-filter"
                 value={regionFilter}
@@ -449,10 +450,7 @@ const PlaygroundGSerp: React.FC = () => {
                 className="mt-1 mb-2"
               />
               {filteredProxies.length > 0 ? (
-                <Select
-                  value={selectedUrl}
-                  onValueChange={handleUrlChange}
-                >
+                <Select value={selectedUrl} onValueChange={handleUrlChange}>
                   <SelectTrigger id="endpoint-url">
                     <SelectValue placeholder="Select endpoint" />
                   </SelectTrigger>
@@ -480,7 +478,9 @@ const PlaygroundGSerp: React.FC = () => {
                       onClick={handleTestRequest}
                       disabled={isLoading || !url.trim() || !selectedUrl}
                     >
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       POST
                     </Button>
                   </TooltipTrigger>
@@ -495,9 +495,7 @@ const PlaygroundGSerp: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-md font-semibold mb-2">
-            Response
-          </h2>
+          <h2 className="text-md font-semibold mb-2">Response</h2>
           {isLoading ? (
             <div className="flex justify-center items-center h-[400px] border rounded-md bg-muted/10">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -513,9 +511,7 @@ const PlaygroundGSerp: React.FC = () => {
         </div>
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-md font-semibold">
-              HTML Preview
-            </h2>
+            <h2 className="text-md font-semibold">HTML Preview</h2>
             {htmlPreview && (
               <TooltipProvider>
                 <Tooltip>

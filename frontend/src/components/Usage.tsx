@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 
 interface UsageProps {
   toolId?: string
@@ -92,9 +87,7 @@ const Usage = ({ toolId }: UsageProps) => {
   if (!toolId) {
     return (
       <div className="p-4">
-        <h2 className="text-lg font-bold mb-4">
-          Usage
-        </h2>
+        <h2 className="text-lg font-bold mb-4">Usage</h2>
         <p className="text-muted-foreground">No endpoint specified.</p>
       </div>
     )
@@ -107,10 +100,10 @@ const Usage = ({ toolId }: UsageProps) => {
   if (!usageData) {
     return (
       <div className="p-4">
-        <h2 className="text-lg font-bold mb-4">
-          Usage for {toolId}
-        </h2>
-        <p className="text-muted-foreground">No data available for this endpoint.</p>
+        <h2 className="text-lg font-bold mb-4">Usage for {toolId}</h2>
+        <p className="text-muted-foreground">
+          No data available for this endpoint.
+        </p>
       </div>
     )
   }
@@ -118,31 +111,39 @@ const Usage = ({ toolId }: UsageProps) => {
   // Case 3: Data available, display usage statistics
   return (
     <div className="p-4">
-      <h2 className="text-lg font-bold mb-4">
-        Usage for {toolId}
-      </h2>
+      <h2 className="text-lg font-bold mb-4">Usage for {toolId}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Requests Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Requests Today
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{usageData.requestsToday.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {usageData.requestsToday.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">Daily usage</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Requests This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Requests This Month
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{usageData.requestsThisMonth.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {usageData.requestsThisMonth.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">Monthly total</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Success Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{usageData.successRate}%</div>
@@ -151,28 +152,40 @@ const Usage = ({ toolId }: UsageProps) => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gigabytes Used Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Gigabytes Used Today
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{usageData.gigsUsedToday.toFixed(1)} GB</div>
+            <div className="text-2xl font-bold">
+              {usageData.gigsUsedToday.toFixed(1)} GB
+            </div>
             <p className="text-xs text-muted-foreground">Daily data usage</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gigabytes Used This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Gigabytes Used This Month
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{usageData.gigsUsedThisMonth.toFixed(1)} GB</div>
+            <div className="text-2xl font-bold">
+              {usageData.gigsUsedThisMonth.toFixed(1)} GB
+            </div>
             <p className="text-xs text-muted-foreground">Monthly data usage</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Cost Per Gigabyte</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Cost Per Gigabyte
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${usageData.costPerGigabyte.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              ${usageData.costPerGigabyte.toFixed(2)}
+            </div>
             <p className="text-xs text-muted-foreground">Rate per GB</p>
           </CardContent>
         </Card>

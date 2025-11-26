@@ -1,11 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,7 +26,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, Check, X, AlertTriangle, Loader2 } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { IconType } from "react-icons"
@@ -51,8 +46,8 @@ import * as XLSX from "xlsx"
 import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
 import useCustomToast from "../hooks/useCustomToast"
-import { showDevUI } from "../utils"
 import { cn } from "../lib/utils"
+import { showDevUI } from "../utils"
 
 // Shared Constants and Types
 type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
@@ -450,7 +445,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
   const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
   const hasMultipleSheets = sheetConfigs.length > 1
-  
+
   // Replaced useColorModeValue with Tailwind classes in render
 
   const sanitizeWorksheet = useCallback((worksheet: XLSX.WorkSheet) => {
@@ -972,7 +967,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
           ) : (
             <Check className="h-3 w-3" />
           )
-          
+
           return (
             <div key={sheet.name || index}>
               <TooltipProvider>
@@ -989,15 +984,25 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                         } ${sheetLabel}`}
                       />
                       <Button
-                        size={size === "xs" ? "sm" : (size === "md" ? "default" : size) as any}
+                        size={
+                          size === "xs"
+                            ? "sm"
+                            : ((size === "md" ? "default" : size) as any)
+                        }
                         variant={
-                          isActive ? "default" : isSelected ? "ghost" : "outline"
+                          isActive
+                            ? "default"
+                            : isSelected
+                              ? "ghost"
+                              : "outline"
                         }
                         className={cn(
                           "gap-2",
                           isActive ? "font-bold" : "font-semibold",
                           !isSelected && "opacity-70",
-                          showWarning && !isActive && "bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+                          showWarning &&
+                            !isActive &&
+                            "bg-yellow-100 hover:bg-yellow-200 text-yellow-800",
                         )}
                         onClick={() => handleActiveSheetChange(index)}
                       >
@@ -1320,12 +1325,13 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                 key={s}
                 className={cn(
                   "cursor-pointer",
-                  step === s.toLowerCase().replace("header selection", "preview")
+                  step ===
+                    s.toLowerCase().replace("header selection", "preview")
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
                     ? "cursor-pointer"
-                    : "cursor-default"
+                    : "cursor-default",
                 )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
@@ -1399,7 +1405,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                   }
                   size="sm"
                 >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Submit
                 </Button>
               )}
@@ -1459,7 +1467,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex flex-row gap-2 text-xs text-muted-foreground items-center">
-                            <ActiveSheetStatusIcon className={cn("h-3 w-3", activeSheetStatusColor)} />
+                            <ActiveSheetStatusIcon
+                              className={cn("h-3 w-3", activeSheetStatusColor)}
+                            />
                             <p>{activeSheetStatusLabel}</p>
                           </div>
                         </TooltipTrigger>
@@ -1502,7 +1512,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                       key={rowIndex}
                       className={cn(
                         "cursor-pointer hover:bg-primary/10",
-                        rowIndex === headerIndex && "bg-primary/20 font-bold"
+                        rowIndex === headerIndex && "bg-primary/20 font-bold",
                       )}
                       onClick={() => handleHeaderChange(rowIndex)}
                     >
@@ -1511,7 +1521,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                           key={cellIndex}
                           className={cn(
                             "max-w-[200px] truncate border",
-                            rowIndex === headerIndex ? "border-primary" : "border-gray-200"
+                            rowIndex === headerIndex
+                              ? "border-primary"
+                              : "border-gray-200",
                           )}
                         >
                           {getDisplayValue(cell)}
@@ -1554,7 +1566,12 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex flex-row gap-2 text-xs text-muted-foreground items-center">
-                              <ActiveSheetStatusIcon className={cn("h-3 w-3", activeSheetStatusColor)} />
+                              <ActiveSheetStatusIcon
+                                className={cn(
+                                  "h-3 w-3",
+                                  activeSheetStatusColor,
+                                )}
+                              />
                               <p>{activeSheetStatusLabel}</p>
                             </div>
                           </TooltipTrigger>
@@ -1604,13 +1621,11 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
                       ? "border-primary bg-primary/10"
-                      : "border-transparent"
+                      : "border-transparent",
                   )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <p className="w-[120px] font-semibold">
-                    {field}:
-                  </p>
+                  <p className="w-[120px] font-semibold">{field}:</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1713,15 +1728,11 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     )}
                   </div>
                   {isManualBrandApplied && (
-                    <Badge className="mt-2">
-                      Manual Brand Column Applied
-                    </Badge>
+                    <Badge className="mt-2">Manual Brand Column Applied</Badge>
                   )}
                 </div>
               )}
-              <p className="font-bold mt-4">
-                Optional Columns
-              </p>
+              <p className="font-bold mt-4">Optional Columns</p>
               {OPTIONAL_COLUMNS.map((field) => (
                 <div
                   key={field}
@@ -1729,13 +1740,11 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
                       ? "border-primary bg-primary/10"
-                      : "border-transparent"
+                      : "border-transparent",
                   )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <p className="w-[120px] font-semibold">
-                    {field}:
-                  </p>
+                  <p className="w-[120px] font-semibold">{field}:</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1802,13 +1811,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
               ))}
 
               {/* Image-specific columns */}
-              <p className="font-bold mt-4">
-                Image Columns
-              </p>
+              <p className="font-bold mt-4">Image Columns</p>
               <div className="flex flex-row gap-2 items-center p-2 rounded-md">
-                <p className="w-[180px] font-semibold">
-                  Image Link Column:
-                </p>
+                <p className="w-[180px] font-semibold">Image Link Column:</p>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -1819,7 +1824,10 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                             : ""
                         }
                         onChange={(e) =>
-                          handleImageColumnMap(Number(e.target.value), "readImage")
+                          handleImageColumnMap(
+                            Number(e.target.value),
+                            "readImage",
+                          )
                         }
                         className="flex-1 border rounded p-1"
                         aria-label="Map image link column"
@@ -1833,7 +1841,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                       </select>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Select the Excel column that contains image URLs (links)</p>
+                      <p>
+                        Select the Excel column that contains image URLs (links)
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -1874,7 +1884,10 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                             : ""
                         }
                         onChange={(e) =>
-                          handleImageColumnMap(Number(e.target.value), "imageAdd")
+                          handleImageColumnMap(
+                            Number(e.target.value),
+                            "imageAdd",
+                          )
                         }
                         className="flex-1 border rounded p-1"
                         aria-label="Map image anchor/target column"
@@ -1888,7 +1901,10 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                       </select>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Select the Excel column indicating image anchor text or target</p>
+                      <p>
+                        Select the Excel column indicating image anchor text or
+                        target
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -1933,7 +1949,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                               : isMapped
                                 ? "bg-green-100"
                                 : "bg-gray-100",
-                            activeMappingField && "hover:bg-primary/10"
+                            activeMappingField && "hover:bg-primary/10",
                           )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
@@ -1968,7 +1984,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          
+
                           return (
                             <TableCell
                               key={cellIndex}
@@ -1981,7 +1997,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                                     : isMappedColumn
                                       ? "bg-green-50"
                                       : "",
-                                activeMappingField ? "cursor-pointer" : "cursor-default"
+                                activeMappingField
+                                  ? "cursor-pointer"
+                                  : "cursor-default",
                               )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >
@@ -2047,7 +2065,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                   <Checkbox
                     id="isIconDistro"
                     checked={isIconDistro}
-                    onCheckedChange={(checked) => setIsIconDistro(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setIsIconDistro(checked as boolean)
+                    }
                   />
                   <Label htmlFor="isIconDistro">Output as New Distro</Label>
                 </div>
@@ -2061,9 +2081,13 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                   <Checkbox
                     id="skipDataWarehouse"
                     checked={skipDataWarehouse}
-                    onCheckedChange={(checked) => setSkipDataWarehouse(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setSkipDataWarehouse(checked as boolean)
+                    }
                   />
-                  <Label htmlFor="skipDataWarehouse">Skip Data Warehouse Processing</Label>
+                  <Label htmlFor="skipDataWarehouse">
+                    Skip Data Warehouse Processing
+                  </Label>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
                   If selected, data will not be processed for the data
@@ -2076,9 +2100,13 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     id="isAiMode"
                     checked={isAiMode}
                     disabled
-                    onCheckedChange={(checked) => setIsAiMode(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setIsAiMode(checked as boolean)
+                    }
                   />
-                  <Label htmlFor="isAiMode" className="text-muted-foreground">AI Mode</Label>
+                  <Label htmlFor="isAiMode" className="text-muted-foreground">
+                    AI Mode
+                  </Label>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
                   AI Mode is currently locked and will submit as disabled.
@@ -2109,7 +2137,9 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                           {excelData.headers[index!] ||
                             `Column ${indexToColumnLetter(index!)}`}
                         </TableCell>
-                        <TableCell>{getColumnPreview(index, excelData.rows)}</TableCell>
+                        <TableCell>
+                          {getColumnPreview(index, excelData.rows)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   {isManualBrandApplied && (
@@ -2661,12 +2691,13 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 key={s}
                 className={cn(
                   "cursor-pointer",
-                  step === s.toLowerCase().replace("header selection", "preview")
+                  step ===
+                    s.toLowerCase().replace("header selection", "preview")
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
                     ? "cursor-pointer"
-                    : "cursor-default"
+                    : "cursor-default",
                 )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
@@ -2738,7 +2769,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   }
                   size="sm"
                 >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Submit
                 </Button>
               )}
@@ -2802,7 +2835,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                       key={rowIndex}
                       className={cn(
                         "cursor-pointer hover:bg-primary/10",
-                        rowIndex === headerIndex && "bg-primary/20 font-bold"
+                        rowIndex === headerIndex && "bg-primary/20 font-bold",
                       )}
                       onClick={() => handleHeaderChange(rowIndex)}
                     >
@@ -2811,7 +2844,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           key={cellIndex}
                           className={cn(
                             "max-w-[200px] truncate border",
-                            rowIndex === headerIndex ? "border-primary" : "border-gray-200"
+                            rowIndex === headerIndex
+                              ? "border-primary"
+                              : "border-gray-200",
                           )}
                         >
                           {getDisplayValue(cell)}
@@ -2861,13 +2896,11 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
                       ? "border-primary bg-primary/10"
-                      : "border-transparent"
+                      : "border-transparent",
                   )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <p className="w-[120px] font-semibold">
-                    {field}:
-                  </p>
+                  <p className="w-[120px] font-semibold">{field}:</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -2934,9 +2967,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               ))}
               {OPTIONAL_COLUMNS.length > 0 && (
                 <>
-                  <p className="font-bold mt-4">
-                    Optional Columns
-                  </p>
+                  <p className="font-bold mt-4">Optional Columns</p>
                   {OPTIONAL_COLUMNS.map((field) => (
                     <div
                       key={field}
@@ -2944,13 +2975,11 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                         activeMappingField === field
                           ? "border-primary bg-primary/10"
-                          : "border-transparent"
+                          : "border-transparent",
                       )}
                       onClick={() => setActiveMappingField(field)}
                     >
-                      <p className="w-[120px] font-semibold">
-                        {field}:
-                      </p>
+                      <p className="w-[120px] font-semibold">{field}:</p>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -2961,7 +2990,10 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                                   : ""
                               }
                               onChange={(e) =>
-                                handleDataColumnMap(Number(e.target.value), field)
+                                handleDataColumnMap(
+                                  Number(e.target.value),
+                                  field,
+                                )
                               }
                               onFocus={() => setActiveMappingField(field)}
                               onClick={() => setActiveMappingField(field)}
@@ -2978,7 +3010,8 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                                     columnMapping[field] !== index
                                   }
                                 >
-                                  {header || `Column ${indexToColumnLetter(index)}`}
+                                  {header ||
+                                    `Column ${indexToColumnLetter(index)}`}
                                 </option>
                               ))}
                             </select>
@@ -3065,21 +3098,17 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 )}
               {enableImageTargetMapping && (
                 <>
-                  <p className="font-bold mt-4">
-                    Image Target Column
-                  </p>
+                  <p className="font-bold mt-4">Image Target Column</p>
                   <div
                     className={cn(
                       "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                       activeMappingField === "imageColumn"
                         ? "border-primary bg-primary/10"
-                        : "border-transparent"
+                        : "border-transparent",
                     )}
                     onClick={() => setActiveMappingField("imageColumn")}
                   >
-                    <p className="w-[120px] font-semibold">
-                      Target Anchor:
-                    </p>
+                    <p className="w-[120px] font-semibold">Target Anchor:</p>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -3100,13 +3129,17 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                             <option value="">Unmapped</option>
                             {excelData.headers.map((header, index) => (
                               <option key={index} value={index}>
-                                {header || `Column ${indexToColumnLetter(index)}`}
+                                {header ||
+                                  `Column ${indexToColumnLetter(index)}`}
                               </option>
                             ))}
                           </select>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Select the column that contains the target anchor used to place downloaded images</p>
+                          <p>
+                            Select the column that contains the target anchor
+                            used to place downloaded images
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -3156,7 +3189,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                               : isMapped
                                 ? "bg-green-100"
                                 : "bg-gray-100",
-                            activeMappingField && "hover:bg-primary/10"
+                            activeMappingField && "hover:bg-primary/10",
                           )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
@@ -3190,7 +3223,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          
+
                           return (
                             <TableCell
                               key={cellIndex}
@@ -3203,7 +3236,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                                     : isMappedColumn
                                       ? "bg-green-50"
                                       : "",
-                                activeMappingField ? "cursor-pointer" : "cursor-default"
+                                activeMappingField
+                                  ? "cursor-pointer"
+                                  : "cursor-default",
                               )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >
@@ -3279,7 +3314,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           {excelData.headers[index!] ||
                             `Column ${indexToColumnLetter(index!)}`}
                         </TableCell>
-                        <TableCell>{getColumnPreview(index, excelData.rows)}</TableCell>
+                        <TableCell>
+                          {getColumnPreview(index, excelData.rows)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   {enableImageTargetMapping && imageColumnIndex !== null && (
@@ -3403,9 +3440,7 @@ const CMSGoogleSerpForm: React.FC = () => {
             Back to tools
           </Button>
           <div className="flex flex-col items-start gap-1">
-            <p className="text-lg font-bold">
-              Choose a Data Warehouse job
-            </p>
+            <p className="text-lg font-bold">Choose a Data Warehouse job</p>
             <p className="text-sm text-muted-foreground">
               Pick the workflow you need for this upload.
             </p>
@@ -3421,7 +3456,9 @@ const CMSGoogleSerpForm: React.FC = () => {
                 key={modeKey}
                 className={cn(
                   "cursor-pointer hover:shadow-md hover:border-primary/50 transition-all",
-                  modeKey === "imagesAndMsrp" ? "border-2 border-primary/20" : "border"
+                  modeKey === "imagesAndMsrp"
+                    ? "border-2 border-primary/20"
+                    : "border",
                 )}
                 onClick={() => setDataWarehouseMode(modeKey)}
               >
@@ -3461,14 +3498,18 @@ const CMSGoogleSerpForm: React.FC = () => {
     <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
       <div className="flex flex-col gap-6 items-stretch">
         {/* Mine Data */}
-        <p className="text-lg font-bold">
-          Mine Data
-        </p>
+        <p className="text-lg font-bold">Mine Data</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => setSelectedType("images")}>
+          <Card
+            className="cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setSelectedType("images")}
+          >
             <CardHeader>
               <div className="flex flex-row items-center gap-2">
-                <LuSearch className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <LuSearch
+                  className="h-6 w-6 text-gray-600"
+                  strokeWidth={1.75}
+                />
                 <CardTitle className="text-xl font-semibold">
                   Google Images
                 </CardTitle>
@@ -3487,7 +3528,10 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <div className="flex flex-row items-center gap-2">
-                <LuDatabase className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <LuDatabase
+                  className="h-6 w-6 text-gray-600"
+                  strokeWidth={1.75}
+                />
                 <CardTitle className="text-xl font-semibold">
                   Data Warehouse
                 </CardTitle>
@@ -3524,14 +3568,12 @@ const CMSGoogleSerpForm: React.FC = () => {
         </div>
 
         {/* Transform Excel */}
-        <p className="text-lg font-bold mt-2">
-          Transform Excel
-        </p>
+        <p className="text-lg font-bold mt-2">Transform Excel</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             className={cn(
               "cursor-pointer hover:shadow-md transition-all",
-              showDevUI() && "bg-red-50 border-red-200"
+              showDevUI() && "bg-red-50 border-red-200",
             )}
             onClick={() => setSelectedType("imageLinks")}
           >
@@ -3555,7 +3597,7 @@ const CMSGoogleSerpForm: React.FC = () => {
           <Card
             className={cn(
               "cursor-pointer hover:shadow-md transition-all",
-              showDevUI() && "bg-red-50 border-red-200"
+              showDevUI() && "bg-red-50 border-red-200",
             )}
             onClick={() => setSelectedType("crop")}
           >
@@ -3582,7 +3624,10 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <div className="flex flex-row items-center gap-2">
-                <LuFileText className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+                <LuFileText
+                  className="h-6 w-6 text-gray-400"
+                  strokeWidth={1.5}
+                />
                 <CardTitle className="text-xl font-semibold">
                   PDF → Excel
                 </CardTitle>
@@ -3603,9 +3648,7 @@ const CMSGoogleSerpForm: React.FC = () => {
         </div>
 
         {/* Enhance Images (Gen AI) - coming soon */}
-        <p className="text-lg font-bold mt-2">
-          Enhance Images (Gen AI)
-        </p>
+        <p className="text-lg font-bold mt-2">Enhance Images (Gen AI)</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card
             className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
@@ -3654,18 +3697,9 @@ const CMSGoogleSerpForm: React.FC = () => {
                 </p>
                 <p className="font-semibold">Convert:</p>
                 <p className="m-0 p-0 pl-0 whitespace-nowrap">
-                  <span className="mx-2">
-                    •
-                  </span>
-                  Lifestyle shots{" "}
-                  <span className="mx-2">
-                    •
-                  </span>{" "}
-                  Mockups/CAD
-                  <span className="mx-2">
-                    •
-                  </span>{" "}
-                  Low‑quality product photos
+                  <span className="mx-2">•</span>
+                  Lifestyle shots <span className="mx-2">•</span> Mockups/CAD
+                  <span className="mx-2">•</span> Low‑quality product photos
                 </p>
               </div>
             </CardContent>

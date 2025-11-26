@@ -1,3 +1,9 @@
+import { useParams } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
+import { Loader2 } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
 import {
   Card,
   CardContent,
@@ -5,13 +11,7 @@ import {
   CardTitle,
 } from "../../components/ui/card"
 import { Progress } from "../../components/ui/progress"
-import { Badge } from "../../components/ui/badge"
-import { Button } from "../../components/ui/button"
 import { Separator } from "../../components/ui/separator"
-import { Loader2 } from "lucide-react"
-import { useParams } from "@tanstack/react-router"
-import { createFileRoute } from "@tanstack/react-router"
-import React, { useState, useEffect } from "react"
 import useCustomToast from "../../hooks/useCustomToast"
 
 // --- INTERFACES ---
@@ -191,7 +191,9 @@ const JobProgressPage = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">Input File</span>
+                <span className="text-sm font-medium text-gray-500">
+                  Input File
+                </span>
                 <a
                   href={jobData.fileLocationUrl}
                   target="_blank"
@@ -202,14 +204,18 @@ const JobProgressPage = () => {
                 </a>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">Start Time</span>
+                <span className="text-sm font-medium text-gray-500">
+                  Start Time
+                </span>
                 <span className="text-gray-800 text-lg">
                   {new Date(jobData.fileStart).toLocaleString()}
                 </span>
               </div>
               {jobData.fileEnd && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">Duration</span>
+                  <span className="text-sm font-medium text-gray-500">
+                    Duration
+                  </span>
                   <span className="text-gray-800 text-lg">
                     {(
                       (new Date(jobData.fileEnd).getTime() -
@@ -246,7 +252,7 @@ const JobProgressPage = () => {
                     <Progress
                       value={step.progress}
                       className="h-3"
-                      // Note: Shadcn Progress doesn't support colorScheme or hasStripe directly via props usually, 
+                      // Note: Shadcn Progress doesn't support colorScheme or hasStripe directly via props usually,
                       // but we can style it via className or if the component supports it.
                       // Assuming standard Shadcn Progress component.
                     />
@@ -269,9 +275,11 @@ const JobProgressPage = () => {
             <p className="mt-2 text-green-600">
               The job finished successfully.
             </p>
-            <Button 
+            <Button
               className="mt-4 bg-green-600 hover:bg-green-700"
-              onClick={() => window.location.href = `/scraping-api/scraping-jobs/${jobId}`}
+              onClick={() =>
+                (window.location.href = `/scraping-api/scraping-jobs/${jobId}`)
+              }
             >
               View Results
             </Button>

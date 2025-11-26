@@ -29,16 +29,16 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react"
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import {
-  FaFileExcel,
-  FaFileImage,
-  FaFilePdf,
-  FaFileWord,
-} from "react-icons/fa"
+import { FaFileExcel, FaFileImage, FaFilePdf, FaFileWord } from "react-icons/fa"
 import {
   FiArrowDown,
   FiArrowUp,
@@ -224,13 +224,18 @@ async function getFileContent(
   return fileType === "excel" ? response.arrayBuffer() : response.text()
 }
 
-async function getS3Configs(): Promise<{ data: S3Configuration[]; count: number }> {
+async function getS3Configs(): Promise<{
+  data: S3Configuration[]
+  count: number
+}> {
   const response = await fetch(`${API_BASE_URL}/s3/configs`)
   if (!response.ok) throw new Error("Failed to fetch configs")
   return response.json()
 }
 
-async function createS3Config(config: Omit<S3Configuration, "id">): Promise<S3Configuration> {
+async function createS3Config(
+  config: Omit<S3Configuration, "id">,
+): Promise<S3Configuration> {
   const response = await fetch(`${API_BASE_URL}/s3/configs`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -753,7 +758,11 @@ interface ConfigModalProps {
   onSuccess: () => void
 }
 
-const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess }) => {
+const ConfigModal: React.FC<ConfigModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [newConfig, setNewConfig] = useState<Partial<S3Configuration>>({
@@ -762,13 +771,13 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess })
     access_key_id: "",
     secret_access_key: "",
     bucket_name: "",
-    region_name: "auto"
+    region_name: "auto",
   })
 
   const { data: configs, refetch } = useQuery({
     queryKey: ["s3Configs"],
     queryFn: getS3Configs,
-    enabled: isOpen
+    enabled: isOpen,
   })
 
   const createMutation = useMutation({
@@ -776,11 +785,19 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess })
     onSuccess: () => {
       toast({ title: "Config Added", status: "success", duration: 3000 })
       queryClient.invalidateQueries({ queryKey: ["s3Configs"] })
-      setNewConfig({ name: "", endpoint_url: "", access_key_id: "", secret_access_key: "", bucket_name: "", region_name: "auto" })
+      setNewConfig({
+        name: "",
+        endpoint_url: "",
+        access_key_id: "",
+        secret_access_key: "",
+        bucket_name: "",
+        region_name: "auto",
+      })
       refetch()
       onSuccess()
     },
-    onError: (err: Error) => toast({ title: "Error", description: err.message, status: "error" })
+    onError: (err: Error) =>
+      toast({ title: "Error", description: err.message, status: "error" }),
   })
 
   const deleteMutation = useMutation({
@@ -790,11 +807,17 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess })
       queryClient.invalidateQueries({ queryKey: ["s3Configs"] })
       refetch()
     },
-    onError: (err: Error) => toast({ title: "Error", description: err.message, status: "error" })
+    onError: (err: Error) =>
+      toast({ title: "Error", description: err.message, status: "error" }),
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl" closeOnOverlayClick={false}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="xl"
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Manage S3 Sources</ModalHeader>
@@ -802,16 +825,27 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess })
         <ModalBody>
           <VStack spacing={6} align="stretch">
             <Box>
-              <Text fontWeight="bold" mb={2}>Existing Sources</Text>
+              <Text fontWeight="bold" mb={2}>
+                Existing Sources
+              </Text>
               {configs?.data.length === 0 ? (
                 <Text color="gray.500">No sources configured.</Text>
               ) : (
                 <VStack align="stretch" spacing={2}>
-                  {configs?.data.map(config => (
-                    <Flex key={config.id} justify="space-between" align="center" p={2} borderWidth="1px" borderRadius="md">
+                  {configs?.data.map((config) => (
+                    <Flex
+                      key={config.id}
+                      justify="space-between"
+                      align="center"
+                      p={2}
+                      borderWidth="1px"
+                      borderRadius="md"
+                    >
                       <Box>
                         <Text fontWeight="bold">{config.name}</Text>
-                        <Text fontSize="sm" color="gray.600">{config.bucket_name}</Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {config.bucket_name}
+                        </Text>
                       </Box>
                       <IconButton
                         aria-label="Delete"
@@ -828,37 +862,94 @@ const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess })
             </Box>
             <Divider />
             <Box>
-              <Text fontWeight="bold" mb={2}>Add New Source</Text>
+              <Text fontWeight="bold" mb={2}>
+                Add New Source
+              </Text>
               <VStack spacing={3}>
                 <FormControl isRequired>
                   <FormLabel>Name</FormLabel>
-                  <Input value={newConfig.name} onChange={e => setNewConfig({...newConfig, name: e.target.value})} placeholder="My R2 Bucket" />
+                  <Input
+                    value={newConfig.name}
+                    onChange={(e) =>
+                      setNewConfig({ ...newConfig, name: e.target.value })
+                    }
+                    placeholder="My R2 Bucket"
+                  />
                 </FormControl>
                 <FormControl isRequired>
                   <FormLabel>Endpoint URL</FormLabel>
-                  <Input value={newConfig.endpoint_url} onChange={e => setNewConfig({...newConfig, endpoint_url: e.target.value})} placeholder="https://<accountid>.r2.cloudflarestorage.com" />
+                  <Input
+                    value={newConfig.endpoint_url}
+                    onChange={(e) =>
+                      setNewConfig({
+                        ...newConfig,
+                        endpoint_url: e.target.value,
+                      })
+                    }
+                    placeholder="https://<accountid>.r2.cloudflarestorage.com"
+                  />
                 </FormControl>
                 <HStack>
                   <FormControl isRequired>
                     <FormLabel>Access Key ID</FormLabel>
-                    <Input value={newConfig.access_key_id} onChange={e => setNewConfig({...newConfig, access_key_id: e.target.value})} type="password" />
+                    <Input
+                      value={newConfig.access_key_id}
+                      onChange={(e) =>
+                        setNewConfig({
+                          ...newConfig,
+                          access_key_id: e.target.value,
+                        })
+                      }
+                      type="password"
+                    />
                   </FormControl>
                   <FormControl isRequired>
                     <FormLabel>Secret Access Key</FormLabel>
-                    <Input type="password" value={newConfig.secret_access_key} onChange={e => setNewConfig({...newConfig, secret_access_key: e.target.value})} />
+                    <Input
+                      type="password"
+                      value={newConfig.secret_access_key}
+                      onChange={(e) =>
+                        setNewConfig({
+                          ...newConfig,
+                          secret_access_key: e.target.value,
+                        })
+                      }
+                    />
                   </FormControl>
                 </HStack>
                 <HStack>
                   <FormControl isRequired>
                     <FormLabel>Bucket Name</FormLabel>
-                    <Input value={newConfig.bucket_name} onChange={e => setNewConfig({...newConfig, bucket_name: e.target.value})} />
+                    <Input
+                      value={newConfig.bucket_name}
+                      onChange={(e) =>
+                        setNewConfig({
+                          ...newConfig,
+                          bucket_name: e.target.value,
+                        })
+                      }
+                    />
                   </FormControl>
                   <FormControl>
                     <FormLabel>Region</FormLabel>
-                    <Input value={newConfig.region_name} onChange={e => setNewConfig({...newConfig, region_name: e.target.value})} placeholder="auto" />
+                    <Input
+                      value={newConfig.region_name}
+                      onChange={(e) =>
+                        setNewConfig({
+                          ...newConfig,
+                          region_name: e.target.value,
+                        })
+                      }
+                      placeholder="auto"
+                    />
                   </FormControl>
                 </HStack>
-                <Button colorScheme="blue" width="full" onClick={() => createMutation.mutate(newConfig as any)} isLoading={createMutation.isPending}>
+                <Button
+                  colorScheme="blue"
+                  width="full"
+                  onClick={() => createMutation.mutate(newConfig as any)}
+                  isLoading={createMutation.isPending}
+                >
                   Add Source
                 </Button>
               </VStack>
@@ -928,9 +1019,21 @@ function FileExplorer() {
     error: s3Error,
     refetch,
   } = useQuery<S3ListResponse, Error>({
-    queryKey: ["s3Objects", state.currentPath, state.page, continuationToken, selectedConfigId],
+    queryKey: [
+      "s3Objects",
+      state.currentPath,
+      state.page,
+      continuationToken,
+      selectedConfigId,
+    ],
     queryFn: () =>
-      listS3Objects(state.currentPath, state.page, 10, continuationToken, selectedConfigId),
+      listS3Objects(
+        state.currentPath,
+        state.page,
+        10,
+        continuationToken,
+        selectedConfigId,
+      ),
     placeholderData: keepPreviousData,
     retry: 1,
     enabled: !!configStatus?.configured || !!selectedConfigId,
@@ -979,7 +1082,11 @@ function FileExplorer() {
   ) => {
     setSelectedFile(obj)
     try {
-      const url = await getSignedUrl(obj.path, DEFAULT_EXPIRES_IN, selectedConfigId)
+      const url = await getSignedUrl(
+        obj.path,
+        DEFAULT_EXPIRES_IN,
+        selectedConfigId,
+      )
       setPreviewUrl(url)
       if (action === "details") {
         onDetailsOpen()
@@ -1175,7 +1282,7 @@ function FileExplorer() {
             value={selectedConfigId || ""}
             onChange={(e) => {
               setSelectedConfigId(e.target.value)
-              setState(prev => ({ ...prev, currentPath: "", page: 1 }))
+              setState((prev) => ({ ...prev, currentPath: "", page: 1 }))
               setObjects([])
             }}
             placeholder="Select Source"
@@ -1261,11 +1368,7 @@ function FileExplorer() {
       {s3Error && !isConfigOpen ? (
         <Container maxW="full" bg="white" color="gray.800" py={6}>
           <Text color="red.500">{s3Error.message}</Text>
-          <Button
-            mt={4}
-            colorScheme="blue"
-            onClick={() => refetch()}
-          >
+          <Button mt={4} colorScheme="blue" onClick={() => refetch()}>
             Retry
           </Button>
         </Container>
@@ -1278,7 +1381,10 @@ function FileExplorer() {
         >
           <Box
             flex={state.viewMode === "grid" ? "0 0 40%" : "1"}
-            minW={{ base: "100%", md: state.viewMode === "grid" ? "40%" : "40%" }}
+            minW={{
+              base: "100%",
+              md: state.viewMode === "grid" ? "40%" : "40%",
+            }}
             maxW={
               state.viewMode === "grid" ? { base: "100%", md: "50%" } : "none"
             }
@@ -1454,10 +1560,10 @@ function FileExplorer() {
         </ModalContent>
       </Modal>
 
-      <ConfigModal 
-        isOpen={isConfigOpen} 
-        onClose={onConfigClose} 
-        onSuccess={() => refetch()} 
+      <ConfigModal
+        isOpen={isConfigOpen}
+        onClose={onConfigClose}
+        onSuccess={() => refetch()}
       />
     </Container>
   )

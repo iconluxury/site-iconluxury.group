@@ -1,9 +1,9 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { Badge } from "../ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Label } from "../ui/label"
 import { Switch } from "../ui/switch"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
 
 // Define the shape of API status settings
 type ApiStatusSettings = {

@@ -1,9 +1,9 @@
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
 
 import {
   type ApiError,
@@ -113,7 +113,11 @@ const UserInformation = () => {
             {editMode ? "Save" : "Edit"}
           </Button>
           {editMode && (
-            <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
           )}

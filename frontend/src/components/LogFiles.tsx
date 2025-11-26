@@ -1,4 +1,11 @@
+import { Link } from "@tanstack/react-router"
+import debounce from "lodash/debounce"
+import { Download, Loader2, RefreshCw } from "lucide-react"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import useCustomToast from "./../hooks/useCustomToast"
 import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
 import {
   Table,
   TableBody,
@@ -7,19 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import { Card, CardContent } from "./ui/card"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-import { Download, Loader2, RefreshCw } from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import debounce from "lodash/debounce"
-import type React from "react"
-import { useCallback, useEffect, useState } from "react"
-import useCustomToast from "./../hooks/useCustomToast"
 
 interface LogFile {
   fileId: string
@@ -112,9 +112,7 @@ const LogFiles: React.FC = () => {
   return (
     <div className="p-4 w-full">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">
-          Log Files
-        </h2>
+        <h2 className="text-lg font-bold">Log Files</h2>
         <div className="flex gap-2">
           <TooltipProvider>
             <Tooltip>
@@ -138,13 +136,8 @@ const LogFiles: React.FC = () => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button
-            size="sm"
-            asChild
-          >
-            <Link to="/scraping-api/log-details">
-              View Details
-            </Link>
+          <Button size="sm" asChild>
+            <Link to="/scraping-api/log-details">View Details</Link>
           </Button>
         </div>
       </div>
@@ -152,7 +145,9 @@ const LogFiles: React.FC = () => {
       {isLoading ? (
         <div className="flex justify-center items-center h-[200px]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <span className="ml-4 text-muted-foreground">Loading log files...</span>
+          <span className="ml-4 text-muted-foreground">
+            Loading log files...
+          </span>
         </div>
       ) : logFiles.length === 0 ? (
         <div className="text-center text-muted-foreground">

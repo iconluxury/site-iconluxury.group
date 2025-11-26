@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
 import PromoSERP from "../../../components/ComingSoon"
-import ApiStatusManagement from "../../../components/UserSettings/ApiStatusManagement"
+import ApiStatusManagement from "../../../components/Admin/ApiStatusManagement"
 
 import { Badge } from "../../../components/ui/badge"
 import { Button } from "../../../components/ui/button"
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select"
+import { Separator } from "../../../components/ui/separator"
 import {
   Table,
   TableBody,
@@ -30,13 +31,22 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table"
-import { Separator } from "../../../components/ui/separator"
 
-export const JOB_TYPES: Record<number, { name: string; required: string[]; optional: string[]; flags: string[] }> = {
+export const JOB_TYPES: Record<
+  number,
+  { name: string; required: string[]; optional: string[]; flags: string[] }
+> = {
   1: {
     name: "InputScrape + WH",
     required: ["fileUploadImage", "header_index", "searchColImage"],
-    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    optional: [
+      "imageColumnImage",
+      "brandColImage",
+      "ColorColImage",
+      "CategoryColImage",
+      "sendToEmail",
+      "manualBrand",
+    ],
     flags: ["skipDataWarehouse=False", "isIconDistro=False", "isAiMode=False"],
   },
   2: {
@@ -48,31 +58,72 @@ export const JOB_TYPES: Record<number, { name: string; required: string[]; optio
   3: {
     name: "DistroScrape + WH",
     required: ["fileUploadImage", "header_index", "searchColImage"],
-    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    optional: [
+      "imageColumnImage",
+      "brandColImage",
+      "ColorColImage",
+      "CategoryColImage",
+      "sendToEmail",
+      "manualBrand",
+    ],
     flags: ["isIconDistro=True", "skipDataWarehouse=False", "isAiMode=False"],
   },
   4: {
     name: "InputScrape + WH (standard)",
     required: ["fileUploadImage", "header_index", "searchColImage"],
-    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    optional: [
+      "imageColumnImage",
+      "brandColImage",
+      "ColorColImage",
+      "CategoryColImage",
+      "sendToEmail",
+      "manualBrand",
+    ],
     flags: ["skipDataWarehouse=False", "isIconDistro=False", "isAiMode=False"],
   },
   5: {
     name: "InputScrape + isAiMode OR Datawarehouse",
-    required: ["Via /submitImage: same as type 1 + isAiMode=True", "Via /datawarehouse: fileUploadImage, header_index, searchColImage, msrpColImage, currency, isNewDistro"],
-    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    required: [
+      "Via /submitImage: same as type 1 + isAiMode=True",
+      "Via /datawarehouse: fileUploadImage, header_index, searchColImage, msrpColImage, currency, isNewDistro",
+    ],
+    optional: [
+      "imageColumnImage",
+      "brandColImage",
+      "ColorColImage",
+      "CategoryColImage",
+      "sendToEmail",
+      "manualBrand",
+    ],
     flags: ["isAiMode=True (for image path)"],
   },
   6: {
     name: "CropJob",
     required: ["fileUploadCrop", "header_index"],
-    optional: ["searchColImage", "brandColImage", "imageColumnImage", "ColorColImage", "CategoryColImage", "manualBrand", "sendToEmail", "skipDataWarehouse"],
+    optional: [
+      "searchColImage",
+      "brandColImage",
+      "imageColumnImage",
+      "ColorColImage",
+      "CategoryColImage",
+      "manualBrand",
+      "sendToEmail",
+      "skipDataWarehouse",
+    ],
     flags: [],
   },
   7: {
     name: "ImageLinkJob",
     required: ["fileUploadLink", "header_index", "searchColLink"],
-    optional: ["linkColumn", "brandColLink", "ColorColLink", "CategoryColLink", "sendToEmail", "manualBrand", "skipDataWarehouse"],
+    optional: [
+      "linkColumn",
+      "brandColLink",
+      "ColorColLink",
+      "CategoryColLink",
+      "sendToEmail",
+      "manualBrand",
+      "skipDataWarehouse",
+    ],
     flags: [],
   },
 }
@@ -288,12 +339,8 @@ function Jobs() {
     <div className="container mx-auto p-6 bg-white text-gray-800">
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
-          <h1 className="text-xl font-bold text-black">
-            All Jobs
-          </h1>
-          <p className="text-sm text-gray-600">
-            View and manage all job types
-          </p>
+          <h1 className="text-xl font-bold text-black">All Jobs</h1>
+          <p className="text-sm text-gray-600">View and manage all job types</p>
         </div>
       </div>
 
@@ -337,7 +384,7 @@ function Jobs() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-4">
               <Card>
                 <CardContent className="p-0">
@@ -354,7 +401,7 @@ function Jobs() {
                     </TableHeader>
                     <TableBody>
                       {filteredJobs.map((job) => (
-                        <TableRow 
+                        <TableRow
                           key={job.id}
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() =>
@@ -364,12 +411,22 @@ function Jobs() {
                             })
                           }
                         >
-                          <TableCell className="font-medium">{job.id}</TableCell>
-                          <TableCell>{job.fileTypeId ? (JOB_TYPES[job.fileTypeId]?.name || "Unknown") : "N/A"}</TableCell>
-                          <TableCell>{job.inputFile}</TableCell>
-                          <TableCell>{job.rec} records, {job.img} images</TableCell>
+                          <TableCell className="font-medium">
+                            {job.id}
+                          </TableCell>
                           <TableCell>
-                            <Badge variant={job.fileEnd ? "default" : "secondary"}>
+                            {job.fileTypeId
+                              ? JOB_TYPES[job.fileTypeId]?.name || "Unknown"
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell>{job.inputFile}</TableCell>
+                          <TableCell>
+                            {job.rec} records, {job.img} images
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={job.fileEnd ? "default" : "secondary"}
+                            >
                               {job.fileEnd ? "Completed" : "Pending"}
                             </Badge>
                           </TableCell>
@@ -418,9 +475,7 @@ function Jobs() {
                 </p>
               )}
               {isFetching ? (
-                <p className="text-sm text-gray-500">
-                  Loading more...
-                </p>
+                <p className="text-sm text-gray-500">Loading more...</p>
               ) : (
                 filteredJobs.length > 0 && (
                   <div className="flex justify-center mt-4">

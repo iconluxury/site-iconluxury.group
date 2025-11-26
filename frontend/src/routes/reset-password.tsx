@@ -75,10 +75,7 @@ function ResetPassword() {
         <p className="text-center text-muted-foreground">
           Please enter your new password and confirm it to reset your password.
         </p>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">Set Password</Label>
             <Input
@@ -99,7 +96,8 @@ function ResetPassword() {
               id="confirm_password"
               {...register("confirm_password", {
                 validate: (value) =>
-                  value === getValues().new_password || "The passwords do not match",
+                  value === getValues().new_password ||
+                  "The passwords do not match",
               })}
               placeholder="Confirm Password"
               type="password"

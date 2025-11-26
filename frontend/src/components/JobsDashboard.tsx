@@ -1,21 +1,15 @@
-import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
-import {
-  CheckCircle,
-  Clock,
-  File,
-  Moon,
-  RefreshCw,
-  Sun,
-} from "lucide-react"
+import { useNavigate } from "@tanstack/react-router"
+import { CheckCircle, Clock, File, Moon, RefreshCw, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
+import * as React from "react"
 import {
   LuCrop,
   LuDatabase,
+  LuLayoutGrid,
   LuLink,
   LuSearch,
-  LuLayoutGrid,
 } from "react-icons/lu"
-import { useTheme } from "next-themes"
 import { Button } from "./ui/button"
 import {
   Card,
@@ -24,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
-import { useNavigate } from "@tanstack/react-router"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -57,7 +50,6 @@ const getJobTypeName = (id?: number) => {
   if (!id) return "Unknown"
   return JOB_TYPES[id] || `Type ${id}`
 }
-
 
 const getAuthToken = (): string | null => {
   return localStorage.getItem("access_token")
@@ -170,7 +162,9 @@ export default function JobsDashboard() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Jobs
+                </CardTitle>
                 <File className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -188,7 +182,9 @@ export default function JobsDashboard() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  In Progress
+                </CardTitle>
                 <RefreshCw className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
@@ -208,60 +204,72 @@ export default function JobsDashboard() {
 
           {/* Tools Shortcuts */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
               onClick={() => navigate({ to: "/tools/google-images" } as any)}
             >
-                <CardHeader>
-                  <div className="flex flex-row items-center gap-2">
-                    <LuSearch className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
-                    <CardTitle className="text-xl font-semibold">
-                      Google Images
-                    </CardTitle>
-                  </div>
-                </CardHeader>
+              <CardHeader>
+                <div className="flex flex-row items-center gap-2">
+                  <LuSearch
+                    className="h-6 w-6 text-gray-600"
+                    strokeWidth={1.75}
+                  />
+                  <CardTitle className="text-xl font-semibold">
+                    Google Images
+                  </CardTitle>
+                </div>
+              </CardHeader>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
               onClick={() => navigate({ to: "/tools/data-warehouse" } as any)}
             >
-                <CardHeader>
-                  <div className="flex flex-row items-center gap-2">
-                    <LuDatabase className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
-                    <CardTitle className="text-xl font-semibold">
-                      Data Warehouse
-                    </CardTitle>
-                  </div>
-                </CardHeader>
+              <CardHeader>
+                <div className="flex flex-row items-center gap-2">
+                  <LuDatabase
+                    className="h-6 w-6 text-gray-600"
+                    strokeWidth={1.75}
+                  />
+                  <CardTitle className="text-xl font-semibold">
+                    Data Warehouse
+                  </CardTitle>
+                </div>
+              </CardHeader>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
               onClick={() => navigate({ to: "/tools/image-links" } as any)}
             >
-                <CardHeader>
-                  <div className="flex flex-row items-center gap-2">
-                    <LuLink className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
-                    <CardTitle className="text-xl font-semibold">
-                      Image URL Download
-                    </CardTitle>
-                  </div>
-                </CardHeader>
+              <CardHeader>
+                <div className="flex flex-row items-center gap-2">
+                  <LuLink
+                    className="h-6 w-6 text-gray-600"
+                    strokeWidth={1.75}
+                  />
+                  <CardTitle className="text-xl font-semibold">
+                    Image URL Download
+                  </CardTitle>
+                </div>
+              </CardHeader>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
               onClick={() => navigate({ to: "/tools/crop" } as any)}
             >
-                <CardHeader>
-                  <div className="flex flex-row items-center gap-2">
-                    <LuCrop className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
-                    <CardTitle className="text-xl font-semibold">
-                      Image crop
-                    </CardTitle>
-                  </div>
-                </CardHeader>
+              <CardHeader>
+                <div className="flex flex-row items-center gap-2">
+                  <LuCrop
+                    className="h-6 w-6 text-gray-600"
+                    strokeWidth={1.75}
+                  />
+                  <CardTitle className="text-xl font-semibold">
+                    Image crop
+                  </CardTitle>
+                </div>
+              </CardHeader>
             </Card>
           </div>
 
@@ -271,7 +279,10 @@ export default function JobsDashboard() {
               <CardTitle>Need Help?</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" onClick={() => navigate({ to: "/support-ticket" })}>
+              <Button
+                className="w-full"
+                onClick={() => navigate({ to: "/support-ticket" })}
+              >
                 Submit Ticket
               </Button>
             </CardContent>

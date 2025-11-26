@@ -1,35 +1,34 @@
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Badge } from "../ui/badge"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useLocation } from "@tanstack/react-router"
 import {
   Archive,
+  BarChart,
+  Briefcase,
   Calendar,
+  Crop,
+  Database,
   Eye,
+  FileSpreadsheet,
   FileText,
   Globe,
   HelpCircle,
   Home,
+  Image,
   Layers,
+  Layout,
+  Link as LinkIcon,
   LogOut,
   MessageSquare,
   Search,
+  Settings,
   Shield,
   Users,
-  Image,
-  Database,
-  Link as LinkIcon,
-  Crop,
   Wrench,
-  Settings,
-  Package,
-  BarChart,
-  Briefcase,
-  FileSpreadsheet,
-  Layout,
 } from "lucide-react"
 import type { UserPublic } from "../../client"
 import useAuth from "../../hooks/useAuth"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Badge } from "../ui/badge"
 
 interface SidebarItem {
   title: string
@@ -47,10 +46,18 @@ const sidebarStructure: SidebarItem[] = [
     icon: Wrench,
     subItems: [
       { title: "Google Images", path: "/tools/google-images", icon: Image },
-      { title: "Data Warehouse", path: "/tools/data-warehouse", icon: Database },
+      {
+        title: "Data Warehouse",
+        path: "/tools/data-warehouse",
+        icon: Database,
+      },
       { title: "Image Links", path: "/tools/image-links", icon: LinkIcon },
       { title: "Crop Tool", path: "/tools/crop", icon: Crop },
-      { title: "Reformat Excel", path: "/reformat-excel", icon: FileSpreadsheet },
+      {
+        title: "Reformat Excel",
+        path: "/reformat-excel",
+        icon: FileSpreadsheet,
+      },
     ],
   },
   {
@@ -58,7 +65,11 @@ const sidebarStructure: SidebarItem[] = [
     icon: Search,
     subItems: [
       { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
-      { title: "Scraping Jobs", path: "/scraping-api/scraping-jobs", icon: Briefcase },
+      {
+        title: "Scraping Jobs",
+        path: "/scraping-api/scraping-jobs",
+        icon: Briefcase,
+      },
       { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
       { title: "Google SERP CMS", path: "/google-serp-cms", icon: Layout },
     ],
@@ -95,22 +106,10 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   }
 
   const isEnabled = (title: string) => {
-    if (
-      [
-        "Dashboard",
-        "Sign out",
-      ].includes(title)
-    ) {
+    if (["Dashboard", "Sign out"].includes(title)) {
       return true
     }
-    if (
-      [
-        "Scraper",
-        "Jobs",
-        "File Explorer",
-        "Admin",
-      ].includes(title)
-    ) {
+    if (["Scraper", "Jobs", "File Explorer", "Admin"].includes(title)) {
       return currentUser?.is_superuser || false
     }
     return true
@@ -148,7 +147,10 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
                 <span>{title}</span>
               </div>
               {showAdminLabel && (
-                <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 rounded-full">
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium px-2 py-0.5 rounded-full"
+                >
                   Admin
                 </Badge>
               )}
@@ -166,9 +168,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
             </div>
           ) : (
             <div>
-              <div className="p-2 font-bold">
-                {title}
-              </div>
+              <div className="p-2 font-bold">{title}</div>
               <div className="pl-4">{subItems && renderItems(subItems)}</div>
             </div>
           )}
@@ -186,11 +186,18 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
           onClick={onClose}
         >
           <Avatar className="h-8 w-8 mr-2 border-2 border-transparent hover:border-primary transition-all duration-200 grayscale hover:grayscale-0">
-            <AvatarImage src={hardcodedAvatar} alt={currentUser.full_name || "User"} />
-            <AvatarFallback>{currentUser.full_name ? currentUser.full_name.charAt(0) : "U"}</AvatarFallback>
+            <AvatarImage
+              src={hardcodedAvatar}
+              alt={currentUser.full_name || "User"}
+            />
+            <AvatarFallback>
+              {currentUser.full_name ? currentUser.full_name.charAt(0) : "U"}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="font-medium truncate">{currentUser.full_name || "User"}</p>
+            <p className="font-medium truncate">
+              {currentUser.full_name || "User"}
+            </p>
             <p className="text-xs text-muted-foreground truncate whitespace-normal break-words">
               {currentUser.email || "email@example.com"}
             </p>

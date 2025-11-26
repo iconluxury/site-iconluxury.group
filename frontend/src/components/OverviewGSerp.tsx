@@ -1,26 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table"
-import { Button } from "./ui/button"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip"
-import { Badge } from "./ui/badge"
-import { Loader2, X, RefreshCw, ToggleLeft, ToggleRight } from "lucide-react"
+import { debounce } from "lodash"
+import { Loader2, RefreshCw, ToggleLeft, ToggleRight, X } from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
@@ -32,8 +11,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { debounce } from "lodash"
 import useCustomToast from "../hooks/useCustomToast"
+import { Badge } from "./ui/badge"
+import { Button } from "./ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
 
 // Interfaces for TypeScript type safety
 interface TimeSeries {
@@ -259,7 +254,11 @@ const OverviewGSerp: React.FC = () => {
       setEndpointData([])
       setChartData({})
       setError(error instanceof Error ? error.message : "Unknown error")
-      showToast("Data Fetch Error", error instanceof Error ? error.message : "Unknown error", "error")
+      showToast(
+        "Data Fetch Error",
+        error instanceof Error ? error.message : "Unknown error",
+        "error",
+      )
     } finally {
       setIsLoading(false)
     }
@@ -558,9 +557,7 @@ const OverviewGSerp: React.FC = () => {
         </p>
         {selectedQuery.endpointDetails && (
           <div className="mt-2">
-            <p className="text-sm font-semibold">
-              Endpoint Breakdown:
-            </p>
+            <p className="text-sm font-semibold">Endpoint Breakdown:</p>
             {selectedQuery.endpointDetails.map((detail, idx) => (
               <p key={idx} className="text-sm">
                 {detail.endpoint}: {detail.count}
@@ -572,8 +569,13 @@ const OverviewGSerp: React.FC = () => {
     ) : (
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat, index) => (
-          <div key={index} className="flex flex-col p-3 border rounded-lg bg-card text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+          <div
+            key={index}
+            className="flex flex-col p-3 border rounded-lg bg-card text-card-foreground shadow-sm"
+          >
+            <span className="text-sm font-medium text-muted-foreground">
+              {stat.label}
+            </span>
             <span className="text-xl font-bold">{stat.value}</span>
           </div>
         ))}
@@ -592,14 +594,14 @@ const OverviewGSerp: React.FC = () => {
         <Card className="relative min-h-[150px]">
           <CardContent className="pt-6">
             {selectedQuery && (
-                <Button
+              <Button
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2"
                 onClick={() => setSelectedQuery(null)}
-                >
+              >
                 <X className="h-4 w-4" />
-                </Button>
+              </Button>
             )}
             {summaryContent}
           </CardContent>
@@ -638,9 +640,7 @@ const OverviewGSerp: React.FC = () => {
   return (
     <div className="p-4 w-full">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-        <h2 className="text-lg font-bold">
-          OverviewGSerp
-        </h2>
+        <h2 className="text-lg font-bold">OverviewGSerp</h2>
         <div className="flex items-center gap-2 ml-auto">
           <div className="flex gap-1">
             {chartOptions.map((option) => (
@@ -648,11 +648,24 @@ const OverviewGSerp: React.FC = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={selectedChart === option.key ? "default" : "outline"}
+                      variant={
+                        selectedChart === option.key ? "default" : "outline"
+                      }
                       size="sm"
                       onClick={() => setSelectedChart(option.key)}
-                      className={selectedChart === option.key ? "" : "text-muted-foreground"}
-                      style={selectedChart === option.key ? { backgroundColor: option.color, borderColor: option.color } : {}}
+                      className={
+                        selectedChart === option.key
+                          ? ""
+                          : "text-muted-foreground"
+                      }
+                      style={
+                        selectedChart === option.key
+                          ? {
+                              backgroundColor: option.color,
+                              borderColor: option.color,
+                            }
+                          : {}
+                      }
                     >
                       {option.label}
                     </Button>
@@ -664,7 +677,7 @@ const OverviewGSerp: React.FC = () => {
               </TooltipProvider>
             ))}
           </div>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -677,7 +690,11 @@ const OverviewGSerp: React.FC = () => {
                   }}
                   disabled={isLoading}
                 >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
                   Refresh Now
                 </Button>
               </TooltipTrigger>
@@ -695,7 +712,11 @@ const OverviewGSerp: React.FC = () => {
                   variant={showLabels ? "default" : "outline"}
                   onClick={() => setShowLabels(!showLabels)}
                 >
-                  {showLabels ? <ToggleRight className="h-4 w-4 mr-2" /> : <ToggleLeft className="h-4 w-4 mr-2" />}
+                  {showLabels ? (
+                    <ToggleRight className="h-4 w-4 mr-2" />
+                  ) : (
+                    <ToggleLeft className="h-4 w-4 mr-2" />
+                  )}
                   {showLabels ? "Labels: On" : "Labels: Off"}
                 </Button>
               </TooltipTrigger>
@@ -800,21 +821,30 @@ const OverviewGSerp: React.FC = () => {
               {renderSummary()}
               {selectedChart !== "requestsOverTime" && (
                 <div className="mt-6">
-                  <h3 className="text-md font-semibold mb-2">
-                    Compare To
-                  </h3>
+                  <h3 className="text-md font-semibold mb-2">Compare To</h3>
                   <div className="flex flex-col gap-2">
                     {compareRows.map((row, rowIndex) => (
                       <div key={rowIndex} className="flex gap-1 flex-wrap">
                         {row.map((option) => (
                           <Button
                             key={option.value}
-                            variant={compares[selectedChart].includes(option.value) ? "default" : "outline"}
+                            variant={
+                              compares[selectedChart].includes(option.value)
+                                ? "default"
+                                : "outline"
+                            }
                             size="sm"
                             onClick={() =>
                               toggleCompare(selectedChart, option.value)
                             }
-                            style={compares[selectedChart].includes(option.value) ? { backgroundColor: option.color, borderColor: option.color } : {}}
+                            style={
+                              compares[selectedChart].includes(option.value)
+                                ? {
+                                    backgroundColor: option.color,
+                                    borderColor: option.color,
+                                  }
+                                : {}
+                            }
                           >
                             {option.label}
                           </Button>
@@ -828,9 +858,7 @@ const OverviewGSerp: React.FC = () => {
           </div>
 
           <div className="mt-6">
-            <h3 className="text-md font-semibold mb-2">
-              Top Search Queries
-            </h3>
+            <h3 className="text-md font-semibold mb-2">Top Search Queries</h3>
             <div className="rounded-md border shadow-md overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -847,14 +875,20 @@ const OverviewGSerp: React.FC = () => {
                     <TableRow
                       key={index}
                       onClick={() => setSelectedQuery(query)}
-                      className={`cursor-pointer ${selectedQuery?.query === query.query ? "bg-muted" : ""}`}
+                      className={`cursor-pointer ${
+                        selectedQuery?.query === query.query ? "bg-muted" : ""
+                      }`}
                     >
                       <TableCell>{query.query}</TableCell>
                       <TableCell>{query.count}</TableCell>
                       <TableCell>{query.category}</TableCell>
                       <TableCell>{query.type}</TableCell>
                       <TableCell>
-                        {query.featured ? <Badge variant="default">Yes</Badge> : <Badge variant="secondary">No</Badge>}
+                        {query.featured ? (
+                          <Badge variant="default">Yes</Badge>
+                        ) : (
+                          <Badge variant="secondary">No</Badge>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

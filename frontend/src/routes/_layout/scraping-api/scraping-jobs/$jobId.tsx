@@ -1,6 +1,11 @@
-import {
-  Badge,
-} from "../../../../components/ui/badge"
+import { useQuery } from "@tanstack/react-query"
+import { useNavigate, useSearch } from "@tanstack/react-router"
+import { createFileRoute, useParams } from "@tanstack/react-router"
+import { Loader2 } from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { FiFileText } from "react-icons/fi"
+import InfiniteScroll from "react-infinite-scroll-component"
+import { Badge } from "../../../../components/ui/badge"
 import { Button } from "../../../../components/ui/button"
 import {
   Card,
@@ -38,13 +43,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../../../components/ui/tabs"
-import { Loader2 } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { createFileRoute, useParams } from "@tanstack/react-router"
-import React, { useEffect, useState } from "react"
-import { FiFileText } from "react-icons/fi"
-import InfiniteScroll from "react-infinite-scroll-component"
 import useCustomToast from "../../../../hooks/useCustomToast"
 
 // Interfaces
@@ -160,9 +158,11 @@ const LogDisplay: React.FC<LogDisplayProps> = ({ logUrl }) => {
     fetchLog()
   }, [logUrl, showToast])
 
-  if (isLoading) return <Loader2 className="h-4 w-4 animate-spin text-green-500" />
+  if (isLoading)
+    return <Loader2 className="h-4 w-4 animate-spin text-green-500" />
   if (error) return <p className="text-red-500">{error}</p>
-  if (!logContent) return <p className="text-gray-600">No log content available</p>
+  if (!logContent)
+    return <p className="text-gray-600">No log content available</p>
 
   return (
     <ScrollArea className="h-[300px] w-full rounded-md border p-4 bg-gray-50 text-gray-800">
@@ -481,10 +481,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                       {step.completed} / {progressData.totalRecords} records
                     </span>
                   </div>
-                  <Progress
-                    value={step.progress}
-                    className="h-2"
-                  />
+                  <Progress value={step.progress} className="h-2" />
                 </div>
               ))}
             </div>
@@ -495,17 +492,26 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Input File</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Input File
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <a href={job.fileLocationUrl} target="_blank" rel="noreferrer" className="text-green-500 hover:underline break-all">
+            <a
+              href={job.fileLocationUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-green-500 hover:underline break-all"
+            >
               {job.inputFile}
             </a>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Status</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Status
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Badge variant={job.fileEnd ? "default" : "secondary"}>
@@ -516,7 +522,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         {job.fileEnd && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Processing Duration</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Processing Duration
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-800">
@@ -533,14 +541,18 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         )}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Results</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total Results
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-800">{job.results.length}</div>
+            <div className="text-2xl font-bold text-gray-800">
+              {job.results.length}
+            </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <Button size="sm" onClick={() => setIsFileModalOpen(true)}>
         File Metadata
       </Button>
@@ -602,7 +614,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                       <TableCell>{totalResults}</TableCell>
                       <TableCell>{positiveSortOrderCount}</TableCell>
                     </TableRow>
-                  )
+                  ),
                 )}
               </TableBody>
             </Table>
@@ -652,7 +664,12 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
       /^(https?:\/\/[^\s]+)$/.test(displayValue)
     ) {
       return (
-        <a href={displayValue} className="text-blue-500 hover:underline" target="_blank" rel="noreferrer">
+        <a
+          href={displayValue}
+          className="text-blue-500 hover:underline"
+          target="_blank"
+          rel="noreferrer"
+        >
           {displayValue}
         </a>
       )
@@ -667,9 +684,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          <div className="text-md text-gray-600">
-            No data available
-          </div>
+          <div className="text-md text-gray-600">No data available</div>
         </DialogContent>
       </Dialog>
     )
@@ -735,7 +750,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
       (result.aiLabel || "").toLowerCase().includes(query) ||
       (result.createTime || "").toLowerCase().includes(query) ||
       result.entryId.toString().includes(query) // Ensures entryId is searchable
-      result.resultId.toString().includes(query)
+    result.resultId.toString().includes(query)
 
     const matchesDomain = domain
       ? new URL(result.imageSource).hostname
@@ -834,7 +849,9 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
             className="p-2"
           >
             <FiFileText
-              className={viewMode === "pagination" ? "text-white" : "text-green-500"}
+              className={
+                viewMode === "pagination" ? "text-white" : "text-green-500"
+              }
             />
           </Button>
         </div>
@@ -1026,8 +1043,16 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
               dataLength={displayCount}
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedResults.length}
-              loader={<div className="p-4 text-center text-gray-600">Loading more results...</div>}
-              endMessage={<div className="p-4 text-center text-gray-600">No more results to load.</div>}
+              loader={
+                <div className="p-4 text-center text-gray-600">
+                  Loading more results...
+                </div>
+              }
+              endMessage={
+                <div className="p-4 text-center text-gray-600">
+                  No more results to load.
+                </div>
+              }
               height={600}
             >
               <Table>
@@ -1262,7 +1287,9 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
             className="p-2"
           >
             <FiFileText
-              className={viewMode === "pagination" ? "text-white" : "text-green-500"}
+              className={
+                viewMode === "pagination" ? "text-white" : "text-green-500"
+              }
             />
           </Button>
         </div>
@@ -1446,8 +1473,16 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
               dataLength={displayCount}
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedRecords.length}
-              loader={<div className="p-4 text-center text-gray-600">Loading more records...</div>}
-              endMessage={<div className="p-4 text-center text-gray-600">No more records to load.</div>}
+              loader={
+                <div className="p-4 text-center text-gray-600">
+                  Loading more records...
+                </div>
+              }
+              endMessage={
+                <div className="p-4 text-center text-gray-600">
+                  No more records to load.
+                </div>
+              }
             >
               <Table>
                 <TableHeader className="bg-gray-100">
@@ -1576,7 +1611,10 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                   ))}
                   {displayedRecordsInfinite.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={hasThumbnails ? 7 : 6} className="text-center text-gray-600">
+                      <TableCell
+                        colSpan={hasThumbnails ? 7 : 6}
+                        className="text-center text-gray-600"
+                      >
                         No records match your search query on this page.
                       </TableCell>
                     </TableRow>
@@ -1633,7 +1671,9 @@ const LogsTab = ({ job }: { job: JobDetails }) => {
                 </TableRow>
                 {job.fileEnd && (
                   <TableRow>
-                    <TableCell className="text-gray-800">File Roughly</TableCell>
+                    <TableCell className="text-gray-800">
+                      File Roughly
+                    </TableCell>
                     <TableCell className="text-gray-800">
                       {new Date(job.fileEnd).toLocaleString()}
                     </TableCell>
@@ -1900,7 +1940,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           return (
             <TableRow
               key={record.entryId}
-              className={`hover:bg-gray-50 ${positiveSortCount === 0 && !hideEmptyRows ? "opacity-80" : ""}`}
+              className={`hover:bg-gray-50 ${
+                positiveSortCount === 0 && !hideEmptyRows ? "opacity-80" : ""
+              }`}
             >
               <TableCell className="w-[90px]">
                 <span
@@ -1913,18 +1955,14 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               {showFileDetails && (
                 <TableCell className="w-[120px] bg-gray-50">
                   {record.productCategory || (
-                    <span className="text-xs text-gray-600">
-                      No category
-                    </span>
+                    <span className="text-xs text-gray-600">No category</span>
                   )}
                 </TableCell>
               )}
               {showFileDetails && (
                 <TableCell className="w-[120px] bg-gray-50">
                   {record.productColor || (
-                    <span className="text-xs text-gray-600">
-                      No color
-                    </span>
+                    <span className="text-xs text-gray-600">No color</span>
                   )}
                 </TableCell>
               )}
@@ -1933,10 +1971,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                   {record.excelRowImageRef ? (
                     <img
                       src={record.excelRowImageRef}
-                      alt={
-                        record.productModel ||
-                        `Record ID ${record.entryId}`
-                      }
+                      alt={record.productModel || `Record ID ${record.entryId}`}
                       className="max-w-[80px] max-h-[80px] object-cover cursor-pointer"
                       onClick={() => {
                         if (record.excelRowImageRef)
@@ -1953,9 +1988,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-xs text-gray-600">
-                      No picture
-                    </span>
+                    <span className="text-xs text-gray-600">No picture</span>
                   )}
                 </TableCell>
               )}
@@ -2028,9 +2061,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                 (_, index) => (
                   <React.Fragment key={`empty-${record.entryId}-${index}`}>
                     <TableCell className="w-[80px]">
-                      <span className="text-xs text-gray-600">
-                        No picture
-                      </span>
+                      <span className="text-xs text-gray-600">No picture</span>
                     </TableCell>
                     {showResultDetails && (
                       <TableCell className="w-[200px] bg-gray-50">
@@ -2050,12 +2081,12 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                       handleLinkClick(e, googleSearch(record.productModel))
                     }
                   >
-                    <span className="text-green-500">{record.productModel}</span>
+                    <span className="text-green-500">
+                      {record.productModel}
+                    </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-gray-600">
-                    No style
-                  </span>
+                  <span className="text-xs text-gray-600">No style</span>
                 )}
               </TableCell>
               <TableCell className="w-[150px]">
@@ -2075,28 +2106,24 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                       )
                     }
                   >
-                    <span className="text-green-500">{record.productBrand}</span>
+                    <span className="text-green-500">
+                      {record.productBrand}
+                    </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-gray-600">
-                    No brand
-                  </span>
+                  <span className="text-xs text-gray-600">No brand</span>
                 )}
               </TableCell>
               <TableCell className="w-[100px]">
                 {totalImageCount === 0 ? (
-                  <span className="text-xs text-gray-600">
-                    0
-                  </span>
+                  <span className="text-xs text-gray-600">0</span>
                 ) : (
                   <span className="text-gray-800">{totalImageCount}</span>
                 )}
               </TableCell>
               <TableCell className="w-[100px]">
                 {positiveSortCount === 0 ? (
-                  <span className="text-xs text-gray-600">
-                    0
-                  </span>
+                  <span className="text-xs text-gray-600">0</span>
                 ) : (
                   <span className="text-gray-800">{positiveSortCount}</span>
                 )}
@@ -2110,9 +2137,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
 
   return (
     <div className="p-4 bg-white">
-      <div
-        className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-5 border-b border-gray-200"
-      >
+      <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-5 border-b border-gray-200">
         <h3 className="text-lg font-bold text-gray-800">
           File Rows ({sortedRecords.length})
         </h3>
@@ -2157,13 +2182,19 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           </div>
           <Button
             size="sm"
-            className={viewMode === "pagination" ? "bg-green-500" : "bg-white border border-gray-200"}
+            className={
+              viewMode === "pagination"
+                ? "bg-green-500"
+                : "bg-white border border-gray-200"
+            }
             onClick={() =>
               setViewMode(viewMode === "pagination" ? "infinite" : "pagination")
             }
           >
             <FiFileText
-              className={viewMode === "pagination" ? "text-white" : "text-green-500"}
+              className={
+                viewMode === "pagination" ? "text-white" : "text-green-500"
+              }
             />
           </Button>
         </div>
@@ -2221,8 +2252,16 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               dataLength={displayCount}
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedRecords.length}
-              loader={<div className="p-4 text-center text-gray-600">Loading more rows...</div>}
-              endMessage={<div className="p-4 text-center text-gray-600">No more rows to load.</div>}
+              loader={
+                <div className="p-4 text-center text-gray-600">
+                  Loading more rows...
+                </div>
+              }
+              endMessage={
+                <div className="p-4 text-center text-gray-600">
+                  No more rows to load.
+                </div>
+              }
             >
               {renderTable(displayedRecordsInfinite)}
             </InfiniteScroll>
@@ -2360,9 +2399,7 @@ const JobsDetailPage = () => {
     <div className="container mx-auto p-6 bg-white">
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
-          <h1 className="text-xl font-bold text-gray-800">
-            Job: {jobId}
-          </h1>
+          <h1 className="text-xl font-bold text-gray-800">Job: {jobId}</h1>
           <p className="text-sm text-gray-600">
             Details and results for scraping job {jobData.inputFile}.
           </p>

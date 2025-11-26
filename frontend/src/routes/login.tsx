@@ -1,10 +1,10 @@
-import { useState } from "react"
 import {
   Link as RouterLink,
   createFileRoute,
   redirect,
 } from "@tanstack/react-router"
 import { Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
 import type { Body_login_login_access_token as AccessToken } from "../client"
@@ -85,7 +85,11 @@ function Login() {
       rel="noopener noreferrer"
       className="hover:opacity-80 transition-opacity"
     >
-      <img src="/assets/images/twitter-x.svg" alt="X Logo" className="w-8 h-8" />
+      <img
+        src="/assets/images/twitter-x.svg"
+        alt="X Logo"
+        className="w-8 h-8"
+      />
     </a>
   )
 
@@ -98,7 +102,9 @@ function Login() {
           rel="noopener noreferrer"
           className="self-center"
         >
-          <span className="text-2xl font-bold text-primary">ICON LUXURY GROUP</span>
+          <span className="text-2xl font-bold text-primary">
+            ICON LUXURY GROUP
+          </span>
         </a>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -143,7 +149,9 @@ function Login() {
                 )}
               </button>
             </div>
-            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive font-medium">{error}</p>
+            )}
           </div>
 
           <RouterLink
@@ -160,7 +168,10 @@ function Login() {
 
         <p className="text-muted-foreground text-center">
           Don't have an account?{" "}
-          <RouterLink to="/signup" className="text-primary font-semibold hover:underline">
+          <RouterLink
+            to="/signup"
+            className="text-primary font-semibold hover:underline"
+          >
             Sign up
           </RouterLink>
         </p>

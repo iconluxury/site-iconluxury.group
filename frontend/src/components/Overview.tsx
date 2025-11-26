@@ -1,32 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table"
-import { Button } from "./ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip"
-import { Loader2, X, RefreshCw, ToggleLeft, ToggleRight } from "lucide-react"
+import { Loader2, RefreshCw, ToggleLeft, ToggleRight, X } from "lucide-react"
 import type React from "react"
 import { useEffect, useState } from "react"
 import {
@@ -44,6 +16,29 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { Button } from "./ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
 
 interface Query {
   query: string
@@ -221,7 +216,9 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
     return (
       <div className="p-4">
         <h2 className="text-lg font-bold mb-4">Overview</h2>
-        <p className="text-muted-foreground">No endpoint specified or data available.</p>
+        <p className="text-muted-foreground">
+          No endpoint specified or data available.
+        </p>
       </div>
     )
   }
@@ -311,8 +308,13 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {stats.map((stat, index) => (
-          <div key={index} className="flex flex-col p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+          <div
+            key={index}
+            className="flex flex-col p-4 border rounded-lg bg-card text-card-foreground shadow-sm"
+          >
+            <span className="text-sm font-medium text-muted-foreground">
+              {stat.label}
+            </span>
             <span className="text-2xl font-bold">{stat.value}</span>
           </div>
         ))}
@@ -426,7 +428,12 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
 
   const renderChart = () => {
     const data = chartData[selectedChart] || []
-    if (!data.length) return <p className="text-muted-foreground">No data available for this chart</p>
+    if (!data.length)
+      return (
+        <p className="text-muted-foreground">
+          No data available for this chart
+        </p>
+      )
 
     const chartProps = {
       margin: {
@@ -475,7 +482,11 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
         />,
         <RechartsTooltip
           key="tooltip"
-          contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+          contentStyle={{
+            backgroundColor: "var(--background)",
+            borderColor: "var(--border)",
+            color: "var(--foreground)",
+          }}
         />,
         <Legend key="legend" verticalAlign="top" height={36} />,
       ],
@@ -521,7 +532,11 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
               ))}
             </Pie>
             <RechartsTooltip
-              contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+              contentStyle={{
+                backgroundColor: "var(--background)",
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+              }}
             />
             <Legend verticalAlign="bottom" height={36} />
           </PieChart>
@@ -554,9 +569,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   return (
     <div className="p-4 w-full">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-        <h2 className="text-lg font-bold">
-          Overview for {endpointId}
-        </h2>
+        <h2 className="text-lg font-bold">Overview for {endpointId}</h2>
         <div className="flex items-center gap-2">
           <Select
             value={compareEndpointId}
@@ -575,18 +588,31 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                 ))}
             </SelectContent>
           </Select>
-          
+
           <div className="flex gap-1">
             {chartOptions.map((option) => (
               <TooltipProvider key={option.key}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={selectedChart === option.key ? "default" : "outline"}
+                      variant={
+                        selectedChart === option.key ? "default" : "outline"
+                      }
                       size="sm"
                       onClick={() => setSelectedChart(option.key)}
-                      className={selectedChart === option.key ? "" : "text-muted-foreground"}
-                      style={selectedChart === option.key ? { backgroundColor: option.color, borderColor: option.color } : {}}
+                      className={
+                        selectedChart === option.key
+                          ? ""
+                          : "text-muted-foreground"
+                      }
+                      style={
+                        selectedChart === option.key
+                          ? {
+                              backgroundColor: option.color,
+                              borderColor: option.color,
+                            }
+                          : {}
+                      }
                     >
                       {option.label}
                     </Button>
@@ -608,7 +634,9 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                   onClick={fetchData}
                   disabled={isLoading}
                 >
-                  <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -625,7 +653,11 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                   variant="outline"
                   onClick={() => setShowLabels(!showLabels)}
                 >
-                  {showLabels ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                  {showLabels ? (
+                    <ToggleRight className="h-4 w-4" />
+                  ) : (
+                    <ToggleLeft className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -638,9 +670,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
-          <h3 className="text-md font-semibold mb-2">
-            {selectedOption.label}
-          </h3>
+          <h3 className="text-md font-semibold mb-2">{selectedOption.label}</h3>
           <div className="h-[400px] rounded-md overflow-hidden shadow-md bg-card border">
             <ResponsiveContainer width="100%" height="100%">
               {renderChart()}
@@ -656,17 +686,17 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
           </h3>
           <Card className="relative">
             <CardContent className="pt-6">
-                {selectedQuery && (
+              {selectedQuery && (
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => setSelectedQuery(null)}
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => setSelectedQuery(null)}
                 >
-                    <X className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </Button>
-                )}
-                {renderSummary()}
+              )}
+              {renderSummary()}
             </CardContent>
           </Card>
         </div>
@@ -674,9 +704,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
 
       {topQueries.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-md font-semibold mb-2">
-            Top Queries
-          </h3>
+          <h3 className="text-md font-semibold mb-2">Top Queries</h3>
           <div className="rounded-md border shadow-md overflow-x-auto">
             <Table>
               <TableHeader>
@@ -691,11 +719,15 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                   <TableRow
                     key={index}
                     onClick={() => setSelectedQuery(query)}
-                    className={`cursor-pointer ${selectedQuery?.query === query.query ? "bg-muted" : ""}`}
+                    className={`cursor-pointer ${
+                      selectedQuery?.query === query.query ? "bg-muted" : ""
+                    }`}
                   >
                     <TableCell>{query.query || "N/A"}</TableCell>
                     <TableCell>{query.category || "N/A"}</TableCell>
-                    <TableCell className="text-right">{(query.count || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                      {(query.count || 0).toLocaleString()}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

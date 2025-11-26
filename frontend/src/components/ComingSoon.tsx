@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Info } from "lucide-react"
 import type React from "react"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 
 const ComingSoon: React.FC = () => {
   return (
@@ -9,9 +9,7 @@ const ComingSoon: React.FC = () => {
         <Alert className="bg-gray-50 text-gray-800 border-none">
           <Info className="h-4 w-4 text-blue-500" />
           <AlertTitle>Info</AlertTitle>
-          <AlertDescription>
-            Features are in development.
-          </AlertDescription>
+          <AlertDescription>Features are in development.</AlertDescription>
         </Alert>
       </div>
     </div>

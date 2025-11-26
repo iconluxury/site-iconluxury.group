@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { type UserPublic, UsersService } from "../../client"
 import AddUser from "../../components/Admin/AddUser"
+import ApiStatusManagement from "../../components/Admin/ApiStatusManagement"
 import ActionsMenu from "../../components/Common/ActionsMenu"
 import Navbar from "../../components/Common/Navbar"
 import { PaginationFooter } from "../../components/Common/PaginationFooter.tsx"
@@ -17,6 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs"
 
 const usersSearchSchema = z.object({
   page: z.number().catch(1),
@@ -91,7 +98,9 @@ function UsersTable() {
               users?.data.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="max-w-[150px] truncate">
-                    <span className={!user.full_name ? "text-muted-foreground" : ""}>
+                    <span
+                      className={!user.full_name ? "text-muted-foreground" : ""}
+                    >
                       {user.full_name || "N/A"}
                     </span>
                     {currentUser?.id === user.id && (
@@ -142,12 +151,23 @@ function UsersTable() {
 function Admin() {
   return (
     <div className="container mx-auto max-w-full px-4">
-      <h1 className="text-2xl font-bold text-center md:text-left pt-12">
-        Users Management
+      <h1 className="text-2xl font-bold text-center md:text-left pt-12 mb-4">
+        Admin Dashboard
       </h1>
 
-      <Navbar type={"User"} addModalAs={AddUser} />
-      <UsersTable />
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="api-status">API Status</TabsTrigger>
+        </TabsList>
+        <TabsContent value="users" className="space-y-4">
+          <Navbar type={"User"} addModalAs={AddUser} />
+          <UsersTable />
+        </TabsContent>
+        <TabsContent value="api-status">
+          <ApiStatusManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

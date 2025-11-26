@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
 import {
-  DataWarehouseForm,
   DATA_WAREHOUSE_MODE_CONFIG,
-  DataWarehouseMode,
+  DataWarehouseForm,
+  type DataWarehouseMode,
 } from "@/components/GoogleSerpLegacy"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
 
 export const Route = createFileRoute("/_layout/tools/data-warehouse")({
   component: DataWarehousePage,

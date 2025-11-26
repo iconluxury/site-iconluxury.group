@@ -1,3 +1,6 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { type SubmitHandler, useForm } from "react-hook-form"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import {
@@ -9,9 +12,6 @@ import {
 } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useEffect } from "react"
-import { type SubmitHandler, useForm } from "react-hook-form"
 
 import {
   type ApiError,
@@ -178,9 +178,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
                 {...register("confirm_password", {
                   validate: (value) => {
                     const { password } = getValues()
-                    return (
-                      password === value || "Passwords do not match"
-                    )
+                    return password === value || "Passwords do not match"
                   },
                 })}
                 placeholder="Confirm Password"

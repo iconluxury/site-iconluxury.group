@@ -1,3 +1,5 @@
+import { LogOut, User } from "lucide-react"
+import useAuth from "../../hooks/useAuth"
 import { Button } from "../ui/button"
 import {
   DropdownMenu,
@@ -5,8 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { LogOut, User } from "lucide-react"
-import useAuth from "../../hooks/useAuth"
 
 const UserMenu = () => {
   const { logout } = useAuth()
@@ -30,7 +30,10 @@ const UserMenu = () => {
               <User className="h-[18px] w-[18px] text-gray-800" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-gray-50 border-gray-200 text-gray-800 shadow-md">
+          <DropdownMenuContent
+            align="end"
+            className="bg-gray-50 border-gray-200 text-gray-800 shadow-md"
+          >
             {/* <DropdownMenuItem asChild>
               <Link to="/settings" className="flex items-center cursor-pointer hover:bg-yellow-100 hover:text-yellow-500">
                 <User className="mr-2 h-[18px] w-[18px] text-gray-600" />

@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -6,22 +7,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { showDevUI } from "@/utils"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   LuCrop,
   LuDatabase,
-  LuImage,
-  LuLink,
-  LuLayoutDashboard,
-  LuFileBarChart,
   LuEraser,
-  LuWand2,
-  LuHelpCircle,
-  LuSearch,
+  LuFileBarChart,
   LuFileText,
+  LuHelpCircle,
+  LuImage,
+  LuLayoutDashboard,
+  LuLink,
+  LuSearch,
+  LuWand2,
 } from "react-icons/lu"
-import { showDevUI } from "@/utils"
 
 export const Route = createFileRoute("/google-serp-cms")({
   component: GoogleSerpCmsPage,
@@ -74,9 +74,7 @@ function GoogleSerpCmsPage() {
               <LuLink className="h-6 w-6 text-primary" />
               <CardTitle>Image Links</CardTitle>
             </div>
-            <CardDescription>
-              Process and validate image links.
-            </CardDescription>
+            <CardDescription>Process and validate image links.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -147,23 +145,14 @@ function GoogleSerpCmsPage() {
           <CardContent>
             <div className="flex flex-col items-start gap-1">
               <p>
-                Generate studio-style product photos from reference shots.
-                (Nano Banana)
+                Generate studio-style product photos from reference shots. (Nano
+                Banana)
               </p>
               <p className="font-semibold">Convert:</p>
               <p className="m-0 p-0 pl-0 whitespace-nowrap">
-                <span className="mx-2">
-                  •
-                </span>
-                Lifestyle shots{" "}
-                <span className="mx-2">
-                  •
-                </span>{" "}
-                Mockups/CAD
-                <span className="mx-2">
-                  •
-                </span>{" "}
-                Low‑quality product photos
+                <span className="mx-2">•</span>
+                Lifestyle shots <span className="mx-2">•</span> Mockups/CAD
+                <span className="mx-2">•</span> Low‑quality product photos
               </p>
             </div>
           </CardContent>
@@ -222,9 +211,7 @@ function GoogleSerpCmsPage() {
               <LuHelpCircle className="h-6 w-6 text-primary" />
               <CardTitle>Support</CardTitle>
             </div>
-            <CardDescription>
-              Report issues or request help.
-            </CardDescription>
+            <CardDescription>Report issues or request help.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -258,9 +245,7 @@ function GoogleSerpCmsPage() {
               <LuFileBarChart className="h-6 w-6 text-primary" />
               <CardTitle>Jobs Report</CardTitle>
             </div>
-            <CardDescription>
-              View scraping jobs and analytics.
-            </CardDescription>
+            <CardDescription>View scraping jobs and analytics.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">

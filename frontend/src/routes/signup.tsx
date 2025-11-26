@@ -51,7 +51,9 @@ function SignUp() {
   return (
     <div className="flex h-screen flex-col items-center justify-center md:flex-row">
       <div className="container flex h-screen max-w-sm flex-col items-stretch justify-center gap-4 mx-auto">
-        <span className="text-2xl font-bold text-primary self-center mb-4">ICON LUXURY GROUP</span>
+        <span className="text-2xl font-bold text-primary self-center mb-4">
+          ICON LUXURY GROUP
+        </span>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="grid gap-2">
             <Input
