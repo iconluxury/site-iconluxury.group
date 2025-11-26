@@ -331,13 +331,12 @@ async def list_objects(s3_client, bucket_name, prefix: str = "", page: int = 1, 
             folder_path = common_prefix["Prefix"]
             folder_name = folder_path.rstrip("/").split("/")[-1]
             if folder_name:
-                # count = await get_folder_count(folder_path) # This would need s3_client too
-                # For performance, maybe skip count or update get_folder_count signature
+                count = await get_folder_count(folder_path, s3_client, bucket_name)
                 folders.append({
                     "type": "folder",
                     "name": folder_name,
                     "path": folder_path,
-                    "count": 0, # Placeholder or update get_folder_count
+                    "count": count,
                     "lastModified": None
                 })
 
@@ -413,7 +412,7 @@ async def get_signed_url(key: str, expires_in: int = 3600):
         logger.error(f"Unexpected error generating signed URL: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-async def upload_file(file: UploadFile, path: str):
+async def upload_file(file: UploadFile, path: str, s3_client, bucket_name: str):
     """
     Upload a file to S3 with robust error handling and validation, and update JSON store.
     """
@@ -453,17 +452,17 @@ async def upload_file(file: UploadFile, path: str):
             }
         }
         
-        logger.info(f"Uploading file {file.filename} to s3://{BUCKET_NAME}/{sanitized_path}")
+        logger.info(f"Uploading file {file.filename} to s3://{bucket_name}/{sanitized_path}")
         
         response = s3_client.upload_fileobj(
             Fileobj=file.file,
-            Bucket=BUCKET_NAME,
+            Bucket=bucket_name,
             Key=sanitized_path,
             ExtraArgs=extra_args
         )
         
         try:
-            head_response = s3_client.head_object(Bucket=BUCKET_NAME, Key=sanitized_path)
+            head_response = s3_client.head_object(Bucket=bucket_name, Key=sanitized_path)
             # Update JSON store
             new_object = {
                 "type": "file",
@@ -473,7 +472,7 @@ async def upload_file(file: UploadFile, path: str):
                 "lastModified": head_response["LastModified"].isoformat(),
                 "count": None
             }
-            await update_json_store([new_object])
+            await update_json_store([new_object], s3_client, bucket_name)
         except ClientError as e:
             logger.error(f"Verification failed for {sanitized_path}: {str(e)}")
             raise HTTPException(status_code=500, detail="Upload verification failed")
@@ -700,42 +699,43 @@ async def s3_upload_file(
     config_id: Optional[uuid.UUID] = None
 ):
     s3, bucket = get_active_s3_client(session, config_id)
-    # Update upload logic...
-    # For brevity, I'll just implement the core upload here or call a modified helper
-    try:
-        file_content = await file.read()
-        if len(file_content) > MAX_UPLOAD_SIZE:
-             raise HTTPException(status_code=413, detail="File too large")
-        
-        key = f"{path.strip('/')}/{file.filename}" if path else file.filename
-        key = key.lstrip("/") # Ensure no leading slash
-        
-        s3.put_object(
-            Bucket=bucket,
-            Key=key,
-            Body=file_content,
-            ContentType=file.content_type or "application/octet-stream"
-        )
-        return {"message": "File uploaded successfully", "path": key}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await upload_file(file, path, s3, bucket)
 
 @s3_router.post("/delete")
-async def s3_delete_objects(request: DeleteRequest):
-    return await delete_objects(request.paths)
+async def s3_delete_objects(
+    request: DeleteRequest,
+    session: SessionDep,
+    config_id: Optional[uuid.UUID] = None
+):
+    s3, bucket = get_active_s3_client(session, config_id)
+    return await delete_objects(request.paths, s3, bucket)
 
 @s3_router.get("/export-csv")
-async def s3_export_to_csv(prefix: str = ""):
-    return await export_to_csv(prefix)
+async def s3_export_to_csv(
+    session: SessionDep,
+    prefix: str = "",
+    config_id: Optional[uuid.UUID] = None
+):
+    s3, bucket = get_active_s3_client(session, config_id)
+    return await export_to_csv(prefix, s3, bucket)
 
 @s3_router.get("/json-store")
-async def get_json_store():
-    return await read_json_store()
+async def get_json_store(
+    session: SessionDep,
+    config_id: Optional[uuid.UUID] = None
+):
+    s3, bucket = get_active_s3_client(session, config_id)
+    return await read_json_store(s3, bucket)
 
 @s3_router.post("/sync-json-store")
-async def sync_json_store(prefix: str = ""):
+async def sync_json_store(
+    session: SessionDep,
+    prefix: str = "",
+    config_id: Optional[uuid.UUID] = None
+):
     """
     One-time endpoint to sync existing S3 objects to the JSON store.
     """
-    return await sync_existing_objects(prefix)
+    s3, bucket = get_active_s3_client(session, config_id)
+    return await sync_existing_objects(prefix, s3, bucket)
 

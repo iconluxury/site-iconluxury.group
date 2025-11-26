@@ -18,6 +18,8 @@ import {
   LuEraser,
   LuWand2,
   LuHelpCircle,
+  LuSearch,
+  LuFileText,
 } from "react-icons/lu"
 import { showDevUI } from "@/utils"
 
@@ -29,42 +31,6 @@ function GoogleSerpCmsPage() {
   return (
     <div className="p-8 space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Dashboard / Portal */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <LuLayoutDashboard className="h-6 w-6 text-primary" />
-              <CardTitle>Dash / Portal</CardTitle>
-            </div>
-            <CardDescription>
-              Go to the main dashboard and portal.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/">Open Dashboard</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Jobs Report */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <LuFileBarChart className="h-6 w-6 text-primary" />
-              <CardTitle>Jobs Report</CardTitle>
-            </div>
-            <CardDescription>
-              View scraping jobs and analytics.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/_layout/scraping-api/insights">Open Report</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Google Images Tool */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
@@ -203,6 +169,52 @@ function GoogleSerpCmsPage() {
           </CardContent>
         </Card>
 
+        {/* Reverse Image Search (Locked) */}
+        <Card
+          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          aria-disabled
+        >
+          <CardHeader>
+            <div className="flex flex-row items-center gap-2">
+              <LuSearch className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <CardTitle className="text-xl font-semibold">
+                Reverse Image Search
+              </CardTitle>
+              {showDevUI() && (
+                <Badge variant="destructive" className="ml-auto">
+                  DEV
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p>Search for images using an image as a query.</p>
+          </CardContent>
+        </Card>
+
+        {/* PDF Transform Tool (Locked) */}
+        <Card
+          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          aria-disabled
+        >
+          <CardHeader>
+            <div className="flex flex-row items-center gap-2">
+              <LuFileText className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <CardTitle className="text-xl font-semibold">
+                PDF Transform
+              </CardTitle>
+              {showDevUI() && (
+                <Badge variant="destructive" className="ml-auto">
+                  DEV
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p>Convert and transform PDF documents.</p>
+          </CardContent>
+        </Card>
+
         {/* Support Ticket */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
@@ -217,6 +229,42 @@ function GoogleSerpCmsPage() {
           <CardContent>
             <Button asChild className="w-full">
               <Link to="/_layout/support-ticket">Contact Support</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Dashboard / Portal */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <LuLayoutDashboard className="h-6 w-6 text-primary" />
+              <CardTitle>Dash / Portal</CardTitle>
+            </div>
+            <CardDescription>
+              Go to the main dashboard and portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/">Open Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Jobs Report */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <LuFileBarChart className="h-6 w-6 text-primary" />
+              <CardTitle>Jobs Report</CardTitle>
+            </div>
+            <CardDescription>
+              View scraping jobs and analytics.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/_layout/scraping-api/insights">Open Report</Link>
             </Button>
           </CardContent>
         </Card>
