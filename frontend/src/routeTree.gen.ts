@@ -16,7 +16,7 @@ import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
-import { Route as InsightsImport } from './routes/insights'
+import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
@@ -34,8 +34,7 @@ import { Route as LayoutToolsDataWarehouseImport } from './routes/_layout/tools/
 import { Route as LayoutToolsCropImport } from './routes/_layout/tools/crop'
 import { Route as LayoutSubmitFormSuccessImport } from './routes/_layout/submit-form/success'
 import { Route as LayoutSubmitFormOfferImport } from './routes/_layout/submit-form/offer'
-import { Route as LayoutScrapingApiUserAgentsImport } from './routes/_layout/scraping-api/user-agents'
-import { Route as LayoutScrapingApiGoogleSerpImport } from './routes/_layout/scraping-api/google-serp'
+import { Route as LayoutScrapingApiInsightsImport } from './routes/_layout/scraping-api/insights'
 import { Route as LayoutScrapingApiExploreImport } from './routes/_layout/scraping-api/explore'
 import { Route as LayoutScrapingApiScrapingJobsIndexImport } from './routes/_layout/scraping-api/scraping-jobs/index'
 import { Route as LayoutScrapingApiScrapingJobsJobIdImport } from './routes/_layout/scraping-api/scraping-jobs/$jobId'
@@ -72,9 +71,9 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InsightsRoute = InsightsImport.update({
-  id: '/insights',
-  path: '/insights',
+const GoogleSerpCmsRoute = GoogleSerpCmsImport.update({
+  id: '/google-serp-cms',
+  path: '/google-serp-cms',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -179,19 +178,11 @@ const LayoutSubmitFormOfferRoute = LayoutSubmitFormOfferImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutScrapingApiUserAgentsRoute =
-  LayoutScrapingApiUserAgentsImport.update({
-    id: '/scraping-api/user-agents',
-    path: '/scraping-api/user-agents',
-    getParentRoute: () => LayoutRoute,
-  } as any)
-
-const LayoutScrapingApiGoogleSerpRoute =
-  LayoutScrapingApiGoogleSerpImport.update({
-    id: '/scraping-api/google-serp',
-    path: '/scraping-api/google-serp',
-    getParentRoute: () => LayoutRoute,
-  } as any)
+const LayoutScrapingApiInsightsRoute = LayoutScrapingApiInsightsImport.update({
+  id: '/scraping-api/insights',
+  path: '/scraping-api/insights',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 const LayoutScrapingApiExploreRoute = LayoutScrapingApiExploreImport.update({
   id: '/scraping-api/explore',
@@ -224,11 +215,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutImport
       parentRoute: typeof rootRoute
     }
-    '/insights': {
-      id: '/insights'
-      path: '/insights'
-      fullPath: '/insights'
-      preLoaderRoute: typeof InsightsImport
+    '/google-serp-cms': {
+      id: '/google-serp-cms'
+      path: '/google-serp-cms'
+      fullPath: '/google-serp-cms'
+      preLoaderRoute: typeof GoogleSerpCmsImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -343,18 +334,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutScrapingApiExploreImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/scraping-api/google-serp': {
-      id: '/_layout/scraping-api/google-serp'
-      path: '/scraping-api/google-serp'
-      fullPath: '/scraping-api/google-serp'
-      preLoaderRoute: typeof LayoutScrapingApiGoogleSerpImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/scraping-api/user-agents': {
-      id: '/_layout/scraping-api/user-agents'
-      path: '/scraping-api/user-agents'
-      fullPath: '/scraping-api/user-agents'
-      preLoaderRoute: typeof LayoutScrapingApiUserAgentsImport
+    '/_layout/scraping-api/insights': {
+      id: '/_layout/scraping-api/insights'
+      path: '/scraping-api/insights'
+      fullPath: '/scraping-api/insights'
+      preLoaderRoute: typeof LayoutScrapingApiInsightsImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/submit-form/offer': {
@@ -429,8 +413,7 @@ interface LayoutRouteChildren {
   LayoutSubmitCropRoute: typeof LayoutSubmitCropRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiExploreRoute: typeof LayoutScrapingApiExploreRoute
-  LayoutScrapingApiGoogleSerpRoute: typeof LayoutScrapingApiGoogleSerpRoute
-  LayoutScrapingApiUserAgentsRoute: typeof LayoutScrapingApiUserAgentsRoute
+  LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
   LayoutSubmitFormOfferRoute: typeof LayoutSubmitFormOfferRoute
   LayoutSubmitFormSuccessRoute: typeof LayoutSubmitFormSuccessRoute
   LayoutToolsCropRoute: typeof LayoutToolsCropRoute
@@ -452,8 +435,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSubmitCropRoute: LayoutSubmitCropRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiExploreRoute: LayoutScrapingApiExploreRoute,
-  LayoutScrapingApiGoogleSerpRoute: LayoutScrapingApiGoogleSerpRoute,
-  LayoutScrapingApiUserAgentsRoute: LayoutScrapingApiUserAgentsRoute,
+  LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
   LayoutSubmitFormOfferRoute: LayoutSubmitFormOfferRoute,
   LayoutSubmitFormSuccessRoute: LayoutSubmitFormSuccessRoute,
   LayoutToolsCropRoute: LayoutToolsCropRoute,
@@ -471,7 +453,7 @@ const LayoutRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
-  '/insights': typeof InsightsRoute
+  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -488,8 +470,7 @@ export interface FileRoutesByFullPath {
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
-  '/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
-  '/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/tools/crop': typeof LayoutToolsCropRoute
@@ -501,7 +482,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
-  '/insights': typeof InsightsRoute
+  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -518,8 +499,7 @@ export interface FileRoutesByTo {
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
-  '/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
-  '/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/tools/crop': typeof LayoutToolsCropRoute
@@ -533,7 +513,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
-  '/insights': typeof InsightsRoute
+  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -550,8 +530,7 @@ export interface FileRoutesById {
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
-  '/_layout/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
-  '/_layout/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/_layout/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/_layout/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/_layout/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/_layout/tools/crop': typeof LayoutToolsCropRoute
@@ -566,7 +545,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
-    | '/insights'
+    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -583,8 +562,7 @@ export interface FileRouteTypes {
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
-    | '/scraping-api/google-serp'
-    | '/scraping-api/user-agents'
+    | '/scraping-api/insights'
     | '/submit-form/offer'
     | '/submit-form/success'
     | '/tools/crop'
@@ -595,7 +573,7 @@ export interface FileRouteTypes {
     | '/scraping-api/scraping-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/insights'
+    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -612,8 +590,7 @@ export interface FileRouteTypes {
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
-    | '/scraping-api/google-serp'
-    | '/scraping-api/user-agents'
+    | '/scraping-api/insights'
     | '/submit-form/offer'
     | '/submit-form/success'
     | '/tools/crop'
@@ -625,7 +602,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layout'
-    | '/insights'
+    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -642,8 +619,7 @@ export interface FileRouteTypes {
     | '/progress/$jobId'
     | '/_layout/'
     | '/_layout/scraping-api/explore'
-    | '/_layout/scraping-api/google-serp'
-    | '/_layout/scraping-api/user-agents'
+    | '/_layout/scraping-api/insights'
     | '/_layout/submit-form/offer'
     | '/_layout/submit-form/success'
     | '/_layout/tools/crop'
@@ -657,7 +633,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
-  InsightsRoute: typeof InsightsRoute
+  GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ReformatExcelRoute: typeof ReformatExcelRoute
@@ -668,7 +644,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
-  InsightsRoute: InsightsRoute,
+  GoogleSerpCmsRoute: GoogleSerpCmsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ReformatExcelRoute: ReformatExcelRoute,
@@ -688,7 +664,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layout",
-        "/insights",
+        "/google-serp-cms",
         "/login",
         "/recover-password",
         "/reformat-excel",
@@ -710,8 +686,7 @@ export const routeTree = rootRoute
         "/_layout/submit-crop",
         "/_layout/",
         "/_layout/scraping-api/explore",
-        "/_layout/scraping-api/google-serp",
-        "/_layout/scraping-api/user-agents",
+        "/_layout/scraping-api/insights",
         "/_layout/submit-form/offer",
         "/_layout/submit-form/success",
         "/_layout/tools/crop",
@@ -722,8 +697,8 @@ export const routeTree = rootRoute
         "/_layout/scraping-api/scraping-jobs/"
       ]
     },
-    "/insights": {
-      "filePath": "insights.tsx"
+    "/google-serp-cms": {
+      "filePath": "google-serp-cms.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
@@ -783,12 +758,8 @@ export const routeTree = rootRoute
       "filePath": "_layout/scraping-api/explore.tsx",
       "parent": "/_layout"
     },
-    "/_layout/scraping-api/google-serp": {
-      "filePath": "_layout/scraping-api/google-serp.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/scraping-api/user-agents": {
-      "filePath": "_layout/scraping-api/user-agents.tsx",
+    "/_layout/scraping-api/insights": {
+      "filePath": "_layout/scraping-api/insights.tsx",
       "parent": "/_layout"
     },
     "/_layout/submit-form/offer": {

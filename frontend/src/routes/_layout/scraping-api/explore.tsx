@@ -326,19 +326,36 @@ function Explore() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                navigate({
-                                  to: "/scraping-api/scraping-jobs/$jobId",
-                                  params: { jobId: job.id.toString() },
-                                })
-                              }}
-                            >
-                              View Details
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                              {!job.fileEnd && (
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    navigate({
+                                      to: "/progress/$jobId",
+                                      params: { jobId: job.id.toString() },
+                                    })
+                                  }}
+                                >
+                                  View Progress
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  navigate({
+                                    to: "/scraping-api/scraping-jobs/$jobId",
+                                    params: { jobId: job.id.toString() },
+                                  })
+                                }}
+                              >
+                                View Details
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

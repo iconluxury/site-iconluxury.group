@@ -15,6 +15,7 @@ import {
   LuDatabase,
   LuLink,
   LuSearch,
+  LuLayoutGrid, // Add this import
 } from "react-icons/lu"
 import { useTheme } from "next-themes"
 import { Badge } from "./ui/badge"
@@ -139,24 +140,42 @@ export default function JobsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 space-y-8">
+    <div className="p-8 space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jobs Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of scraping jobs state and history
+            Manage your scraping jobs and view system status.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </div>
       </div>
+
+      {/* Tools Access Card */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="space-y-1">
+            <CardTitle className="text-xl">Google SERP CMS</CardTitle>
+            <CardDescription>
+              Access the legacy CMS tools and new insights dashboard.
+            </CardDescription>
+          </div>
+          <Button onClick={() => navigate({ to: "/google-serp-cms" })}>
+            <LuLayoutGrid className="mr-2 h-4 w-4" />
+            Open Tools
+          </Button>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Middle Content (Feed) */}

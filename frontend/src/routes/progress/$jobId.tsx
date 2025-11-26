@@ -1,25 +1,18 @@
 import {
-  Badge,
-  Box,
   Card,
-  CardBody,
-  Container,
-  Flex,
-  Heading,
-  Link,
-  Progress,
-  Spinner,
-  Stat,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card"
+import { Progress } from "../../components/ui/progress"
+import { Badge } from "../../components/ui/badge"
+import { Button } from "../../components/ui/button"
+import { Separator } from "../../components/ui/separator"
+import { Loader2 } from "lucide-react"
 import { useParams } from "@tanstack/react-router"
 import { createFileRoute } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react"
-import useCustomToast from "../../hooks/useCustomToast" // Assuming the hook's path
+import useCustomToast from "../../hooks/useCustomToast"
 
 // --- INTERFACES ---
 
@@ -38,9 +31,12 @@ interface ProgressData {
   totalRecords: number
   step1Completed: number
   step1Progress: number
-  // Include other steps if your API provides them
-  // step2Completed: number;
-  // step2Progress: number;
+  step2Completed: number
+  step2Progress: number
+  step3Completed: number
+  step3Progress: number
+  step4Completed: number
+  step4Progress: number
 }
 
 // --- COMPONENT ---
@@ -106,9 +102,8 @@ const JobProgressPage = () => {
           if (!isCancelled) {
             setProgressData(data)
 
-            // If progress hits 100%, refetch the main job data to get the final `fileEnd` timestamp
-            // This ensures the UI updates to "Completed" without a manual refresh.
-            if (data.step1Progress >= 100) {
+            // If progress hits 100% on the last step, refetch the main job data
+            if (data.step4Progress >= 100) {
               const jobResponse = await fetch(
                 `https://external.iconluxury.group/api/scraping-jobs/${jobId}`,
               )
@@ -142,24 +137,20 @@ const JobProgressPage = () => {
 
   if (isLoading) {
     return (
-      <Container centerContent maxW="container.md" py={10}>
-        <Flex direction="column" align="center" justify="center" h="200px">
-          <Spinner size="xl" color="green.300" />
-          <Text mt={4} color="gray.600">
-            Loading Job Details...
-          </Text>
-        </Flex>
-      </Container>
+      <div className="container mx-auto max-w-3xl py-10 flex flex-col items-center justify-center h-[200px]">
+        <Loader2 className="h-10 w-10 animate-spin text-green-500" />
+        <p className="mt-4 text-gray-600">Loading Job Details...</p>
+      </div>
     )
   }
 
   if (error || !jobData) {
     return (
-      <Container centerContent maxW="container.md" py={10}>
-        <Text color="red.500" fontSize="lg" textAlign="center">
+      <div className="container mx-auto max-w-3xl py-10 text-center">
+        <p className="text-red-500 text-lg">
           {error || "Job data could not be loaded."}
-        </Text>
-      </Container>
+        </p>
+      </div>
     )
   }
 
@@ -167,49 +158,59 @@ const JobProgressPage = () => {
   const progressSteps = progressData
     ? [
         {
-          label: "Processing Records",
+          label: "Step 1: Initial Sort",
           completed: progressData.step1Completed,
           progress: progressData.step1Progress,
+        },
+        {
+          label: "Step 2: Image Validation",
+          completed: progressData.step2Completed,
+          progress: progressData.step2Progress,
+        },
+        {
+          label: "Step 3: Search Sort",
+          completed: progressData.step3Completed,
+          progress: progressData.step3Progress,
+        },
+        {
+          label: "Step 4: AI Analysis",
+          completed: progressData.step4Completed,
+          progress: progressData.step4Progress,
         },
       ]
     : []
 
   return (
-    <Container maxW="container.lg" py={8} bg="gray.50" minH="100vh">
-      <VStack spacing={8} align="stretch">
+    <div className="container mx-auto max-w-4xl py-8 bg-gray-50 min-h-screen">
+      <div className="space-y-8">
         {/* Job Details Card */}
-        <Card
-          variant="outline"
-          borderWidth="1px"
-          borderColor="gray.200"
-          shadow="sm"
-        >
-          <CardBody>
-            <Flex justify="space-around" wrap="wrap" gap={6}>
-              <Stat>
-                <StatLabel color="gray.600">Input File</StatLabel>
-                <StatHelpText wordBreak="break-all" maxW="300px">
-                  <Link
-                    href={jobData.fileLocationUrl}
-                    isExternal
-                    color="green.500"
-                    fontWeight="medium"
-                    _hover={{ textDecoration: "underline" }}
-                  >
-                    {jobData.inputFile}
-                  </Link>
-                </StatHelpText>
-              </Stat>
-              <Stat>
-                <StatLabel color="gray.600">Start Time</StatLabel>
-                <StatNumber color="gray.700" fontSize="lg">
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle>Job Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">Input File</span>
+                <a
+                  href={jobData.fileLocationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:underline break-all font-medium"
+                >
+                  {jobData.inputFile}
+                </a>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">Start Time</span>
+                <span className="text-gray-800 text-lg">
                   {new Date(jobData.fileStart).toLocaleString()}
-                </StatNumber>
-              </Stat>
+                </span>
+              </div>
               {jobData.fileEnd && (
-                <Stat>
-                  <StatLabel color="gray.600">Processing Duration</StatLabel>
-                  <StatNumber color="gray.700" fontSize="lg">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-500">Duration</span>
+                  <span className="text-gray-800 text-lg">
                     {(
                       (new Date(jobData.fileEnd).getTime() -
                         new Date(jobData.fileStart).getTime()) /
@@ -217,70 +218,67 @@ const JobProgressPage = () => {
                       60
                     ).toFixed(2)}{" "}
                     minutes
-                  </StatNumber>
-                </Stat>
+                  </span>
+                </div>
               )}
-            </Flex>
-          </CardBody>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Progress Bar Section - only shows when job is running */}
         {progressData && !jobData.fileEnd && (
-          <Card
-            variant="outline"
-            borderWidth="1px"
-            borderColor="gray.200"
-            shadow="sm"
-          >
-            <CardBody>
-              <VStack spacing={6}>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader>
+              <CardTitle>Processing Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
                 {progressSteps.map((step, index) => (
-                  <Box key={index} w="100%">
-                    <Flex justify="space-between" align="baseline" mb={1}>
-                      <Text fontWeight="medium" color="gray.800">
+                  <div key={index} className="w-full">
+                    <div className="flex justify-between items-baseline mb-2">
+                      <span className="font-medium text-gray-800">
                         {step.label}
-                      </Text>
-                      <Text fontSize="sm" color="gray.600">
+                      </span>
+                      <span className="text-sm text-gray-600">
                         {step.completed} / {progressData.totalRecords} records
-                      </Text>
-                    </Flex>
+                      </span>
+                    </div>
                     <Progress
                       value={step.progress}
-                      size="lg"
-                      colorScheme="green"
-                      hasStripe={Number(step.progress) < 100}
-                      isAnimated={Number(step.progress) < 100}
-                      borderRadius="md"
+                      className="h-3"
+                      // Note: Shadcn Progress doesn't support colorScheme or hasStripe directly via props usually, 
+                      // but we can style it via className or if the component supports it.
+                      // Assuming standard Shadcn Progress component.
                     />
-                  </Box>
+                    <div className="text-right text-xs text-gray-500 mt-1">
+                      {Math.round(step.progress)}%
+                    </div>
+                  </div>
                 ))}
-              </VStack>
-            </CardBody>
+              </div>
+            </CardContent>
           </Card>
         )}
 
         {/* Completion Message - only shows when job is done */}
         {jobData.fileEnd && (
-          <Flex
-            direction="column"
-            align="center"
-            justify="center"
-            p={8}
-            bg="green.50"
-            borderRadius="md"
-            borderWidth="1px"
-            borderColor="green.200"
-          >
-            <Heading as="h3" size="md" color="green.700">
+          <div className="flex flex-col items-center justify-center p-8 bg-green-50 rounded-md border border-green-200">
+            <h3 className="text-lg font-bold text-green-700">
               Processing Complete!
-            </Heading>
-            <Text mt={2} color="green.600">
+            </h3>
+            <p className="mt-2 text-green-600">
               The job finished successfully.
-            </Text>
-          </Flex>
+            </p>
+            <Button 
+              className="mt-4 bg-green-600 hover:bg-green-700"
+              onClick={() => window.location.href = `/scraping-api/scraping-jobs/${jobId}`}
+            >
+              View Results
+            </Button>
+          </div>
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 

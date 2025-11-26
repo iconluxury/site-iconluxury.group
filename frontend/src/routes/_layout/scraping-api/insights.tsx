@@ -46,7 +46,7 @@ interface EndpointData {
   queries: Query[]
 }
 
-export const Route = createFileRoute("/insights")({
+export const Route = createFileRoute("/_layout/scraping-api/insights")({
   component: InsightsPage,
 })
 
