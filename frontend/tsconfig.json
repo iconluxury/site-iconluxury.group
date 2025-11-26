@@ -16,7 +16,11 @@
     "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]

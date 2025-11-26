@@ -1,36 +1,37 @@
-// src/hooks/useCustomToast.ts
-import { useToast } from "@chakra-ui/react"
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
+import { toast } from "sonner"
+
+type ToastStatus = "info" | "warning" | "success" | "error"
+
+const mapStatusToToaster = (status: ToastStatus) => {
+  switch (status) {
+    case "success":
+      return toast.success
+    case "warning":
+      return toast.warning
+    case "error":
+      return toast.error
+    default:
+      return toast.info
+  }
+}
 
 const useCustomToast = () => {
-  const toast = useToast()
-  const toastIdRef = useRef<string | number | null>(null)
-
-  const showToast = useCallback(
+  return useCallback(
     (
       title: string,
       description: string,
-      status: "info" | "warning" | "success" | "error",
+      status: ToastStatus = "info",
     ) => {
-      if (toastIdRef.current) {
-        toast.close(toastIdRef.current)
-      }
-
-      const id = toast({
-        title,
+      const show = mapStatusToToaster(status)
+      show(title, {
         description,
-        status,
-        isClosable: true,
-        position: "top" as const,
         duration: 4000,
+        closeButton: true,
       })
-
-      toastIdRef.current = id
     },
-    [toast],
+    [],
   )
-
-  return showToast
 }
 
 export default useCustomToast
