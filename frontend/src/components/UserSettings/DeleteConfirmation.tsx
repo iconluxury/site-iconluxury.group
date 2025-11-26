@@ -1,12 +1,14 @@
 import {
   AlertDialog,
-  AlertDialogBody,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogOverlay,
-  Button,
-} from "@chakra-ui/react"
+  AlertDialogTitle,
+} from "../ui/alert-dialog"
+import { Button } from "../ui/button"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import React from "react"
 import { useForm } from "react-hook-form"
@@ -24,7 +26,6 @@ interface DeleteProps {
 const DeleteConfirmation = ({ isOpen, onClose }: DeleteProps) => {
   const queryClient = useQueryClient()
   const showToast = useCustomToast()
-  const cancelRef = React.useRef<HTMLButtonElement | null>(null)
   const {
     handleSubmit,
     formState: { isSubmitting },
@@ -55,41 +56,29 @@ const DeleteConfirmation = ({ isOpen, onClose }: DeleteProps) => {
   }
 
   return (
-    <>
-      <AlertDialog
-        isOpen={isOpen}
-        onClose={onClose}
-        leastDestructiveRef={cancelRef}
-        size={{ base: "sm", md: "md" }}
-        isCentered
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
-            <AlertDialogHeader>Confirmation Required</AlertDialogHeader>
-
-            <AlertDialogBody>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent asChild>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmation Required</AlertDialogTitle>
+            <AlertDialogDescription>
               All your account data will be{" "}
               <strong>permanently deleted.</strong> If you are sure, please
               click <strong>"Confirm"</strong> to proceed. This action cannot be
               undone.
-            </AlertDialogBody>
-
-            <AlertDialogFooter gap={3}>
-              <Button variant="danger" type="submit" isLoading={isSubmitting}>
-                Confirm
-              </Button>
-              <Button
-                ref={cancelRef}
-                onClick={onClose}
-                isDisabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={onClose} disabled={isSubmitting}>
+              Cancel
+            </AlertDialogCancel>
+            <Button variant="destructive" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Deleting..." : "Confirm"}
+            </Button>
+          </AlertDialogFooter>
+        </form>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 

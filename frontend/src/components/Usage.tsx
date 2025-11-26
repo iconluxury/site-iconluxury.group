@@ -1,12 +1,9 @@
 import {
-  Box,
-  SimpleGrid,
-  Stat,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
-  Text,
-} from "@chakra-ui/react"
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card"
 
 interface UsageProps {
   toolId?: string
@@ -94,12 +91,12 @@ const Usage = ({ toolId }: UsageProps) => {
   // Case 1: No toolId provided
   if (!toolId) {
     return (
-      <Box p={4}>
-        <Text fontSize="lg" fontWeight="bold" mb={4}>
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4">
           Usage
-        </Text>
-        <Text color="gray.500">No endpoint specified.</Text>
-      </Box>
+        </h2>
+        <p className="text-muted-foreground">No endpoint specified.</p>
+      </div>
     )
   }
 
@@ -109,56 +106,78 @@ const Usage = ({ toolId }: UsageProps) => {
   // Case 2: toolId provided but no data available
   if (!usageData) {
     return (
-      <Box p={4}>
-        <Text fontSize="lg" fontWeight="bold" mb={4}>
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4">
           Usage for {toolId}
-        </Text>
-        <Text color="gray.500">No data available for this endpoint.</Text>
-      </Box>
+        </h2>
+        <p className="text-muted-foreground">No data available for this endpoint.</p>
+      </div>
     )
   }
 
   // Case 3: Data available, display usage statistics
   return (
-    <Box p={4}>
-      <Text fontSize="lg" fontWeight="bold" mb={4}>
+    <div className="p-4">
+      <h2 className="text-lg font-bold mb-4">
         Usage for {toolId}
-      </Text>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-        <Stat>
-          <StatLabel>Requests Today</StatLabel>
-          <StatNumber>{usageData.requestsToday.toLocaleString()}</StatNumber>
-          <StatHelpText>Daily usage</StatHelpText>
-        </Stat>
-        <Stat>
-          <StatLabel>Requests This Month</StatLabel>
-          <StatNumber>
-            {usageData.requestsThisMonth.toLocaleString()}
-          </StatNumber>
-          <StatHelpText>Monthly total</StatHelpText>
-        </Stat>
-        <Stat>
-          <StatLabel>Success Rate</StatLabel>
-          <StatNumber>{usageData.successRate}%</StatNumber>
-          <StatHelpText>Request success</StatHelpText>
-        </Stat>
-        <Stat>
-          <StatLabel>Gigabytes Used Today</StatLabel>
-          <StatNumber>{usageData.gigsUsedToday.toFixed(1)} GB</StatNumber>
-          <StatHelpText>Daily data usage</StatHelpText>
-        </Stat>
-        <Stat>
-          <StatLabel>Gigabytes Used This Month</StatLabel>
-          <StatNumber>{usageData.gigsUsedThisMonth.toFixed(1)} GB</StatNumber>
-          <StatHelpText>Monthly data usage</StatHelpText>
-        </Stat>
-        <Stat>
-          <StatLabel>Cost Per Gigabyte</StatLabel>
-          <StatNumber>${usageData.costPerGigabyte.toFixed(2)}</StatNumber>
-          <StatHelpText>Rate per GB</StatHelpText>
-        </Stat>
-      </SimpleGrid>
-    </Box>
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Requests Today</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usageData.requestsToday.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Daily usage</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Requests This Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usageData.requestsThisMonth.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Monthly total</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usageData.successRate}%</div>
+            <p className="text-xs text-muted-foreground">Request success</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Gigabytes Used Today</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usageData.gigsUsedToday.toFixed(1)} GB</div>
+            <p className="text-xs text-muted-foreground">Daily data usage</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Gigabytes Used This Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usageData.gigsUsedThisMonth.toFixed(1)} GB</div>
+            <p className="text-xs text-muted-foreground">Monthly data usage</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Cost Per Gigabyte</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${usageData.costPerGigabyte.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">Rate per GB</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
 

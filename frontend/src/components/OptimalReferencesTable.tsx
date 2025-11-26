@@ -1,5 +1,12 @@
-import { Flex, Image, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react"
-// src/components/OptimalReferencesTable.tsx
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Card, CardContent } from "./ui/card"
 import { useEffect, useState } from "react"
 
 interface Reference {
@@ -42,35 +49,37 @@ const OptimalReferencesTable = () => {
   }, []) // Empty dependency array ensures this runs only once on mount
 
   return (
-    <Flex direction="column" p={4}>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Category</Th>
-            <Th>Image URL</Th>
-            <Th>Image</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {references.map((ref) => (
-            <Tr key={ref.category}>
-              <Td>{ref.category}</Td>
-              <Td>{ref.url}</Td>
-              <Td>
-                <Image
-                  src={ref.url}
-                  alt={ref.category}
-                  boxSize="100px"
-                  objectFit="cover"
-                  fallbackSrc="https://via.placeholder.com/100"
-                  loading="lazy"
-                />
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </Flex>
+    <Card>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Category</TableHead>
+              <TableHead>Image URL</TableHead>
+              <TableHead>Image</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {references.map((ref) => (
+              <TableRow key={ref.category}>
+                <TableCell>{ref.category}</TableCell>
+                <TableCell className="max-w-xs truncate" title={ref.url}>
+                  {ref.url}
+                </TableCell>
+                <TableCell>
+                  <img
+                    src={ref.url}
+                    alt={ref.category}
+                    className="h-[100px] w-[100px] object-cover rounded-md"
+                    loading="lazy"
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,30 +1,32 @@
+import { Button } from "./ui/button"
 import {
-  Box,
-  Button,
-  Flex,
-  Spinner,
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Card, CardContent } from "./ui/card"
+import {
   Tooltip,
-  Tr,
-} from "@chakra-ui/react"
-import { Link, createFileRoute } from "@tanstack/react-router"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Download, Loader2, RefreshCw } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 import debounce from "lodash/debounce"
-// src/components/LogFiles.tsx
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
-import useCustomToast from "./../hooks/useCustomToast" // Ensure path is correct
+import useCustomToast from "./../hooks/useCustomToast"
 
 interface LogFile {
   fileId: string
   fileName: string
   url: string | null
   lastModified: string
-  entries: LogEntry[] | null // Not used here, but kept for consistency
+  entries: LogEntry[] | null
 }
 
 interface LogEntry {
@@ -98,7 +100,6 @@ const LogFiles: React.FC = () => {
 
   const handleDownload = (url: string | null) => {
     if (url) {
-      // Explicitly check for null and narrow type to string
       window.open(url, "_blank")
       showToast(
         "File Opened",
@@ -109,79 +110,96 @@ const LogFiles: React.FC = () => {
   }
 
   return (
-    <Box p={4} width="100%">
-      <Flex justify="space-between" align="center" mb={4}>
-        <Text fontSize="lg" fontWeight="bold">
+    <div className="p-4 w-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold">
           Log Files
-        </Text>
-        <Flex gap={2}>
-          <Tooltip label="Refresh log files">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={debouncedFetchLogFiles}
-              isLoading={isLoading}
-            >
-              Refresh
-            </Button>
-          </Tooltip>
+        </h2>
+        <div className="flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={debouncedFetchLogFiles}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Refresh</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh log files</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button
             size="sm"
-            colorScheme="teal"
-            as={Link}
-            to="/scraping-api/log-details"
+            asChild
           >
-            View Details
+            <Link to="/scraping-api/log-details">
+              View Details
+            </Link>
           </Button>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
 
       {isLoading ? (
-        <Flex justify="center" align="center" h="200px">
-          <Spinner size="xl" color="blue.500" />
-          <Text ml={4}>Loading log files...</Text>
-        </Flex>
+        <div className="flex justify-center items-center h-[200px]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <span className="ml-4 text-muted-foreground">Loading log files...</span>
+        </div>
       ) : logFiles.length === 0 ? (
-        <Text color="gray.500" textAlign="center">
+        <div className="text-center text-muted-foreground">
           No log files available.
-        </Text>
+        </div>
       ) : (
-        <Box shadow="md" borderWidth="1px" borderRadius="md" overflowX="auto">
-          <Table variant="simple" size="sm">
-            <Thead>
-              <Tr>
-                <Th>File Name</Th>
-                <Th>Last Modified</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {logFiles.map((file) => (
-                <Tr key={file.fileId}>
-                  <Td>{file.fileName}</Td>
-                  <Td>{new Date(file.lastModified).toLocaleString()}</Td>
-                  <Td>
-                    {file.url ? (
-                      <Button
-                        size="xs"
-                        colorScheme="teal"
-                        onClick={() => handleDownload(file.url)}
-                      >
-                        Download
-                      </Button>
-                    ) : (
-                      <Text fontSize="xs" color="gray.500">
-                        No file
-                      </Text>
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Last Modified</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logFiles.map((file) => (
+                  <TableRow key={file.fileId}>
+                    <TableCell>{file.fileName}</TableCell>
+                    <TableCell>
+                      {new Date(file.lastModified).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      {file.url ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDownload(file.url)}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          No file
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
-    </Box>
+    </div>
   )
 }
 

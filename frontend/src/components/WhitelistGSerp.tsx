@@ -1,16 +1,14 @@
+import { Button } from "./ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import {
-  Box,
-  Button,
-  Flex,
-  Spinner,
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/react"
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type React from "react"
 import { useEffect, useState } from "react"
 
@@ -102,87 +100,102 @@ const WhitelistGSerp: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Flex justify="center" align="center" height="200px">
-        <Spinner size="xl" />
-      </Flex>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Box>
-        <Text fontSize="lg" fontWeight="bold" mb={4}>
-          Whitelist Domains
-        </Text>
-        <Text color="red.500">{error}</Text>
-      </Box>
+      <div className="text-red-500 text-center p-4">
+        <p>{error}</p>
+      </div>
     )
   }
 
   return (
-    <Box>
-      <Text fontSize="lg" fontWeight="bold" mb={4}>
-        Whitelist Domains
-      </Text>
-      {sortedDomains.length === 0 ? (
-        <Text>No data available.</Text>
-      ) : (
-        <>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th onClick={() => handleSort("domain")} cursor="pointer">
-                  Domain{" "}
-                  {sortConfig.key === "domain" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </Th>
-                <Th onClick={() => handleSort("totalResults")} cursor="pointer">
-                  Total Results{" "}
-                  {sortConfig.key === "totalResults" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </Th>
-                <Th
-                  onClick={() => handleSort("positiveSortOrderCount")}
-                  cursor="pointer"
-                >
-                  Positive Sort Orders Count{" "}
-                  {sortConfig.key === "positiveSortOrderCount" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {paginatedDomains.map(
-                ({ domain, totalResults, positiveSortOrderCount }) => (
-                  <Tr key={domain}>
-                    <Td>{domain}</Td>
-                    <Td>{totalResults}</Td>
-                    <Td>{positiveSortOrderCount}</Td>
-                  </Tr>
-                ),
-              )}
-            </Tbody>
+    <Card>
+      <CardHeader>
+        <CardTitle>Whitelist Domains</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("domain")}
+                    className="flex items-center gap-1 p-0 h-auto font-bold"
+                  >
+                    Domain
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("totalResults")}
+                    className="flex items-center gap-1 p-0 h-auto font-bold"
+                  >
+                    Total Results
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("positiveSortOrderCount")}
+                    className="flex items-center gap-1 p-0 h-auto font-bold"
+                  >
+                    Positive Sort Order Count
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedDomains.map((item) => (
+                <TableRow key={item.domain}>
+                  <TableCell className="font-medium">{item.domain}</TableCell>
+                  <TableCell>{item.totalResults}</TableCell>
+                  <TableCell>{item.positiveSortOrderCount}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
-          <Flex justify="space-between" mt={4}>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between space-x-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="space-x-2">
             <Button
+              variant="outline"
+              size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
-              isDisabled={currentPage === 1}
+              disabled={currentPage === 1}
             >
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
-            <Text>
-              Page {currentPage} of {totalPages}
-            </Text>
             <Button
+              variant="outline"
+              size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
-              isDisabled={currentPage === totalPages}
+              disabled={currentPage === totalPages}
             >
               Next
+              <ChevronRight className="h-4 w-4" />
             </Button>
-          </Flex>
-        </>
-      )}
-    </Box>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,12 +1,7 @@
-import {
-  Badge,
-  Box,
-  HStack,
-  Heading,
-  Switch,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Badge } from "../ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Label } from "../ui/label"
+import { Switch } from "../ui/switch"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
@@ -84,70 +79,77 @@ const ApiStatusManagement = () => {
   // Determine status badge properties
   const getStatusBadge = (service: ApiServiceType) => {
     const { isActive, isLimited, isDeactivated } = settings[service]
-    if (isDeactivated) return { text: "Down", color: "red" }
-    if (isLimited) return { text: "Limited", color: "yellow" }
-    if (isActive) return { text: "Active", color: "green" }
-    return { text: "Unknown", color: "red" }
+    if (isDeactivated) return { text: "Down", variant: "destructive" as const }
+    if (isLimited) return { text: "Limited", variant: "secondary" as const }
+    if (isActive) return { text: "Active", variant: "default" as const }
+    return { text: "Unknown", variant: "destructive" as const }
   }
 
   return (
-    <Box borderWidth="1px" borderRadius="lg" p={5} w="100%">
-      <VStack align="stretch" spacing={6}>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>API Status Management</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {API_SERVICES.map((service) => {
           const status = getStatusBadge(service)
           return (
-            <Box key={service} p={4} borderWidth="1px" borderRadius="md">
-              <HStack justify="space-between" mb={2}>
-                <Heading size="sm">{service}</Heading>
-                <Badge colorScheme={status.color}>{status.text}</Badge>
-              </HStack>
-              <VStack align="stretch" spacing={3}>
-                <HStack justify="space-between">
-                  <Text fontWeight="bold">Active</Text>
+            <div key={service} className="p-4 border rounded-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">{service}</h3>
+                <Badge variant={status.variant}>{status.text}</Badge>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${service}-active`}>Active</Label>
                   <Switch
-                    isChecked={settings[service].isActive}
-                    onChange={() =>
+                    id={`${service}-active`}
+                    checked={settings[service].isActive}
+                    onCheckedChange={(checked) =>
                       updateSettings(service, {
                         ...settings[service],
-                        isActive: !settings[service].isActive,
-                        isDeactivated: false, // Reset deactivated if active toggled on
+                        isActive: checked,
+                        isDeactivated: !checked, // If active, not deactivated
                       })
                     }
                   />
-                </HStack>
-                <HStack justify="space-between">
-                  <Text fontWeight="bold">Limited Mode</Text>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${service}-limited`}>Limited</Label>
                   <Switch
-                    isChecked={settings[service].isLimited}
-                    onChange={() =>
+                    id={`${service}-limited`}
+                    checked={settings[service].isLimited}
+                    onCheckedChange={(checked) =>
                       updateSettings(service, {
                         ...settings[service],
-                        isLimited: !settings[service].isLimited,
-                        isDeactivated: false, // Reset deactivated if limited toggled on
+                        isLimited: checked,
                       })
                     }
                   />
-                </HStack>
-                <HStack justify="space-between">
-                  <Text fontWeight="bold">Deactivated</Text>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${service}-deactivated`}>Deactivated</Label>
                   <Switch
-                    isChecked={settings[service].isDeactivated}
-                    onChange={() =>
+                    id={`${service}-deactivated`}
+                    checked={settings[service].isDeactivated}
+                    onCheckedChange={(checked) =>
                       updateSettings(service, {
                         ...settings[service],
-                        isDeactivated: !settings[service].isDeactivated,
-                        isActive: false, // Reset active if deactivated toggled on
-                        isLimited: false, // Reset limited if deactivated toggled on
+                        isDeactivated: checked,
+                        isActive: !checked, // If deactivated, not active
                       })
                     }
                   />
-                </HStack>
-              </VStack>
-            </Box>
+                </div>
+              </div>
+            </div>
           )
         })}
-      </VStack>
-    </Box>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,25 +1,26 @@
-import { ExternalLinkIcon } from "@chakra-ui/icons"
+import { ExternalLink, Loader2 } from "lucide-react"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
 import {
-  Box,
-  Button,
-  Flex,
-  FormControl,
-  FormLabel,
-  Grid,
-  GridItem,
-  IconButton,
-  Image,
-  Input,
   Select,
-  Spinner,
-  Text,
-  Textarea,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
+import { Textarea } from "./ui/textarea"
+import {
   Tooltip,
-} from "@chakra-ui/react"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import type React from "react"
 import { useEffect, useState } from "react"
 
-const proxyData = {
+const proxyData: Record<string, { region: string; url: string }[]> = {
   "Google Cloud": [
     {
       region: "SOUTHAMERICA-WEST1",
@@ -342,15 +343,14 @@ const PlaygroundGSerp: React.FC = () => {
   const [htmlPreview, setHtmlPreview] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value
-    setProvider(newProvider)
+  const handleProviderChange = (value: string) => {
+    setProvider(value)
     setRegionFilter("")
-    setSelectedUrl(proxyData[newProvider][0].url)
+    setSelectedUrl(proxyData[value][0].url)
   }
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedUrl(e.target.value)
+  const handleUrlChange = (value: string) => {
+    setSelectedUrl(value)
   }
 
   const handleTestRequest = async () => {
@@ -396,158 +396,166 @@ const PlaygroundGSerp: React.FC = () => {
     }
   }, [provider, regionFilter])
 
+  const filteredProxies = proxyData[provider].filter((proxy) =>
+    proxy.region.toLowerCase().includes(regionFilter.toLowerCase()),
+  )
+
   return (
-    <Box p={4} width="100%">
-      <Box mb={6}>
-        <Text fontSize="md" fontWeight="semibold" mb={2}>
+    <div className="p-4 w-full">
+      <div className="mb-6">
+        <h2 className="text-md font-semibold mb-2">
           Test Parameters
-        </Text>
-        <Flex direction="column" gap={4}>
-          <Flex gap={4} alignItems="flex-end">
-            <FormControl flex="2">
-              <FormLabel fontSize="sm">Search URL</FormLabel>
+        </h2>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 w-full">
+              <Label htmlFor="search-url" className="text-sm">Search URL</Label>
               <Input
+                id="search-url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="e.g., https://www.google.com/search?q=flowers&udm=2"
-                size="sm"
-                isRequired
+                className="mt-1"
+                required
               />
-            </FormControl>
-            <FormControl flex="1">
-              <FormLabel fontSize="sm">Provider</FormLabel>
+            </div>
+            <div className="w-full md:w-[200px]">
+              <Label htmlFor="provider" className="text-sm">Provider</Label>
               <Select
                 value={provider}
-                onChange={handleProviderChange}
-                size="sm"
+                onValueChange={handleProviderChange}
               >
-                {Object.keys(proxyData).map((prov) => (
-                  <option key={prov} value={prov}>
-                    {prov}
-                  </option>
-                ))}
+                <SelectTrigger id="provider" className="mt-1">
+                  <SelectValue placeholder="Select provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(proxyData).map((prov) => (
+                    <SelectItem key={prov} value={prov}>
+                      {prov}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
-          </Flex>
-          <Flex direction="row" gap={4} alignItems="flex-end">
-            <FormControl flex="1">
-              <FormLabel fontSize="sm">Endpoint URL</FormLabel>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 w-full">
+              <Label htmlFor="endpoint-url" className="text-sm">Endpoint URL</Label>
               <Input
+                id="region-filter"
                 value={regionFilter}
                 onChange={(e) => setRegionFilter(e.target.value)}
                 placeholder="Filter regions"
-                size="sm"
-                mb={2}
+                className="mt-1 mb-2"
               />
-              {proxyData[provider].filter((proxy) =>
-                proxy.region.toLowerCase().includes(regionFilter.toLowerCase()),
-              ).length > 0 ? (
+              {filteredProxies.length > 0 ? (
                 <Select
                   value={selectedUrl}
-                  onChange={handleUrlChange}
-                  size="sm"
+                  onValueChange={handleUrlChange}
                 >
-                  {proxyData[provider]
-                    .filter((proxy) =>
-                      proxy.region
-                        .toLowerCase()
-                        .includes(regionFilter.toLowerCase()),
-                    )
-                    .map((proxy) => (
-                      <option key={proxy.url} value={proxy.url}>
+                  <SelectTrigger id="endpoint-url">
+                    <SelectValue placeholder="Select endpoint" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredProxies.map((proxy) => (
+                      <SelectItem key={proxy.url} value={proxy.url}>
                         {proxy.region} - {proxy.url}
-                      </option>
+                      </SelectItem>
                     ))}
+                  </SelectContent>
                 </Select>
               ) : (
-                <Select
-                  isDisabled
-                  placeholder="No regions match the filter"
-                  size="sm"
-                />
+                <Select disabled>
+                  <SelectTrigger>
+                    <SelectValue placeholder="No regions match the filter" />
+                  </SelectTrigger>
+                </Select>
               )}
-            </FormControl>
-            <Box>
-              <Tooltip label="Send test request">
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  onClick={handleTestRequest}
-                  isLoading={isLoading}
-                  isDisabled={!url.trim() || !selectedUrl}
-                >
-                  POST
-                </Button>
-              </Tooltip>
-            </Box>
-          </Flex>
-        </Flex>
-      </Box>
-      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
-        <GridItem>
-          <Text fontSize="md" fontWeight="semibold" mb={2}>
+            </div>
+            <div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleTestRequest}
+                      disabled={isLoading || !url.trim() || !selectedUrl}
+                    >
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      POST
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Send test request</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 className="text-md font-semibold mb-2">
             Response
-          </Text>
+          </h2>
           {isLoading ? (
-            <Flex justify="center" align="center" h="400px">
-              <Spinner size="xl" color="blue.500" />
-            </Flex>
+            <div className="flex justify-center items-center h-[400px] border rounded-md bg-muted/10">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
           ) : (
             <Textarea
               value={response}
               readOnly
-              height="400px"
-              bg="gray.700"
-              color="white"
+              className="h-[400px] font-mono text-xs bg-slate-950 text-slate-50 resize-y"
               placeholder="Response will appear here after testing"
-              size="sm"
-              resize="vertical"
             />
           )}
-        </GridItem>
-        <GridItem>
-          <Flex align="center" justify="space-between" mb={2}>
-            <Text fontSize="md" fontWeight="semibold">
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-md font-semibold">
               HTML Preview
-            </Text>
+            </h2>
             {htmlPreview && (
-              <Flex align="center" gap={2}>
-                <Tooltip label="Open preview in new tab">
-                  <IconButton
-                    aria-label="Open preview"
-                    icon={<ExternalLinkIcon />}
-                    size="sm"
-                    onClick={() => {
-                      const newWindow = window.open("", "_blank")
-                      if (newWindow) {
-                        newWindow.document.write(htmlPreview)
-                        newWindow.document.close()
-                      } else {
-                        alert(
-                          "Popup blocked. Please allow popups for this site.",
-                        )
-                      }
-                    }}
-                  />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newWindow = window.open("", "_blank")
+                        if (newWindow) {
+                          newWindow.document.write(htmlPreview)
+                          newWindow.document.close()
+                        } else {
+                          alert(
+                            "Popup blocked. Please allow popups for this site.",
+                          )
+                        }
+                      }}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Open preview in new tab</p>
+                  </TooltipContent>
                 </Tooltip>
-              </Flex>
+              </TooltipProvider>
             )}
-          </Flex>
+          </div>
           {htmlPreview && (
             <iframe
               srcDoc={htmlPreview}
-              style={{
-                width: "100%",
-                height: "400px",
-                border: "1px solid #ccc",
-              }}
+              className="w-full h-[400px] border rounded-md bg-white"
               title="HTML Preview"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
           )}
-        </GridItem>
-      </Grid>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }
 

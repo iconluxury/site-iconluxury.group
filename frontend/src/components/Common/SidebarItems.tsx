@@ -1,22 +1,22 @@
-import { Avatar, Box, Flex, Icon, Text, Tooltip } from "@chakra-ui/react"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Badge } from "../ui/badge"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useLocation } from "@tanstack/react-router"
 import {
-  FiArchive,
-  FiCalendar,
-  FiEye,
-  FiFileText,
-  FiGlobe,
-  FiGlobe as FiGoogleSerp,
-  FiHelpCircle,
-  FiHome,
-  FiLayers,
-  FiLogOut,
-  FiMessageSquare,
-  FiSearch,
-  FiShield,
-  FiUsers,
-} from "react-icons/fi"
+  Archive,
+  Calendar,
+  Eye,
+  FileText,
+  Globe,
+  HelpCircle,
+  Home,
+  Layers,
+  LogOut,
+  MessageSquare,
+  Search,
+  Shield,
+  Users,
+} from "lucide-react"
 import type { UserPublic } from "../../client"
 import useAuth from "../../hooks/useAuth"
 
@@ -29,21 +29,21 @@ interface SidebarItem {
 }
 
 const sidebarStructure: SidebarItem[] = [
-  { title: "Dashboard", path: "/", icon: FiHome },
-  { title: "Archive", path: "/explore", icon: FiArchive },
+  { title: "Dashboard", path: "/", icon: Home },
+  { title: "Archive", path: "/explore", icon: Archive },
   {
     title: "Scraper",
-    icon: FiSearch,
+    icon: Search,
     subItems: [
-      { title: "Jobs", path: "/scraping-api/explore", icon: FiSearch },
+      { title: "Jobs", path: "/scraping-api/explore", icon: Search },
       {
         title: "Google SERP",
         path: "/scraping-api/google-serp",
-        icon: FiGoogleSerp,
+        icon: Globe,
       },
     ],
   },
-  { title: "Sign out", icon: FiLogOut, action: () => {} },
+  { title: "Sign out", icon: LogOut, action: () => {} },
 ]
 
 interface SidebarItemsProps {
@@ -54,11 +54,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const queryClient = useQueryClient()
   const { logout } = useAuth()
   const location = useLocation()
-  const textColor = "gray.800"
-  const disabledColor = "ui.dim"
-  const hoverColor = "ui.main"
-  const bgActive = "ui.light"
-  const activeTextColor = "gray.800"
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
   const avatarOptions = ["https://i.pravatar.cc/150"]
@@ -72,7 +67,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   ) {
     finalSidebarStructure.splice(finalSidebarStructure.length - 1, 0, {
       title: "Admin",
-      icon: FiShield,
+      icon: Shield,
       path: "/admin",
     })
   }
@@ -109,7 +104,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   }
 
   const renderItems = (items: SidebarItem[]) =>
-    items.map(({ icon, title, path, subItems, action }) => {
+    items.map(({ icon: Icon, title, path, subItems, action }) => {
       const enabled = isEnabled(title)
       if (!enabled) {
         return null
@@ -118,136 +113,78 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       const isActive =
         path === location.pathname || (path === "/" && location.pathname === "")
       return (
-        <Box key={title} mb={2}>
+        <div key={title} className="mb-2">
           {path ? (
-            <Flex
-              as={Link}
+            <Link
               to={path}
-              w="100%"
-              p={2}
-              borderRadius="md"
-              style={
+              className={`flex w-full p-2 rounded-md items-center justify-between transition-colors ${
                 isActive
-                  ? {
-                      background: bgActive,
-                      boxShadow: "card",
-                      color: activeTextColor,
-                      borderRadius: "md",
-                    }
-                  : {}
-              }
-              color={textColor}
-              _hover={{ color: hoverColor }}
+                  ? "bg-muted text-foreground shadow-sm"
+                  : "text-foreground hover:text-primary hover:bg-muted/50"
+              }`}
               onClick={onClose}
-              align="center"
-              justify="space-between"
             >
-              <Flex align="center">
-                {icon && (
+              <div className="flex items-center">
+                {Icon && (
                   <Icon
-                    as={icon}
-                    mr={2}
-                    color={isActive ? activeTextColor : textColor}
+                    className={`mr-2 h-4 w-4 ${
+                      isActive ? "text-foreground" : "text-foreground"
+                    }`}
                   />
                 )}
-                <Text>{title}</Text>
-              </Flex>
+                <span>{title}</span>
+              </div>
               {showAdminLabel && (
-                <Text
-                  fontSize="xs"
-                  fontWeight="medium"
-                  bg="gray.200"
-                  color={textColor}
-                  px={2}
-                  py={0.5}
-                  borderRadius="full"
-                >
+                <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5 rounded-full">
                   Admin
-                </Text>
+                </Badge>
               )}
-            </Flex>
+            </Link>
           ) : action ? (
-            <Flex
-              w="100%"
-              p={2}
-              borderRadius="md"
-              color={textColor}
-              _hover={{ color: hoverColor }}
+            <div
+              className="flex w-full p-2 rounded-md text-foreground hover:text-primary hover:bg-muted/50 cursor-pointer items-center transition-colors"
               onClick={() => {
                 if (title === "Sign out") logout()
                 onClose?.()
               }}
-              cursor="pointer"
-              align="center"
             >
-              {icon && <Icon as={icon} mr={2} />}
-              <Text>{title}</Text>
-            </Flex>
+              {Icon && <Icon className="mr-2 h-4 w-4" />}
+              <span>{title}</span>
+            </div>
           ) : (
-            <Box>
-              <Text p={2} fontWeight="bold">
+            <div>
+              <div className="p-2 font-bold">
                 {title}
-              </Text>
-              <Box>{subItems && renderItems(subItems)}</Box>
-            </Box>
+              </div>
+              <div className="pl-4">{subItems && renderItems(subItems)}</div>
+            </div>
           )}
-        </Box>
+        </div>
       )
     })
 
   return (
-    <Box className="sidebar">
-      <Box>{renderItems(finalSidebarStructure)}</Box>
+    <div className="sidebar">
+      <div>{renderItems(finalSidebarStructure)}</div>
       {currentUser && (
-        <Flex
-          as={Link}
+        <Link
           to="/settings"
-          w="100%"
-          p={2}
-          mt={4}
-          borderRadius="md"
-          bg="gray.100"
-          boxShadow="card"
-          color={textColor}
-          border="2px solid"
-          borderColor="transparent"
-          _hover={{
-            color: hoverColor,
-            bg: "gray.50",
-            borderColor: "ui.main",
-          }}
-          transition="all 0.2s ease"
+          className="flex w-full p-2 mt-4 rounded-md bg-muted/50 shadow-sm text-foreground border-2 border-transparent hover:text-primary hover:bg-muted hover:border-primary transition-all duration-200 items-center"
           onClick={onClose}
-          align="center"
         >
-          <Avatar
-            size="sm"
-            name={currentUser.full_name || "User"}
-            src={hardcodedAvatar}
-            mr={2}
-            filter="grayscale(100%)"
-            border="2px solid"
-            borderColor="transparent"
-            _hover={{
-              filter: "grayscale(0)",
-              borderColor: "ui.main",
-            }}
-            transition="all 0.2s ease"
-          />
-          <Box flex="1">
-            <Text fontWeight="medium">{currentUser.full_name || "User"}</Text>
-            <Text
-              fontSize="xs"
-              color="ui.dim"
-              isTruncated={false}
-              whiteSpace="normal"
-            >
+          <Avatar className="h-8 w-8 mr-2 border-2 border-transparent hover:border-primary transition-all duration-200 grayscale hover:grayscale-0">
+            <AvatarImage src={hardcodedAvatar} alt={currentUser.full_name || "User"} />
+            <AvatarFallback>{currentUser.full_name ? currentUser.full_name.charAt(0) : "U"}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 overflow-hidden">
+            <p className="font-medium truncate">{currentUser.full_name || "User"}</p>
+            <p className="text-xs text-muted-foreground truncate whitespace-normal break-words">
               {currentUser.email || "email@example.com"}
-            </Text>
-          </Box>
-        </Flex>
+            </p>
+          </div>
+        </Link>
       )}
-    </Box>
+    </div>
   )
 }
 

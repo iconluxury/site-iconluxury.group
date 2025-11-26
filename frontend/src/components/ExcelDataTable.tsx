@@ -1,15 +1,20 @@
-import { ArrowUpDownIcon } from "@chakra-ui/icons"
 import {
-  Box,
-  IconButton,
   Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Button } from "./ui/button"
+import {
   Tooltip,
-  Tr,
-} from "@chakra-ui/react"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Badge } from "./ui/badge"
+import { ArrowUpDown } from "lucide-react"
 import { memo, useMemo, useState } from "react"
 
 export interface ExcelData {
@@ -44,7 +49,7 @@ const ExcelDataTable = ({
   }>({ key: -1, direction: null })
 
   // Debug: Log the columnMapping to verify it's correct
-  console.log("columnMapping:", columnMapping)
+  // console.log("columnMapping:", columnMapping)
 
   const getDisplayValue = (cell: string | number | boolean | null): string => {
     if (cell == null) return ""
@@ -76,9 +81,9 @@ const ExcelDataTable = ({
   const isColumnMapped = (index: number): boolean => {
     if (!columnMapping) return false
     const isMapped = Object.values(columnMapping).includes(index)
-    console.log(
-      `Column ${index} (${excelData.headers[index]}): isMapped = ${isMapped}`,
-    ) // Debug
+    // console.log(
+    //   `Column ${index} (${excelData.headers[index]}): isMapped = ${isMapped}`,
+    // ) // Debug
     return isMapped
   }
 
@@ -91,85 +96,82 @@ const ExcelDataTable = ({
   }
 
   if (!excelData.headers.length || !excelData.rows.length) {
-    return <Box>No data to display</Box>
+    return <div className="p-4 text-muted-foreground">No data to display</div>
   }
 
   return (
-    <Box overflowX="auto">
-      <Table variant="simple" size="sm" aria-label="Excel data table">
-        <caption
-          style={{ captionSide: "top", padding: "8px", color: "gray.600" }}
-        >
-          Excel Data Preview
-        </caption>
-        <Thead>
-          <Tr>
+    <div className="rounded-md border overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
             {excelData.headers.map((header, index) => {
               const isMapped = isColumnMapped(index)
               const mappedField = getMappedField(index)
               return (
-                <Th
+                <TableHead
                   key={index}
                   onClick={
                     onColumnClick ? () => onColumnClick(index) : undefined
                   }
-                  cursor={onColumnClick ? "pointer" : "default"}
-                  bg={isMapped ? "yellow.300" : "gray.50"} // Changed to yellow for visibility
-                  borderBottom={isMapped ? "2px solid" : "1px solid"}
-                  borderColor={isMapped ? "yellow.600" : "gray.200"}
-                  _hover={{ bg: isMapped ? "yellow.400" : "gray.200" }}
-                  role={onColumnClick ? "button" : undefined}
-                  aria-label={
-                    onColumnClick
-                      ? isMapped
-                        ? `Mapped as ${mappedField} (click to remap)`
-                        : `Map column ${header || index + 1}`
-                      : undefined
-                  }
+                  className={`
+                    ${onColumnClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                    ${isMapped ? "bg-yellow-100 dark:bg-yellow-900/20 border-b-2 border-yellow-500" : ""}
+                  `}
                 >
-                  <Tooltip
-                    label={
-                      onColumnClick
-                        ? isMapped
-                          ? `Mapped as ${mappedField} (click to remap)`
-                          : `Click to map ${header || `Column ${index + 1}`}`
-                        : undefined
-                    }
-                  >
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      color={isMapped ? "yellow.800" : "gray.800"}
-                    >
-                      {header || `Column ${index + 1}`}
-                      <IconButton
-                        aria-label={`Sort by ${
-                          header || `Column ${index + 1}`
-                        }`}
-                        icon={<ArrowUpDownIcon />}
-                        size="xs"
-                        variant="ghost"
-                        onClick={() => handleSort(index)}
-                        ml={2}
-                      />
-                    </Box>
-                  </Tooltip>
-                </Th>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center space-x-2">
+                          <span className={isMapped ? "text-yellow-800 dark:text-yellow-200 font-medium" : ""}>
+                            {header || `Column ${index + 1}`}
+                          </span>
+                          {isMapped && (
+                            <Badge variant="outline" className="ml-2 border-yellow-500 text-yellow-700 dark:text-yellow-300 text-[10px] px-1 py-0 h-5">
+                              {mappedField}
+                            </Badge>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 ml-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSort(index)
+                            }}
+                          >
+                            <ArrowUpDown className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {onColumnClick
+                            ? isMapped
+                              ? `Mapped as ${mappedField} (click to remap)`
+                              : `Click to map ${header || `Column ${index + 1}`}`
+                            : `Column ${header || index + 1}`}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableHead>
               )
             })}
-          </Tr>
-        </Thead>
-        <Tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {sortedRows.map((row, rowIndex) => (
-            <Tr key={rowIndex}>
+            <TableRow key={rowIndex}>
               {row.row.map((cell, cellIndex) => (
-                <Td key={cellIndex}>{getDisplayValue(cell)}</Td>
+                <TableCell key={cellIndex} className={isColumnMapped(cellIndex) ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}>
+                  {getDisplayValue(cell)}
+                </TableCell>
               ))}
-            </Tr>
+            </TableRow>
           ))}
-        </Tbody>
+        </TableBody>
       </Table>
-    </Box>
+    </div>
   )
 }
 

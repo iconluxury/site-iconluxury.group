@@ -1,29 +1,26 @@
-import { CloseIcon } from "@chakra-ui/icons"
 import {
-  Box,
-  Button,
-  ButtonGroup,
   Card,
-  CardBody,
-  Flex,
-  Grid,
-  GridItem,
-  IconButton,
-  Spinner,
-  Stat,
-  StatLabel,
-  StatNumber,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card"
+import {
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Button } from "./ui/button"
+import {
   Tooltip,
-  Tr,
-} from "@chakra-ui/react"
-import { debounce } from "lodash"
-// Assuming this is located at src/components/OverviewGSerp.tsx or similar
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Badge } from "./ui/badge"
+import { Loader2, X, RefreshCw, ToggleLeft, ToggleRight } from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
@@ -35,6 +32,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { debounce } from "lodash"
 import useCustomToast from "../hooks/useCustomToast"
 
 // Interfaces for TypeScript type safety
@@ -136,20 +134,6 @@ const compareOptions: {
     { value: "avgRequests", label: "Avg Requests", color: "#FAF089" },
   ],
 }
-
-// Color palette for bar charts
-const BAR_COLORS = [
-  "#805AD5",
-  "#38A169",
-  "#DD6B20",
-  "#C53030",
-  "#D69E2E",
-  "#9F7AEA",
-  "#68D391",
-  "#F6AD55",
-  "#F56565",
-  "#ECC94B",
-]
 
 const OverviewGSerp: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
@@ -274,8 +258,8 @@ const OverviewGSerp: React.FC = () => {
       console.error("Error fetching data:", error)
       setEndpointData([])
       setChartData({})
-      setError(error.message)
-      showToast("Data Fetch Error", error.message, "error")
+      setError(error instanceof Error ? error.message : "Unknown error")
+      showToast("Data Fetch Error", error instanceof Error ? error.message : "Unknown error", "error")
     } finally {
       setIsLoading(false)
     }
@@ -556,75 +540,69 @@ const OverviewGSerp: React.FC = () => {
   const renderSummary = () => {
     const stats = getSummaryStats(selectedChart)
     const summaryContent = selectedQuery ? (
-      <>
-        <Text>
+      <div className="space-y-2">
+        <p>
           <strong>Query:</strong> {selectedQuery.query}
-        </Text>
-        <Text>
+        </p>
+        <p>
           <strong>Total Count:</strong> {selectedQuery.count}
-        </Text>
-        <Text>
+        </p>
+        <p>
           <strong>Category:</strong> {selectedQuery.category}
-        </Text>
-        <Text>
+        </p>
+        <p>
           <strong>Type:</strong> {selectedQuery.type}
-        </Text>
-        <Text>
+        </p>
+        <p>
           <strong>Featured:</strong> {selectedQuery.featured ? "Yes" : "No"}
-        </Text>
+        </p>
         {selectedQuery.endpointDetails && (
-          <Box mt={2}>
-            <Text fontSize="sm" fontWeight="semibold">
+          <div className="mt-2">
+            <p className="text-sm font-semibold">
               Endpoint Breakdown:
-            </Text>
+            </p>
             {selectedQuery.endpointDetails.map((detail, idx) => (
-              <Text key={idx} fontSize="sm">
+              <p key={idx} className="text-sm">
                 {detail.endpoint}: {detail.count}
-              </Text>
+              </p>
             ))}
-          </Box>
+          </div>
         )}
-      </>
+      </div>
     ) : (
-      <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+      <div className="grid grid-cols-2 gap-4">
         {stats.map((stat, index) => (
-          <Stat key={index}>
-            <StatLabel color="gray.400">{stat.label}</StatLabel>
-            <StatNumber fontSize="xl">{stat.value}</StatNumber>
-          </Stat>
+          <div key={index} className="flex flex-col p-3 border rounded-lg bg-card text-card-foreground shadow-sm">
+            <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+            <span className="text-xl font-bold">{stat.value}</span>
+          </div>
         ))}
-      </Grid>
+      </div>
     )
 
     return (
       <>
-        <Text fontSize="md" fontWeight="semibold" mb={2}>
+        <h3 className="text-md font-semibold mb-2">
           {selectedQuery
             ? "Query Details"
             : `${
                 chartOptions.find((opt) => opt.key === selectedChart)!.label
               } Summary`}
-        </Text>
-        <Card
-          shadow="md"
-          borderWidth="1px"
-          bg="gray.700"
-          minHeight="150px"
-          position="relative"
-        >
-          {selectedQuery && (
-            <IconButton
-              aria-label="Back to summary"
-              icon={<CloseIcon />}
-              size="sm"
-              position="absolute"
-              top={2}
-              right={2}
-              onClick={() => setSelectedQuery(null)}
-              variant="ghost"
-            />
-          )}
-          <CardBody>{summaryContent}</CardBody>
+        </h3>
+        <Card className="relative min-h-[150px]">
+          <CardContent className="pt-6">
+            {selectedQuery && (
+                <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2"
+                onClick={() => setSelectedQuery(null)}
+                >
+                <X className="h-4 w-4" />
+                </Button>
+            )}
+            {summaryContent}
+          </CardContent>
         </Card>
       </>
     )
@@ -658,80 +636,90 @@ const OverviewGSerp: React.FC = () => {
   const compareRows = chunkArray(compareOptions[selectedChart], 4)
 
   return (
-    <Box p={4} width="100%">
-      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
-        <Text fontSize="lg" fontWeight="bold">
+    <div className="p-4 w-full">
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 className="text-lg font-bold">
           OverviewGSerp
-        </Text>
-        <Flex align="center" gap={2} ml="auto">
-          <ButtonGroup size="sm" variant="outline">
+        </h2>
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="flex gap-1">
             {chartOptions.map((option) => (
-              <Tooltip key={option.key} label={`View ${option.label}`}>
-                <Button
-                  aria-label={`View ${option.label}`}
-                  bg={selectedChart === option.key ? option.color : "gray.700"}
-                  color={selectedChart === option.key ? "white" : "gray.200"}
-                  borderColor={option.color}
-                  _hover={{ bg: `${option.color}80` }}
-                  onClick={() => setSelectedChart(option.key)}
-                >
-                  {option.label}
-                </Button>
-              </Tooltip>
+              <TooltipProvider key={option.key}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={selectedChart === option.key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedChart(option.key)}
+                      className={selectedChart === option.key ? "" : "text-muted-foreground"}
+                      style={selectedChart === option.key ? { backgroundColor: option.color, borderColor: option.color } : {}}
+                    >
+                      {option.label}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View {option.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
-          </ButtonGroup>
-          <Tooltip label="Refresh overview data immediately">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={debounce(fetchData, 500)}
-              isLoading={isLoading}
-            >
-              Refresh Now
-            </Button>
-          </Tooltip>
-          <Tooltip label="Toggle chart labels">
-            <Button
-              size="sm"
-              colorScheme={showLabels ? "green" : "gray"}
-              onClick={() => setShowLabels(!showLabels)}
-            >
-              {showLabels ? "Labels: On" : "Labels: Off"}
-            </Button>
-          </Tooltip>
-        </Flex>
-      </Flex>
+          </div>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => {
+                    const debouncedFetch = debounce(fetchData, 500)
+                    debouncedFetch()
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                  Refresh Now
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh overview data immediately</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant={showLabels ? "default" : "outline"}
+                  onClick={() => setShowLabels(!showLabels)}
+                >
+                  {showLabels ? <ToggleRight className="h-4 w-4 mr-2" /> : <ToggleLeft className="h-4 w-4 mr-2" />}
+                  {showLabels ? "Labels: On" : "Labels: Off"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle chart labels</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
 
       {isLoading ? (
-        <Flex
-          justify="center"
-          align="center"
-          h="200px"
-          flexDirection="column"
-          gap={4}
-        >
-          <Spinner size="xl" color="blue.500" />
-          <Text>Loading SERP data...</Text>
-        </Flex>
+        <div className="flex justify-center items-center h-[200px] flex-col gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p>Loading SERP data...</p>
+        </div>
       ) : (
         <>
-          <Grid
-            templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-            gap={6}
-            mb={6}
-            alignItems="start"
-          >
-            <GridItem>
-              <Text fontSize="md" fontWeight="semibold" mb={2}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 items-start">
+            <div>
+              <h3 className="text-md font-semibold mb-2">
                 {selectedOption.label}
-              </Text>
-              <Box
-                height="400px"
-                borderRadius="md"
-                overflow="hidden"
-                shadow="md"
-                bg="gray.700"
-              >
+              </h3>
+              <div className="h-[400px] rounded-md overflow-hidden shadow-md bg-card border">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={updateChartData[selectedChart]}
@@ -742,7 +730,7 @@ const OverviewGSerp: React.FC = () => {
                       left: showLabels ? 40 : 20,
                     }}
                   >
-                    <CartesianGrid stroke="gray.600" />
+                    <CartesianGrid stroke="var(--border)" />
                     <XAxis
                       dataKey={
                         selectedChart === "requestsOverTime" &&
@@ -750,8 +738,8 @@ const OverviewGSerp: React.FC = () => {
                           ? "hour"
                           : "name"
                       }
-                      stroke="#FFFFFF"
-                      tick={{ fill: "#FFFFFF", fontSize: 12, dy: -10 }}
+                      stroke="var(--foreground)"
+                      tick={{ fill: "var(--foreground)", fontSize: 12, dy: 10 }}
                       tickMargin={10}
                       interval="preserveStartEnd"
                       label={
@@ -770,15 +758,15 @@ const OverviewGSerp: React.FC = () => {
                                         : "Queries",
                               position: "insideBottom",
                               offset: -20,
-                              fill: "#FFFFFF",
+                              fill: "var(--foreground)",
                               fontSize: 14,
                             }
                           : undefined
                       }
                     />
                     <YAxis
-                      stroke="#FFFFFF"
-                      tick={{ fill: "#FFFFFF", fontSize: 12 }}
+                      stroke="var(--foreground)"
+                      tick={{ fill: "var(--foreground)", fontSize: 12 }}
                       tickMargin={10}
                       domain={
                         selectedChart === "successRate" ? [0, 100] : undefined
@@ -790,7 +778,7 @@ const OverviewGSerp: React.FC = () => {
                               angle: -45,
                               position: "insideLeft",
                               offset: -20,
-                              fill: "#FFFFFF",
+                              fill: "var(--foreground)",
                               fontSize: 14,
                             }
                           : undefined
@@ -798,107 +786,85 @@ const OverviewGSerp: React.FC = () => {
                     />
                     <RechartsTooltip
                       contentStyle={{
-                        backgroundColor: "gray.700",
-                        color: "white",
+                        backgroundColor: "var(--background)",
+                        borderColor: "var(--border)",
+                        color: "var(--foreground)",
                       }}
                     />
                     <Bar dataKey="value" fill={selectedColor} />
                   </BarChart>
                 </ResponsiveContainer>
-              </Box>
-            </GridItem>
-            <GridItem>
+              </div>
+            </div>
+            <div>
               {renderSummary()}
               {selectedChart !== "requestsOverTime" && (
-                <Box mt={6}>
-                  <Text fontSize="md" fontWeight="semibold" mb={2}>
+                <div className="mt-6">
+                  <h3 className="text-md font-semibold mb-2">
                     Compare To
-                  </Text>
-                  <Flex direction="column" gap={2}>
+                  </h3>
+                  <div className="flex flex-col gap-2">
                     {compareRows.map((row, rowIndex) => (
-                      <ButtonGroup
-                        key={rowIndex}
-                        size="sm"
-                        variant="outline"
-                        isAttached={false}
-                      >
+                      <div key={rowIndex} className="flex gap-1 flex-wrap">
                         {row.map((option) => (
                           <Button
                             key={option.value}
-                            bg={
-                              compares[selectedChart].includes(option.value)
-                                ? option.color
-                                : "gray.600"
-                            }
-                            color={
-                              compares[selectedChart].includes(option.value)
-                                ? "white"
-                                : "gray.200"
-                            }
-                            borderColor={option.color}
-                            _hover={{ bg: `${option.color}80` }}
+                            variant={compares[selectedChart].includes(option.value) ? "default" : "outline"}
+                            size="sm"
                             onClick={() =>
                               toggleCompare(selectedChart, option.value)
                             }
+                            style={compares[selectedChart].includes(option.value) ? { backgroundColor: option.color, borderColor: option.color } : {}}
                           >
                             {option.label}
                           </Button>
                         ))}
-                      </ButtonGroup>
+                      </div>
                     ))}
-                  </Flex>
-                </Box>
+                  </div>
+                </div>
               )}
-            </GridItem>
-          </Grid>
+            </div>
+          </div>
 
-          <Box mt={6}>
-            <Text fontSize="md" fontWeight="semibold" mb={2}>
+          <div className="mt-6">
+            <h3 className="text-md font-semibold mb-2">
               Top Search Queries
-            </Text>
-            <Box
-              shadow="md"
-              borderWidth="1px"
-              borderRadius="md"
-              overflowX="auto"
-            >
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Query</Th>
-                    <Th>Count</Th>
-                    <Th>Category</Th>
-                    <Th>Type</Th>
-                    <Th>Featured</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+            </h3>
+            <div className="rounded-md border shadow-md overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Query</TableHead>
+                    <TableHead>Count</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Featured</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {topQueries.map((query, index) => (
-                    <Tr
+                    <TableRow
                       key={index}
                       onClick={() => setSelectedQuery(query)}
-                      cursor="pointer"
-                      _hover={{ bg: "gray.600" }}
-                      bg={
-                        selectedQuery?.query === query.query
-                          ? "gray.600"
-                          : "transparent"
-                      }
+                      className={`cursor-pointer ${selectedQuery?.query === query.query ? "bg-muted" : ""}`}
                     >
-                      <Td>{query.query}</Td>
-                      <Td>{query.count}</Td>
-                      <Td>{query.category}</Td>
-                      <Td>{query.type}</Td>
-                      <Td>{query.featured ? "Yes" : "No"}</Td>
-                    </Tr>
+                      <TableCell>{query.query}</TableCell>
+                      <TableCell>{query.count}</TableCell>
+                      <TableCell>{query.category}</TableCell>
+                      <TableCell>{query.type}</TableCell>
+                      <TableCell>
+                        {query.featured ? <Badge variant="default">Yes</Badge> : <Badge variant="secondary">No</Badge>}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </Tbody>
+                </TableBody>
               </Table>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   )
 }
 

@@ -1,27 +1,37 @@
 import {
   Accordion,
-  AccordionButton,
-  AccordionIcon,
+  AccordionContent,
   AccordionItem,
-  AccordionPanel,
-  Box,
-  Button,
-  Checkbox,
-  Flex,
+  AccordionTrigger,
+} from "./ui/accordion"
+import { Button } from "./ui/button"
+import { Checkbox } from "./ui/checkbox"
+import {
   Select,
-  Spinner,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
+import {
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Card, CardContent } from "./ui/card"
+import { Badge } from "./ui/badge"
+import {
   Tooltip,
-  Tr,
-} from "@chakra-ui/react"
-import { Link, createFileRoute } from "@tanstack/react-router"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Loader2, RefreshCw } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 import debounce from "lodash/debounce"
-// src/components/LogDetails.tsx
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
 import useCustomToast from "./../hooks/useCustomToast"
@@ -126,7 +136,6 @@ const LogsDetails: React.FC = () => {
     })
     setLogFiles(initialLogFiles)
     setIsLoading(false)
-    // Fetch entries for the first log file immediately
     if (initialLogFiles.length > 0) {
       fetchLogEntries(initialLogFiles[0])
     }
@@ -201,173 +210,212 @@ const LogsDetails: React.FC = () => {
   )
 
   return (
-    <Box p={4} width="100%">
-      <Flex justify="space-between" align="center" mb={4}>
-        <Text fontSize="lg" fontWeight="bold">
+    <div className="p-4 w-full">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h2 className="text-lg font-bold">
           Log Details
-        </Text>
-        <Flex gap={2} flexWrap="wrap" justify="flex-end">
-          <Select
-            size="sm"
-            value={filter}
-            onChange={(e) => {
-              setFilter(e.target.value as "all" | "success" | "error")
-            }}
-            width="150px"
-          >
-            <option value="all">All</option>
-            <option value="success">Success Only</option>
-            <option value="error">Errors Only</option>
-          </Select>
-          <Checkbox
-            size="sm"
-            isChecked={wrapLongLines}
-            onChange={(event) => setWrapLongLines(event.target.checked)}
-          >
-            Wrap long lines
-          </Checkbox>
-          <Checkbox
-            size="sm"
-            isChecked={reverseChronological}
-            onChange={(event) => setReverseChronological(event.target.checked)}
-          >
-            Reverse order
-          </Checkbox>
-          <Checkbox
-            size="sm"
-            isChecked={showTimestamps}
-            onChange={(event) => setShowTimestamps(event.target.checked)}
-          >
-            Show timestamps
-          </Checkbox>
-          <Tooltip label="Refresh log files">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={debouncedFetchLogFiles}
-              isLoading={isLoading}
+        </h2>
+        <div className="flex flex-wrap gap-2 items-center justify-end">
+          <div className="w-[150px]">
+            <Select
+              value={filter}
+              onValueChange={(value) =>
+                setFilter(value as "all" | "success" | "error")
+              }
             >
-              Refresh
-            </Button>
-          </Tooltip>
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="success">Success Only</SelectItem>
+                <SelectItem value="error">Errors Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="wrap-lines"
+              checked={wrapLongLines}
+              onCheckedChange={(checked) => setWrapLongLines(checked as boolean)}
+            />
+            <label
+              htmlFor="wrap-lines"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Wrap long lines
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="reverse-order"
+              checked={reverseChronological}
+              onCheckedChange={(checked) => setReverseChronological(checked as boolean)}
+            />
+            <label
+              htmlFor="reverse-order"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Reverse order
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-timestamps"
+              checked={showTimestamps}
+              onCheckedChange={(checked) => setShowTimestamps(checked as boolean)}
+            />
+            <label
+              htmlFor="show-timestamps"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Show timestamps
+            </label>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={debouncedFetchLogFiles}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Refresh</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh log files</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button
             size="sm"
-            colorScheme="teal"
-            as={Link}
-            to="/scraping-api/log-files"
+            asChild
           >
-            Back to Log Files
+            <Link to="/scraping-api/log-files">
+              Back to Log Files
+            </Link>
           </Button>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
 
       {isLoading ? (
-        <Flex justify="center" align="center" h="200px">
-          <Spinner size="xl" color="blue.500" />
-          <Text ml={4}>Loading log files...</Text>
-        </Flex>
+        <div className="flex justify-center items-center h-[200px]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <span className="ml-4 text-muted-foreground">Loading log files...</span>
+        </div>
       ) : logFiles.length === 0 ? (
-        <Text color="gray.500" textAlign="center">
+        <div className="text-center text-muted-foreground">
           No log files available.
-        </Text>
+        </div>
       ) : (
-        <Box shadow="md" borderWidth="1px" borderRadius="md" overflowX="auto">
-          <Accordion allowMultiple defaultIndex={[0]}>
-            {" "}
-            {/* Expand first log by default */}
-            {logFiles.map((file) => (
-              <AccordionItem key={file.fileId}>
-                <AccordionButton onClick={() => fetchLogEntries(file)}>
-                  <Box flex="1" textAlign="left">
-                    <Text fontWeight="bold">{file.fileName}</Text>
-                    <Text fontSize="sm" color="gray.500">
-                      Last Modified:{" "}
-                      {new Date(file.lastModified).toLocaleString()} | Entries:{" "}
-                      {file.entries ? file.entries.length : "Not loaded"}
-                    </Text>
-                  </Box>
-                  <AccordionIcon />
-                </AccordionButton>
-                <AccordionPanel pb={4}>
-                  {file.entries === null ? (
-                    <Flex justify="center" align="center" py={4}>
-                      <Spinner size="sm" color="blue.500" />
-                      <Text ml={2}>Loading entries...</Text>
-                    </Flex>
-                  ) : (
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          {showTimestamps && <Th>Timestamp</Th>}
-                          <Th>Endpoint</Th>
-                          <Th>Query</Th>
-                          <Th>Status</Th>
-                          <Th>Response Time</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {(() => {
-                          const displayEntries = getDisplayEntries(file.entries)
-                          const wrappingCellProps = wrapLongLines
-                            ? {
-                                whiteSpace: "pre-wrap" as const,
-                                wordBreak: "break-word" as const,
-                                overflowWrap: "anywhere" as const,
-                              }
-                            : {
-                                whiteSpace: "nowrap" as const,
-                                wordBreak: "normal" as const,
-                                overflowWrap: "normal" as const,
+        <Card>
+          <CardContent className="p-0">
+            <Accordion type="multiple" defaultValue={[logFiles[0]?.fileId]}>
+              {logFiles.map((file) => (
+                <AccordionItem key={file.fileId} value={file.fileId}>
+                  <AccordionTrigger
+                    onClick={() => fetchLogEntries(file)}
+                    className="px-4"
+                  >
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-bold">{file.fileName}</span>
+                      <span className="text-sm text-muted-foreground font-normal">
+                        Last Modified:{" "}
+                        {new Date(file.lastModified).toLocaleString()} | Entries:{" "}
+                        {file.entries ? file.entries.length : "Not loaded"}
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    {file.entries === null ? (
+                      <div className="flex justify-center items-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-primary mr-2" />
+                        <span>Loading entries...</span>
+                      </div>
+                    ) : (
+                      <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              {showTimestamps && <TableHead>Timestamp</TableHead>}
+                              <TableHead>Endpoint</TableHead>
+                              <TableHead>Query</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Response Time</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(() => {
+                              const displayEntries = getDisplayEntries(file.entries)
+                              const wrappingClass = wrapLongLines
+                                ? "whitespace-pre-wrap break-all"
+                                : "whitespace-nowrap"
+
+                              if (displayEntries.length === 0) {
+                                return (
+                                  <TableRow>
+                                    <TableCell
+                                      colSpan={showTimestamps ? 5 : 4}
+                                      className="text-center text-muted-foreground"
+                                    >
+                                      No logs match the current filter.
+                                    </TableCell>
+                                  </TableRow>
+                                )
                               }
 
-                          if (displayEntries.length === 0) {
-                            return (
-                              <Tr>
-                                <Td
-                                  colSpan={showTimestamps ? 5 : 4}
-                                  textAlign="center"
+                              return displayEntries.map((log, index) => (
+                                <TableRow
+                                  key={index}
+                                  className={
+                                    log.status === "error"
+                                      ? "bg-red-50 dark:bg-red-900/20"
+                                      : ""
+                                  }
                                 >
-                                  <Text color="gray.500">
-                                    No logs match the current filter.
-                                  </Text>
-                                </Td>
-                              </Tr>
-                            )
-                          }
-
-                          return displayEntries.map((log, index) => (
-                            <Tr
-                              key={index}
-                              bg={
-                                log.status === "error"
-                                  ? "red.900"
-                                  : "transparent"
-                              }
-                            >
-                              {showTimestamps && (
-                                <Td {...wrappingCellProps}>
-                                  {formatTimestamp(log.timestamp)}
-                                </Td>
-                              )}
-                              <Td {...wrappingCellProps}>{log.endpoint}</Td>
-                              <Td {...wrappingCellProps}>{log.query}</Td>
-                              <Td {...wrappingCellProps}>{log.status}</Td>
-                              <Td {...wrappingCellProps}>
-                                {log.responseTime} ms
-                              </Td>
-                            </Tr>
-                          ))
-                        })()}
-                      </Tbody>
-                    </Table>
-                  )}
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </Box>
+                                  {showTimestamps && (
+                                    <TableCell className={wrappingClass}>
+                                      {formatTimestamp(log.timestamp)}
+                                    </TableCell>
+                                  )}
+                                  <TableCell className={wrappingClass}>{log.endpoint}</TableCell>
+                                  <TableCell className={wrappingClass}>{log.query}</TableCell>
+                                  <TableCell className={wrappingClass}>
+                                    <Badge
+                                      variant={
+                                        log.status === "success"
+                                          ? "default"
+                                          : "destructive"
+                                      }
+                                    >
+                                      {log.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className={wrappingClass}>
+                                    {log.responseTime} ms
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            })()}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
       )}
-    </Box>
+    </div>
   )
 }
 

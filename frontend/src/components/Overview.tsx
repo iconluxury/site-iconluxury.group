@@ -1,28 +1,32 @@
-import { CloseIcon } from "@chakra-ui/icons"
 import {
-  Box,
-  Button,
-  ButtonGroup,
   Card,
-  CardBody,
-  Flex,
-  Grid,
-  GridItem,
-  IconButton,
-  Select,
-  Spinner,
-  Stat,
-  StatLabel,
-  StatNumber,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card"
+import {
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Button } from "./ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
+import {
   Tooltip,
-  Tr,
-} from "@chakra-ui/react"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
+import { Loader2, X, RefreshCw, ToggleLeft, ToggleRight } from "lucide-react"
 import type React from "react"
 import { useEffect, useState } from "react"
 import {
@@ -196,31 +200,29 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
 
   if (isLoading) {
     return (
-      <Flex justify="center" align="center" h="200px">
-        <Spinner size="xl" color="brand.500" />
-      </Flex>
+      <div className="flex justify-center items-center h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Box>
-        <Text color="danger.600">{error}</Text>
-        <Button mt={2} onClick={fetchData}>
+      <div className="p-4">
+        <p className="text-destructive">{error}</p>
+        <Button className="mt-2" onClick={fetchData}>
           Retry
         </Button>
-      </Box>
+      </div>
     )
   }
 
   if (!endpointId || !endpointData) {
     return (
-      <Box p={4}>
-        <Text fontSize="lg" fontWeight="bold" mb={4}>
-          Overview
-        </Text>
-        <Text color="subtle">No endpoint specified or data available.</Text>
-      </Box>
+      <div className="p-4">
+        <h2 className="text-lg font-bold mb-4">Overview</h2>
+        <p className="text-muted-foreground">No endpoint specified or data available.</p>
+      </div>
     )
   }
 
@@ -307,14 +309,14 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
   const renderSummary = () => {
     const stats = getSummaryStats(selectedChart)
     return (
-      <CardBody>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {stats.map((stat, index) => (
-          <Stat key={index}>
-            <StatLabel>{stat.label}</StatLabel>
-            <StatNumber>{stat.value}</StatNumber>
-          </Stat>
+          <div key={index} className="flex flex-col p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
+            <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+            <span className="text-2xl font-bold">{stat.value}</span>
+          </div>
         ))}
-      </CardBody>
+      </div>
     )
   }
 
@@ -424,7 +426,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
 
   const renderChart = () => {
     const data = chartData[selectedChart] || []
-    if (!data.length) return <Text>No data available for this chart</Text>
+    if (!data.length) return <p className="text-muted-foreground">No data available for this chart</p>
 
     const chartProps = {
       margin: {
@@ -434,12 +436,12 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
         left: showLabels ? 40 : 20,
       },
       children: [
-        <CartesianGrid key="grid" stroke="gray.600" />,
+        <CartesianGrid key="grid" stroke="var(--border)" />,
         <XAxis
           key="xaxis"
           dataKey="name"
-          stroke="#FFFFFF"
-          tick={{ fill: "#FFFFFF", fontSize: 12 }}
+          stroke="var(--foreground)"
+          tick={{ fill: "var(--foreground)", fontSize: 12 }}
           tickMargin={10}
           angle={selectedChart === "cost" ? -45 : 0}
           textAnchor={selectedChart === "cost" ? "end" : "middle"}
@@ -449,15 +451,15 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                   value: selectedChart === "cost" ? "Date" : "Metrics",
                   position: "insideBottom",
                   offset: -20,
-                  fill: "#FFFFFF",
+                  fill: "var(--foreground)",
                 }
               : undefined
           }
         />,
         <YAxis
           key="yaxis"
-          stroke="#FFFFFF"
-          tick={{ fill: "#FFFFFF", fontSize: 12 }}
+          stroke="var(--foreground)"
+          tick={{ fill: "var(--foreground)", fontSize: 12 }}
           tickMargin={10}
           label={
             showLabels
@@ -466,14 +468,14 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
                   angle: -45,
                   position: "insideLeft",
                   offset: -20,
-                  fill: "#FFFFFF",
+                  fill: "var(--foreground)",
                 }
               : undefined
           }
         />,
         <RechartsTooltip
           key="tooltip"
-          contentStyle={{ backgroundColor: "gray.700", color: "white" }}
+          contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
         />,
         <Legend key="legend" verticalAlign="top" height={36} />,
       ],
@@ -519,7 +521,7 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
               ))}
             </Pie>
             <RechartsTooltip
-              contentStyle={{ backgroundColor: "gray.700", color: "white" }}
+              contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
             />
             <Legend verticalAlign="bottom" height={36} />
           </PieChart>
@@ -545,155 +547,163 @@ const Overview: React.FC<OverviewProps> = ({ endpointId }) => {
           </LineChart>
         )
       default:
-        return <Text>Unknown chart type</Text>
+        return <p>Unknown chart type</p>
     }
   }
 
   return (
-    <Box p={4} width="100%">
-      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
-        <Text fontSize="lg" fontWeight="bold">
+    <div className="p-4 w-full">
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h2 className="text-lg font-bold">
           Overview for {endpointId}
-        </Text>
-        <Flex align="center" gap={2}>
+        </h2>
+        <div className="flex items-center gap-2">
           <Select
-            size="sm"
-            placeholder="Compare to..."
             value={compareEndpointId}
-            onChange={(e) => setCompareEndpointId(e.target.value)}
-            width="200px"
+            onValueChange={setCompareEndpointId}
           >
-            {allEndpoints
-              .filter((item) => item.endpoint !== endpointId)
-              .map((item) => (
-                <option key={item.endpoint} value={item.endpoint}>
-                  {item.endpoint}
-                </option>
-              ))}
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Compare to..." />
+            </SelectTrigger>
+            <SelectContent>
+              {allEndpoints
+                .filter((item) => item.endpoint !== endpointId)
+                .map((item) => (
+                  <SelectItem key={item.endpoint} value={item.endpoint}>
+                    {item.endpoint}
+                  </SelectItem>
+                ))}
+            </SelectContent>
           </Select>
-          <ButtonGroup size="sm" variant="outline">
+          
+          <div className="flex gap-1">
             {chartOptions.map((option) => (
-              <Tooltip key={option.key} label={`View ${option.label}`}>
-                <Button
-                  bg={selectedChart === option.key ? option.color : "gray.600"}
-                  color={selectedChart === option.key ? "white" : "gray.200"}
-                  borderColor={option.color}
-                  _hover={{ bg: `${option.color}80` }}
-                  onClick={() => setSelectedChart(option.key)}
-                >
-                  {option.label}
-                </Button>
-              </Tooltip>
+              <TooltipProvider key={option.key}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={selectedChart === option.key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedChart(option.key)}
+                      className={selectedChart === option.key ? "" : "text-muted-foreground"}
+                      style={selectedChart === option.key ? { backgroundColor: option.color, borderColor: option.color } : {}}
+                    >
+                      {option.label}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View {option.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
-          </ButtonGroup>
-          <Tooltip label="Refresh overview data">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={fetchData}
-              isLoading={isLoading}
-            >
-              Refresh
-            </Button>
-          </Tooltip>
-          <Tooltip label="Toggle chart labels">
-            <Button
-              size="sm"
-              colorScheme={showLabels ? "green" : "gray"}
-              onClick={() => setShowLabels(!showLabels)}
-            >
-              {showLabels ? "Labels: On" : "Labels: Off"}
-            </Button>
-          </Tooltip>
-        </Flex>
-      </Flex>
+          </div>
 
-      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6} mb={6}>
-        <Box>
-          <Text fontSize="md" fontWeight="semibold" mb={2}>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={fetchData}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh overview data</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => setShowLabels(!showLabels)}
+                >
+                  {showLabels ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle chart labels</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h3 className="text-md font-semibold mb-2">
             {selectedOption.label}
-          </Text>
-          <Box
-            height="400px"
-            borderRadius="md"
-            overflow="hidden"
-            shadow="md"
-            bg="gray.700"
-          >
+          </h3>
+          <div className="h-[400px] rounded-md overflow-hidden shadow-md bg-card border">
             <ResponsiveContainer width="100%" height="100%">
               {renderChart()}
             </ResponsiveContainer>
-          </Box>
-        </Box>
-        <Box>
-          <Text fontSize="md" fontWeight="semibold" mb={2}>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-md font-semibold mb-2">
             {selectedQuery
               ? "Query Details"
               : `${selectedOption.label} Summary`}
             {compareEndpointData && ` (vs ${compareEndpointData.endpoint})`}
-          </Text>
-          <Card
-            shadow="md"
-            borderWidth="1px"
-            bg="gray.700"
-            p={4}
-            position="relative"
-          >
-            {selectedQuery && (
-              <IconButton
-                aria-label="Back to summary"
-                icon={<CloseIcon />}
-                size="sm"
-                position="absolute"
-                top={2}
-                right={2}
-                onClick={() => setSelectedQuery(null)}
-                variant="ghost"
-              />
-            )}
-            {renderSummary()}
+          </h3>
+          <Card className="relative">
+            <CardContent className="pt-6">
+                {selectedQuery && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => setSelectedQuery(null)}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
+                )}
+                {renderSummary()}
+            </CardContent>
           </Card>
-        </Box>
-      </Grid>
+        </div>
+      </div>
 
       {topQueries.length > 0 && (
-        <Box mt={6}>
-          <Text fontSize="md" fontWeight="semibold" mb={2}>
+        <div className="mt-6">
+          <h3 className="text-md font-semibold mb-2">
             Top Queries
-          </Text>
-          <Box shadow="md" borderWidth="1px" borderRadius="md" overflowX="auto">
-            <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Query</Th>
-                  <Th>Category</Th>
-                  <Th isNumeric>Count</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
+          </h3>
+          <div className="rounded-md border shadow-md overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Query</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Count</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {topQueries.map((query, index) => (
-                  <Tr
+                  <TableRow
                     key={index}
                     onClick={() => setSelectedQuery(query)}
-                    cursor="pointer"
-                    _hover={{ bg: "gray.600" }}
-                    bg={
-                      selectedQuery?.query === query.query
-                        ? "gray.600"
-                        : "transparent"
-                    }
+                    className={`cursor-pointer ${selectedQuery?.query === query.query ? "bg-muted" : ""}`}
                   >
-                    <Td>{query.query || "N/A"}</Td>
-                    <Td>{query.category || "N/A"}</Td>
-                    <Td isNumeric>{(query.count || 0).toLocaleString()}</Td>
-                  </Tr>
+                    <TableCell>{query.query || "N/A"}</TableCell>
+                    <TableCell>{query.category || "N/A"}</TableCell>
+                    <TableCell className="text-right">{(query.count || 0).toLocaleString()}</TableCell>
+                  </TableRow>
                 ))}
-              </Tbody>
+              </TableBody>
             </Table>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 
