@@ -20,20 +20,17 @@ import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
+import { Route as LayoutSupportTicketImport } from './routes/_layout/support-ticket'
 import { Route as LayoutSubmitCropImport } from './routes/_layout/submit-crop'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutOrdersImport } from './routes/_layout/orders'
-import { Route as LayoutOffersImport } from './routes/_layout/offers'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
-import { Route as LayoutCustomersImport } from './routes/_layout/customers'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 import { Route as LayoutToolsImageLinksImport } from './routes/_layout/tools/image-links'
 import { Route as LayoutToolsGoogleImagesImport } from './routes/_layout/tools/google-images'
 import { Route as LayoutToolsDataWarehouseImport } from './routes/_layout/tools/data-warehouse'
 import { Route as LayoutToolsCropImport } from './routes/_layout/tools/crop'
-import { Route as LayoutSubmitFormSuccessImport } from './routes/_layout/submit-form/success'
-import { Route as LayoutSubmitFormOfferImport } from './routes/_layout/submit-form/offer'
 import { Route as LayoutScrapingApiInsightsImport } from './routes/_layout/scraping-api/insights'
 import { Route as LayoutScrapingApiExploreImport } from './routes/_layout/scraping-api/explore'
 import { Route as LayoutScrapingApiScrapingJobsIndexImport } from './routes/_layout/scraping-api/scraping-jobs/index'
@@ -94,6 +91,12 @@ const ProgressJobIdRoute = ProgressJobIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const LayoutSupportTicketRoute = LayoutSupportTicketImport.update({
+  id: '/support-ticket',
+  path: '/support-ticket',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutSubmitCropRoute = LayoutSubmitCropImport.update({
   id: '/submit-crop',
   path: '/submit-crop',
@@ -112,12 +115,6 @@ const LayoutOrdersRoute = LayoutOrdersImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutOffersRoute = LayoutOffersImport.update({
-  id: '/offers',
-  path: '/offers',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
 const LayoutItemsRoute = LayoutItemsImport.update({
   id: '/items',
   path: '/items',
@@ -127,12 +124,6 @@ const LayoutItemsRoute = LayoutItemsImport.update({
 const LayoutFileExplorerRoute = LayoutFileExplorerImport.update({
   id: '/file-explorer',
   path: '/file-explorer',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutCustomersRoute = LayoutCustomersImport.update({
-  id: '/customers',
-  path: '/customers',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -163,18 +154,6 @@ const LayoutToolsDataWarehouseRoute = LayoutToolsDataWarehouseImport.update({
 const LayoutToolsCropRoute = LayoutToolsCropImport.update({
   id: '/tools/crop',
   path: '/tools/crop',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutSubmitFormSuccessRoute = LayoutSubmitFormSuccessImport.update({
-  id: '/submit-form/success',
-  path: '/submit-form/success',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutSubmitFormOfferRoute = LayoutSubmitFormOfferImport.update({
-  id: '/submit-form/offer',
-  path: '/submit-form/offer',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -264,13 +243,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/customers': {
-      id: '/_layout/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof LayoutCustomersImport
-      parentRoute: typeof LayoutImport
-    }
     '/_layout/file-explorer': {
       id: '/_layout/file-explorer'
       path: '/file-explorer'
@@ -283,13 +255,6 @@ declare module '@tanstack/react-router' {
       path: '/items'
       fullPath: '/items'
       preLoaderRoute: typeof LayoutItemsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/offers': {
-      id: '/_layout/offers'
-      path: '/offers'
-      fullPath: '/offers'
-      preLoaderRoute: typeof LayoutOffersImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/orders': {
@@ -311,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: '/submit-crop'
       fullPath: '/submit-crop'
       preLoaderRoute: typeof LayoutSubmitCropImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/support-ticket': {
+      id: '/_layout/support-ticket'
+      path: '/support-ticket'
+      fullPath: '/support-ticket'
+      preLoaderRoute: typeof LayoutSupportTicketImport
       parentRoute: typeof LayoutImport
     }
     '/progress/$jobId': {
@@ -339,20 +311,6 @@ declare module '@tanstack/react-router' {
       path: '/scraping-api/insights'
       fullPath: '/scraping-api/insights'
       preLoaderRoute: typeof LayoutScrapingApiInsightsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/submit-form/offer': {
-      id: '/_layout/submit-form/offer'
-      path: '/submit-form/offer'
-      fullPath: '/submit-form/offer'
-      preLoaderRoute: typeof LayoutSubmitFormOfferImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/submit-form/success': {
-      id: '/_layout/submit-form/success'
-      path: '/submit-form/success'
-      fullPath: '/submit-form/success'
-      preLoaderRoute: typeof LayoutSubmitFormSuccessImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/tools/crop': {
@@ -404,18 +362,15 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutCustomersRoute: typeof LayoutCustomersRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
-  LayoutOffersRoute: typeof LayoutOffersRoute
   LayoutOrdersRoute: typeof LayoutOrdersRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutSubmitCropRoute: typeof LayoutSubmitCropRoute
+  LayoutSupportTicketRoute: typeof LayoutSupportTicketRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiExploreRoute: typeof LayoutScrapingApiExploreRoute
   LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
-  LayoutSubmitFormOfferRoute: typeof LayoutSubmitFormOfferRoute
-  LayoutSubmitFormSuccessRoute: typeof LayoutSubmitFormSuccessRoute
   LayoutToolsCropRoute: typeof LayoutToolsCropRoute
   LayoutToolsDataWarehouseRoute: typeof LayoutToolsDataWarehouseRoute
   LayoutToolsGoogleImagesRoute: typeof LayoutToolsGoogleImagesRoute
@@ -426,18 +381,15 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
-  LayoutCustomersRoute: LayoutCustomersRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
   LayoutItemsRoute: LayoutItemsRoute,
-  LayoutOffersRoute: LayoutOffersRoute,
   LayoutOrdersRoute: LayoutOrdersRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutSubmitCropRoute: LayoutSubmitCropRoute,
+  LayoutSupportTicketRoute: LayoutSupportTicketRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiExploreRoute: LayoutScrapingApiExploreRoute,
   LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
-  LayoutSubmitFormOfferRoute: LayoutSubmitFormOfferRoute,
-  LayoutSubmitFormSuccessRoute: LayoutSubmitFormSuccessRoute,
   LayoutToolsCropRoute: LayoutToolsCropRoute,
   LayoutToolsDataWarehouseRoute: LayoutToolsDataWarehouseRoute,
   LayoutToolsGoogleImagesRoute: LayoutToolsGoogleImagesRoute,
@@ -460,19 +412,16 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
-  '/customers': typeof LayoutCustomersRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
-  '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/submit-crop': typeof LayoutSubmitCropRoute
+  '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
-  '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
-  '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/tools/crop': typeof LayoutToolsCropRoute
   '/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
   '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
@@ -489,19 +438,16 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
-  '/customers': typeof LayoutCustomersRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
-  '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/submit-crop': typeof LayoutSubmitCropRoute
+  '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
-  '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
-  '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/tools/crop': typeof LayoutToolsCropRoute
   '/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
   '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
@@ -520,19 +466,16 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/customers': typeof LayoutCustomersRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
   '/_layout/items': typeof LayoutItemsRoute
-  '/_layout/offers': typeof LayoutOffersRoute
   '/_layout/orders': typeof LayoutOrdersRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/submit-crop': typeof LayoutSubmitCropRoute
+  '/_layout/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
   '/_layout/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
-  '/_layout/submit-form/offer': typeof LayoutSubmitFormOfferRoute
-  '/_layout/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/_layout/tools/crop': typeof LayoutToolsCropRoute
   '/_layout/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
   '/_layout/tools/google-images': typeof LayoutToolsGoogleImagesRoute
@@ -552,19 +495,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/customers'
     | '/file-explorer'
     | '/items'
-    | '/offers'
     | '/orders'
     | '/settings'
     | '/submit-crop'
+    | '/support-ticket'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
     | '/scraping-api/insights'
-    | '/submit-form/offer'
-    | '/submit-form/success'
     | '/tools/crop'
     | '/tools/data-warehouse'
     | '/tools/google-images'
@@ -580,19 +520,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/customers'
     | '/file-explorer'
     | '/items'
-    | '/offers'
     | '/orders'
     | '/settings'
     | '/submit-crop'
+    | '/support-ticket'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/explore'
     | '/scraping-api/insights'
-    | '/submit-form/offer'
-    | '/submit-form/success'
     | '/tools/crop'
     | '/tools/data-warehouse'
     | '/tools/google-images'
@@ -609,19 +546,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
-    | '/_layout/customers'
     | '/_layout/file-explorer'
     | '/_layout/items'
-    | '/_layout/offers'
     | '/_layout/orders'
     | '/_layout/settings'
     | '/_layout/submit-crop'
+    | '/_layout/support-ticket'
     | '/progress/$jobId'
     | '/_layout/'
     | '/_layout/scraping-api/explore'
     | '/_layout/scraping-api/insights'
-    | '/_layout/submit-form/offer'
-    | '/_layout/submit-form/success'
     | '/_layout/tools/crop'
     | '/_layout/tools/data-warehouse'
     | '/_layout/tools/google-images'
@@ -677,18 +611,15 @@ export const routeTree = rootRoute
       "filePath": "_layout.tsx",
       "children": [
         "/_layout/admin",
-        "/_layout/customers",
         "/_layout/file-explorer",
         "/_layout/items",
-        "/_layout/offers",
         "/_layout/orders",
         "/_layout/settings",
         "/_layout/submit-crop",
+        "/_layout/support-ticket",
         "/_layout/",
         "/_layout/scraping-api/explore",
         "/_layout/scraping-api/insights",
-        "/_layout/submit-form/offer",
-        "/_layout/submit-form/success",
         "/_layout/tools/crop",
         "/_layout/tools/data-warehouse",
         "/_layout/tools/google-images",
@@ -719,20 +650,12 @@ export const routeTree = rootRoute
       "filePath": "_layout/admin.tsx",
       "parent": "/_layout"
     },
-    "/_layout/customers": {
-      "filePath": "_layout/customers.tsx",
-      "parent": "/_layout"
-    },
     "/_layout/file-explorer": {
       "filePath": "_layout/file-explorer.tsx",
       "parent": "/_layout"
     },
     "/_layout/items": {
       "filePath": "_layout/items.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/offers": {
-      "filePath": "_layout/offers.tsx",
       "parent": "/_layout"
     },
     "/_layout/orders": {
@@ -745,6 +668,10 @@ export const routeTree = rootRoute
     },
     "/_layout/submit-crop": {
       "filePath": "_layout/submit-crop.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/support-ticket": {
+      "filePath": "_layout/support-ticket.tsx",
       "parent": "/_layout"
     },
     "/progress/$jobId": {
@@ -760,14 +687,6 @@ export const routeTree = rootRoute
     },
     "/_layout/scraping-api/insights": {
       "filePath": "_layout/scraping-api/insights.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/submit-form/offer": {
-      "filePath": "_layout/submit-form/offer.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/submit-form/success": {
-      "filePath": "_layout/submit-form/success.tsx",
       "parent": "/_layout"
     },
     "/_layout/tools/crop": {

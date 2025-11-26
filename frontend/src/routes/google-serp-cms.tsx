@@ -17,6 +17,7 @@ import {
   LuFileBarChart,
   LuEraser,
   LuWand2,
+  LuHelpCircle,
 } from "react-icons/lu"
 import { showDevUI } from "@/utils"
 
@@ -199,6 +200,24 @@ function GoogleSerpCmsPage() {
                 Low‑quality product photos
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Support Ticket */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <LuHelpCircle className="h-6 w-6 text-primary" />
+              <CardTitle>Support</CardTitle>
+            </div>
+            <CardDescription>
+              Report issues or request help.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/_layout/support-ticket">Contact Support</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

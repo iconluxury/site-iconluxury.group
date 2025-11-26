@@ -431,7 +431,20 @@ export default function JobsDashboard() {
         </div>
 
         {/* Right Column (Changelog) */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Need Help?</CardTitle>
+              <CardDescription>
+                Submit a support ticket for any issues.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" onClick={() => navigate({ to: "/support-ticket" })}>
+                Contact Support
+              </Button>
+            </CardContent>
+          </Card>
           <Changelog />
         </div>
       </div>

@@ -159,7 +159,7 @@ JSON_STORE_PATH = "file_store/file_store.json"
 class DeleteRequest(BaseModel):
     paths: List[str]
 
-async def get_folder_count(prefix: str) -> int:
+async def get_folder_count(prefix: str, s3_client, bucket_name: str) -> int:
     """
     Count the number of objects in a folder (prefix) by listing all objects.
     """
@@ -168,7 +168,7 @@ async def get_folder_count(prefix: str) -> int:
         continuation_token = None
         while True:
             params = {
-                "Bucket": BUCKET_NAME,
+                "Bucket": bucket_name,
                 "Prefix": prefix,
                 "MaxKeys": 1000,
             }
@@ -185,9 +185,9 @@ async def get_folder_count(prefix: str) -> int:
         return 0
 
 # Function to read JSON store
-async def read_json_store():
+async def read_json_store(s3_client, bucket_name: str):
     try:
-        response = s3_client.get_object(Bucket=BUCKET_NAME, Key=JSON_STORE_PATH)
+        response = s3_client.get_object(Bucket=bucket_name, Key=JSON_STORE_PATH)
         content = response["Body"].read().decode("utf-8")
         return json.loads(content)
     except ClientError as e:
@@ -201,10 +201,10 @@ async def read_json_store():
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 # Function to update JSON store
-async def update_json_store(new_objects: List[dict]):
+async def update_json_store(new_objects: List[dict], s3_client, bucket_name: str):
     try:
         # Read current JSON store
-        current_store = await read_json_store()
+        current_store = await read_json_store(s3_client, bucket_name)
         current_objects = {obj["path"]: obj for obj in current_store.get("objects", [])}
 
         # Update with new objects (add or update)
@@ -221,7 +221,7 @@ async def update_json_store(new_objects: List[dict]):
             "nextContinuationToken": None
         })
         s3_client.put_object(
-            Bucket=BUCKET_NAME,
+            Bucket=bucket_name,
             Key=JSON_STORE_PATH,
             Body=json_data.encode("utf-8"),
             ContentType="application/json"
@@ -232,7 +232,7 @@ async def update_json_store(new_objects: List[dict]):
         raise HTTPException(status_code=500, detail=f"Failed to update JSON store: {str(e)}")
 
 # One-time function to fetch and add existing records to JSON store
-async def sync_existing_objects(prefix: str = ""):
+async def sync_existing_objects(prefix: str, s3_client, bucket_name: str):
     """
     Fetch all existing objects from S3 and add them to the JSON store.
     """
@@ -241,7 +241,7 @@ async def sync_existing_objects(prefix: str = ""):
         continuation_token = None
         while True:
             params = {
-                "Bucket": BUCKET_NAME,
+                "Bucket": bucket_name,
                 "Prefix": prefix,
                 "Delimiter": "/",
                 "MaxKeys": 1000,
@@ -255,7 +255,7 @@ async def sync_existing_objects(prefix: str = ""):
                 folder_path = common_prefix["Prefix"]
                 folder_name = folder_path.rstrip("/").split("/")[-1]
                 if folder_name:
-                    count = await get_folder_count(folder_path)
+                    count = await get_folder_count(folder_path, s3_client, bucket_name)
                     all_objects.append({
                         "type": "folder",
                         "name": folder_name,
@@ -284,7 +284,7 @@ async def sync_existing_objects(prefix: str = ""):
                 break
 
         # Update JSON store with all objects
-        await update_json_store(all_objects)
+        await update_json_store(all_objects, s3_client, bucket_name)
         logger.info(f"Synced {len(all_objects)} objects to JSON store for prefix: {prefix}")
         return {
             "message": f"Successfully synced {len(all_objects)} objects to JSON store",
@@ -505,7 +505,7 @@ async def upload_file(file: UploadFile, path: str):
         logger.error(f"Unexpected error uploading file to {path}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-async def delete_objects(paths: List[str]):
+async def delete_objects(paths: List[str], s3_client, bucket_name: str):
     try:
         if not paths:
             raise HTTPException(status_code=400, detail="No paths provided")
@@ -517,7 +517,7 @@ async def delete_objects(paths: List[str]):
                 continuation_token = None
                 while True:
                     response = s3_client.list_objects_v2(
-                        Bucket=BUCKET_NAME,
+                        Bucket=bucket_name,
                         Prefix=path,
                         MaxKeys=1000,
                         ContinuationToken=continuation_token
@@ -535,7 +535,7 @@ async def delete_objects(paths: List[str]):
         
         # Perform the deletion
         response = s3_client.delete_objects(
-            Bucket=BUCKET_NAME,
+            Bucket=bucket_name,
             Delete={"Objects": objects_to_delete, "Quiet": True}
         )
         
@@ -547,7 +547,7 @@ async def delete_objects(paths: List[str]):
         # Sync JSON store: Remove deleted objects
         try:
             # Read current JSON store
-            current_store = await read_json_store()
+            current_store = await read_json_store(s3_client, bucket_name)
             current_objects = current_store.get("objects", [])
             
             # Filter out deleted objects
@@ -561,7 +561,7 @@ async def delete_objects(paths: List[str]):
                 "nextContinuationToken": None
             })
             s3_client.put_object(
-                Bucket=BUCKET_NAME,
+                Bucket=bucket_name,
                 Key=JSON_STORE_PATH,
                 Body=json_data.encode("utf-8"),
                 ContentType="application/json"
@@ -581,7 +581,7 @@ async def delete_objects(paths: List[str]):
         logger.error(f"Unexpected error deleting objects: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-async def export_to_csv(prefix: str = ""):
+async def export_to_csv(prefix: str, s3_client, bucket_name: str):
     """
     Export object list to CSV.
     """
@@ -591,7 +591,7 @@ async def export_to_csv(prefix: str = ""):
         continuation_token = None
         while True:
             params = {
-                "Bucket": BUCKET_NAME,
+                "Bucket": bucket_name,
                 "Prefix": prefix,
                 "Delimiter": "/",
                 "MaxKeys": 1000,
@@ -605,7 +605,7 @@ async def export_to_csv(prefix: str = ""):
                 folder_path = common_prefix["Prefix"]
                 folder_name = folder_path.rstrip("/").split("/")[-1]
                 if folder_name:
-                    count = await get_folder_count(folder_path)
+                    count = await get_folder_count(folder_path, s3_client, bucket_name)
                     objects.append({
                         "type": "folder",
                         "name": folder_name,
