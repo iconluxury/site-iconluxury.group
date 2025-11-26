@@ -122,7 +122,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       if (!enabled) {
         return null
       }
-      const showAdminLabel = ["File Explorer", "VPN", "Admin"].includes(title)
+      const showAdminLabel = ["File Explorer", "Admin"].includes(title)
       const isActive =
         path === location.pathname || (path === "/" && location.pathname === "")
       return (

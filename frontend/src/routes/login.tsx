@@ -7,7 +7,6 @@ import {
 import { Eye, EyeOff } from "lucide-react"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import Logo from "/assets/images/lm-logo-blk.svg"
 import type { Body_login_login_access_token as AccessToken } from "../client"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
@@ -99,11 +98,7 @@ function Login() {
           rel="noopener noreferrer"
           className="self-center"
         >
-          <img
-            src={Logo}
-            alt="iconluxurygroup logo"
-            className="h-auto max-w-[180px]"
-          />
+          <span className="text-2xl font-bold text-primary">ICON LUXURY GROUP</span>
         </a>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">

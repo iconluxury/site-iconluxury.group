@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Menu } from "lucide-react"
-import Logo from "/assets/images/lm-logo-blk.svg"
 import type { UserPublic } from "../../client"
 import SidebarItems from "./SidebarItems"
 import { Button } from "../ui/button"
@@ -30,7 +29,7 @@ const Sidebar = () => {
           <div className="flex flex-col h-full py-8 px-4">
             <div>
               <a href="https://dashboard.iconluxury.group" className="block mb-6">
-                <img src={Logo} alt="Logo" className="p-6" />
+                <span className="text-xl font-bold p-6 block text-primary">ICON LUXURY GROUP</span>
               </a>
               <SidebarItems onClose={() => setIsOpen(false)} />
             </div>
@@ -43,7 +42,7 @@ const Sidebar = () => {
         <div className="flex flex-col justify-between p-4 rounded-md shadow-sm w-[250px] bg-white h-full">
           <div>
             <a href="https://dashboard.iconluxury.group" className="block mb-6">
-              <img src={Logo} alt="Logo" className="w-[180px] max-w-xs p-6" />
+              <span className="text-xl font-bold p-6 block text-primary">ICON LUXURY GROUP</span>
             </a>
             <SidebarItems />
           </div>

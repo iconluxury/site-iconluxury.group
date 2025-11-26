@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import Logo from "/assets/images/lm-logo-blk.svg"
 import type { UserRegister } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "../utils"
@@ -52,11 +51,7 @@ function SignUp() {
   return (
     <div className="flex h-screen flex-col items-center justify-center md:flex-row">
       <div className="container flex h-screen max-w-sm flex-col items-stretch justify-center gap-4 mx-auto">
-        <img
-          src={Logo}
-          alt="logo"
-          className="h-auto max-w-[200px] self-center mb-4"
-        />
+        <span className="text-2xl font-bold text-primary self-center mb-4">ICON LUXURY GROUP</span>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="grid gap-2">
             <Input
