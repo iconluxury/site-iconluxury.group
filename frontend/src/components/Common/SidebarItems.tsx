@@ -41,7 +41,6 @@ interface SidebarItem {
 
 const sidebarStructure: SidebarItem[] = [
   { title: "Dashboard", path: "/", icon: Home },
-  { title: "Items", path: "/items", icon: Package },
   { title: "File Explorer", path: "/file-explorer", icon: Archive },
   {
     title: "Tools",
