@@ -35,9 +35,9 @@ const ScrapingJobsIndexPage = () => {
           </Text>
           <Text mb={4}>
             View all your scraping jobs, check their status, and download
-            results from the Explore page.
+            results from the Jobs page.
           </Text>
-          <Button as={Link} to="/scraping-api/explore" colorScheme="blue">
+          <Button as={Link} to="/scraping-api/jobs" colorScheme="blue">
             Explore Jobs
           </Button>
         </Box>

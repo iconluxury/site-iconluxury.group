@@ -57,7 +57,7 @@ const sidebarStructure: SidebarItem[] = [
     title: "Scraper",
     icon: Search,
     subItems: [
-      { title: "Jobs", path: "/scraping-api/explore", icon: Search },
+      { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
       { title: "Scraping Jobs", path: "/scraping-api/scraping-jobs", icon: Briefcase },
       { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
       { title: "Google SERP CMS", path: "/google-serp-cms", icon: Layout },
@@ -98,10 +98,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
     if (
       [
         "Dashboard",
-        "Orders",
-        "Offers",
-        "Customers",
-        "Support",
         "Sign out",
       ].includes(title)
     ) {
@@ -112,11 +108,6 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
         "Scraper",
         "Jobs",
         "File Explorer",
-        "Google SERP",
-        "Logs",
-        "Network Logs",
-        "Email Logs",
-        "VPN",
         "Admin",
       ].includes(title)
     ) {

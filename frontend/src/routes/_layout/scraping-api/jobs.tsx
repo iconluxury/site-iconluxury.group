@@ -32,6 +32,51 @@ import {
 } from "../../../components/ui/table"
 import { Separator } from "../../../components/ui/separator"
 
+export const JOB_TYPES: Record<number, { name: string; required: string[]; optional: string[]; flags: string[] }> = {
+  1: {
+    name: "InputScrape + WH",
+    required: ["fileUploadImage", "header_index", "searchColImage"],
+    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    flags: ["skipDataWarehouse=False", "isIconDistro=False", "isAiMode=False"],
+  },
+  2: {
+    name: "FullSupplierOffers",
+    required: ["fileUpload", "header_index"],
+    optional: ["sendToEmail"],
+    flags: [],
+  },
+  3: {
+    name: "DistroScrape + WH",
+    required: ["fileUploadImage", "header_index", "searchColImage"],
+    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    flags: ["isIconDistro=True", "skipDataWarehouse=False", "isAiMode=False"],
+  },
+  4: {
+    name: "InputScrape + WH (standard)",
+    required: ["fileUploadImage", "header_index", "searchColImage"],
+    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    flags: ["skipDataWarehouse=False", "isIconDistro=False", "isAiMode=False"],
+  },
+  5: {
+    name: "InputScrape + isAiMode OR Datawarehouse",
+    required: ["Via /submitImage: same as type 1 + isAiMode=True", "Via /datawarehouse: fileUploadImage, header_index, searchColImage, msrpColImage, currency, isNewDistro"],
+    optional: ["imageColumnImage", "brandColImage", "ColorColImage", "CategoryColImage", "sendToEmail", "manualBrand"],
+    flags: ["isAiMode=True (for image path)"],
+  },
+  6: {
+    name: "CropJob",
+    required: ["fileUploadCrop", "header_index"],
+    optional: ["searchColImage", "brandColImage", "imageColumnImage", "ColorColImage", "CategoryColImage", "manualBrand", "sendToEmail", "skipDataWarehouse"],
+    flags: [],
+  },
+  7: {
+    name: "ImageLinkJob",
+    required: ["fileUploadLink", "header_index", "searchColLink"],
+    optional: ["linkColumn", "brandColLink", "ColorColLink", "CategoryColLink", "sendToEmail", "manualBrand", "skipDataWarehouse"],
+    flags: [],
+  },
+}
+
 interface JobSummary {
   id: number
   inputFile: string
@@ -39,6 +84,7 @@ interface JobSummary {
   user: string
   rec: number
   img: number
+  fileTypeId?: number
 }
 
 interface SubscriptionStatus {
@@ -88,11 +134,11 @@ async function fetchJobs(page: number): Promise<JobSummary[]> {
   return response.json()
 }
 
-export const Route = createFileRoute("/_layout/scraping-api/explore")({
-  component: Explore,
+export const Route = createFileRoute("/_layout/scraping-api/jobs")({
+  component: Jobs,
 })
 
-function Explore() {
+function Jobs() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [jobs, setJobs] = useState<JobSummary[]>([])
@@ -243,10 +289,10 @@ function Explore() {
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
           <h1 className="text-xl font-bold text-black">
-            Scraping Jobs
+            All Jobs
           </h1>
           <p className="text-sm text-gray-600">
-            View and manage scraping jobs
+            View and manage all job types
           </p>
         </div>
       </div>
@@ -299,6 +345,7 @@ function Explore() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>ID</TableHead>
+                        <TableHead>Job Type</TableHead>
                         <TableHead>File Name</TableHead>
                         <TableHead>Records</TableHead>
                         <TableHead>Status</TableHead>
@@ -318,6 +365,7 @@ function Explore() {
                           }
                         >
                           <TableCell className="font-medium">{job.id}</TableCell>
+                          <TableCell>{job.fileTypeId ? (JOB_TYPES[job.fileTypeId]?.name || "Unknown") : "N/A"}</TableCell>
                           <TableCell>{job.inputFile}</TableCell>
                           <TableCell>{job.rec} records, {job.img} images</TableCell>
                           <TableCell>
@@ -394,4 +442,4 @@ function Explore() {
   )
 }
 
-export default Explore
+export default Jobs
