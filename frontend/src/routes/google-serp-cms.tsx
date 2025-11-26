@@ -1,44 +1,37 @@
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
-  ArrowBackIcon,
-  CheckIcon,
-  CloseIcon,
-  WarningIcon,
-} from "@chakra-ui/icons"
-import {
-  Badge,
-  Box,
-  Button,
   Card,
-  CardBody,
+  CardContent,
   CardHeader,
-  Checkbox,
-  Container,
-  Flex,
-  FormControl,
-  FormLabel,
-  HStack,
-  Icon,
-  IconButton,
-  Input,
-  ListItem,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
   Select,
-  SimpleGrid,
-  Spinner,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   Tooltip,
-  Tr,
-  UnorderedList,
-  VStack,
-  Wrap,
-  WrapItem,
-  useColorModeValue,
-} from "@chakra-ui/react"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { createFileRoute } from "@tanstack/react-router"
+import { ArrowLeft, Check, X, AlertTriangle, Loader2 } from "lucide-react"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { IconType } from "react-icons"
@@ -59,6 +52,7 @@ import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
 import useCustomToast from "../hooks/useCustomToast"
 import { showDevUI } from "../utils"
+import { cn } from "../lib/utils"
 
 // Shared Constants and Types
 type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
@@ -456,11 +450,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
   const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
   const hasMultipleSheets = sheetConfigs.length > 1
-  const mappingPanelBg = useColorModeValue("white", "gray.800")
-  const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
-  const sheetInactiveBg = useColorModeValue("gray.100", "gray.700")
-  const sheetInactiveHover = useColorModeValue("gray.200", "gray.600")
-  const sheetWarningHover = useColorModeValue("yellow.100", "yellow.400")
+  
+  // Replaced useColorModeValue with Tailwind classes in render
 
   const sanitizeWorksheet = useCallback((worksheet: XLSX.WorkSheet) => {
     const sanitized: XLSX.WorkSheet = { ...worksheet }
@@ -932,14 +923,14 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
     : "Excluded"
   const ActiveSheetStatusIcon = activeSheetIsSelected
     ? activeSheetIsReady
-      ? CheckIcon
-      : WarningIcon
-    : CloseIcon
+      ? Check
+      : AlertTriangle
+    : X
   const activeSheetStatusColor = activeSheetIsSelected
     ? activeSheetIsReady
-      ? "green.400"
-      : "yellow.400"
-    : "gray.400"
+      ? "text-green-400"
+      : "text-yellow-400"
+    : "text-gray-400"
   const activeSheetStatusTooltip = activeSheetIsSelected
     ? activeSheetIsReady
       ? "All required columns are mapped."
@@ -950,7 +941,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
 
   const renderSheetButtons = useCallback(
     (size: "xs" | "sm" | "md" = "sm") => (
-      <Wrap spacing={2} shouldWrapChildren>
+      <div className="flex flex-wrap gap-2">
         {sheetConfigs.map((sheet, index) => {
           const isActive = index === activeSheetIndex
           const isSelected = sheet.isSelected
@@ -958,7 +949,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
           const hasMissing = (validation?.missing ?? []).length > 0
           const isComplete = Boolean(validation?.isValid)
           const showWarning = isSelected && hasMissing
-          const checkboxSize: "sm" | "md" = size === "md" ? "md" : "sm"
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipParts: string[] = [
             isSelected ? "Included in submission" : "Excluded from submission",
@@ -975,87 +965,63 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
             )
           }
           const tooltipLabel = tooltipParts.join(" • ")
-          const statusIcon = !isSelected ? (
-            <CloseIcon boxSize={3} />
+          const StatusIcon = !isSelected ? (
+            <X className="h-3 w-3" />
           ) : showWarning ? (
-            <WarningIcon boxSize={3} />
+            <AlertTriangle className="h-3 w-3" />
           ) : (
-            <CheckIcon boxSize={3} />
+            <Check className="h-3 w-3" />
           )
-          const resolvedBg = isActive
-            ? undefined
-            : !isSelected
-              ? sheetInactiveBg
-              : showWarning
-                ? sheetWarningHover
-                : sheetInactiveBg
-          const resolvedHoverBg = isActive
-            ? undefined
-            : !isSelected
-              ? sheetInactiveHover
-              : showWarning
-                ? sheetWarningHover
-                : sheetInactiveHover
+          
           return (
-            <WrapItem key={sheet.name || index}>
-              <Tooltip label={tooltipLabel} placement="top" hasArrow>
-                <HStack spacing={1} align="center">
-                  <Checkbox
-                    size={checkboxSize}
-                    colorScheme="brand"
-                    isChecked={isSelected}
-                    onChange={(event) => {
-                      event.stopPropagation()
-                      handleToggleSheetSelection(index)
-                    }}
-                    aria-label={`${
-                      isSelected ? "Exclude" : "Include"
-                    } ${sheetLabel}`}
-                  />
-                  <Button
-                    size={size}
-                    variant={
-                      isActive ? "solid" : isSelected ? "ghost" : "outline"
-                    }
-                    colorScheme={
-                      isActive
-                        ? "brand"
-                        : !isSelected
-                          ? "gray"
-                          : showWarning
-                            ? "yellow"
-                            : "green"
-                    }
-                    rightIcon={statusIcon}
-                    onClick={() => handleActiveSheetChange(index)}
-                    cursor="pointer"
-                    bg={resolvedBg}
-                    _hover={{ bg: resolvedHoverBg }}
-                    transition="all 0.2s ease"
-                    fontWeight={isActive ? "bold" : "semibold"}
-                    borderWidth={isActive ? "1px" : "0px"}
-                    borderColor={isActive ? "brand.500" : "transparent"}
-                    opacity={isSelected ? 1 : 0.7}
-                    aria-pressed={isActive}
-                  >
-                    {sheetLabel}
-                  </Button>
-                </HStack>
-              </Tooltip>
-            </WrapItem>
+            <div key={sheet.name || index}>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => {
+                          handleToggleSheetSelection(index)
+                        }}
+                        aria-label={`${
+                          isSelected ? "Exclude" : "Include"
+                        } ${sheetLabel}`}
+                      />
+                      <Button
+                        size={size === "xs" ? "sm" : (size === "md" ? "default" : size) as any}
+                        variant={
+                          isActive ? "default" : isSelected ? "ghost" : "outline"
+                        }
+                        className={cn(
+                          "gap-2",
+                          isActive ? "font-bold" : "font-semibold",
+                          !isSelected && "opacity-70",
+                          showWarning && !isActive && "bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+                        )}
+                        onClick={() => handleActiveSheetChange(index)}
+                      >
+                        {sheetLabel}
+                        {StatusIcon}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tooltipLabel}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           )
         })}
-      </Wrap>
+      </div>
     ),
     [
       activeSheetIndex,
       handleActiveSheetChange,
       handleToggleSheetSelection,
       sheetConfigs,
-      sheetInactiveBg,
-      sheetInactiveHover,
       sheetValidationResults,
-      sheetWarningHover,
     ],
   )
 
@@ -1331,50 +1297,36 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   ])
 
   return (
-    <Container maxW="container.xl" p={4} bg="surface" color="text">
-      <VStack spacing={6} align="stretch">
+    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
-            alignSelf="flex-start"
             variant="ghost"
             size="sm"
-            leftIcon={<ArrowBackIcon />}
+            className="self-start"
             onClick={() => {
               setStep("upload")
               onBack()
             }}
           >
+            <ArrowLeft className="mr-2 h-4 w-4" />
             {backLabel ?? "Back to tools"}
           </Button>
         )}
-        <HStack
-          justify="space-between"
-          bg="neutral.50"
-          p={2}
-          borderRadius="md"
-          align="center"
-        >
-          <HStack spacing={4}>
+        <div className="flex flex-row justify-between bg-gray-50 p-2 rounded-md items-center">
+          <div className="flex flex-row gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
-              <Text
+              <p
                 key={s}
-                fontWeight={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "bold"
-                    : "normal"
-                }
-                color={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "brand.600"
-                    : "subtle"
-                }
-                cursor={
+                className={cn(
+                  "cursor-pointer",
+                  step === s.toLowerCase().replace("header selection", "preview")
+                    ? "font-bold text-primary"
+                    : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
-                    ? "pointer"
-                    : "default"
-                }
+                    ? "cursor-pointer"
+                    : "cursor-default"
+                )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
                     setStep(
@@ -1385,11 +1337,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                 }}
               >
                 {i + 1}. {s}
-              </Text>
+              </p>
             ))}
-          </HStack>
+          </div>
           {step !== "upload" && (
-            <HStack>
+            <div className="flex flex-row gap-2">
               {step !== "preview" && (
                 <Button
                   onClick={() =>
@@ -1424,7 +1376,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     )
                   }
                   size="sm"
-                  isDisabled={step === "map" && !validateForm.isValid}
+                  disabled={step === "map" && !validateForm.isValid}
                 >
                   Next:{" "}
                   {
@@ -1436,108 +1388,103 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
               )}
               {step === "submit" && (
                 <Button
-                  colorScheme="brand"
                   onClick={handleSubmit}
-                  isLoading={isLoading}
-                  size="sm"
-                  isDisabled={
+                  disabled={
+                    isLoading ||
                     !validateForm.isValid ||
                     !sendToEmail ||
                     !isEmailValid ||
                     selectedSheetCount === 0 ||
                     hasInvalidSelectedSheet
                   }
+                  size="sm"
                 >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Submit
                 </Button>
               )}
-            </HStack>
+            </div>
           )}
-        </HStack>
+        </div>
 
         {step === "upload" && (
-          <VStack spacing={4} align="stretch">
-            <Text fontSize="lg" fontWeight="bold">
+          <div className="flex flex-col gap-4 items-stretch">
+            <p className="text-lg font-bold">
               Upload Excel File for Google Images Scrape
-            </Text>
-            <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
-                <Input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileChange}
-                  disabled={isLoading}
-                  bg="white"
-                  borderColor="border"
-                  p={1}
-                  aria-label="Upload Excel file"
-                />
-              </Tooltip>
-            </FormControl>
-            {isLoading && <Spinner mt={4} />}
-          </VStack>
+            </p>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleFileChange}
+                      disabled={isLoading}
+                      className="bg-white border-gray-200"
+                      aria-label="Upload Excel file"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Upload an Excel file (.xlsx or .xls) up to 10MB</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            {isLoading && <Loader2 className="h-8 w-8 animate-spin" />}
+          </div>
         )}
 
         {step === "preview" && (
-          <VStack spacing={4} align="stretch">
+          <div className="flex flex-col gap-4 items-stretch">
             {hasMultipleSheets && (
-              <Card
-                variant="outline"
-                bg={mappingPanelBg}
-                borderColor={mappingPanelBorder}
-              >
-                <CardBody py={3} px={4}>
-                  <VStack align="stretch" spacing={2}>
-                    <HStack justify="space-between" align="center">
-                      <Text fontWeight="semibold">Sheets</Text>
-                      <HStack spacing={2} align="center">
-                        <Badge colorScheme="brand" variant="subtle">
+              <Card className="bg-white border-gray-200">
+                <CardContent className="py-3 px-4">
+                  <div className="flex flex-col gap-2 items-stretch">
+                    <div className="flex flex-row justify-between items-center">
+                      <p className="font-semibold">Sheets</p>
+                      <div className="flex flex-row gap-2 items-center">
+                        <Badge variant="secondary">
                           {selectedSheetCount} selected
                         </Badge>
-                        <Text fontSize="xs" color="subtle">
+                        <p className="text-xs text-muted-foreground">
                           Viewing{" "}
                           {sheetConfigs[activeSheetIndex]?.name ||
                             `Sheet ${activeSheetIndex + 1}`}
-                        </Text>
-                      </HStack>
-                    </HStack>
+                        </p>
+                      </div>
+                    </div>
                     {renderSheetButtons("xs")}
-                    <Tooltip
-                      label={activeSheetStatusTooltip}
-                      placement="top"
-                      hasArrow
-                    >
-                      <HStack
-                        spacing={2}
-                        fontSize="xs"
-                        color="subtle"
-                        align="center"
-                      >
-                        <Icon
-                          as={ActiveSheetStatusIcon}
-                          boxSize={3}
-                          color={activeSheetStatusColor}
-                        />
-                        <Text>{activeSheetStatusLabel}</Text>
-                      </HStack>
-                    </Tooltip>
-                    <Text fontSize="xs" color="subtle">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex flex-row gap-2 text-xs text-muted-foreground items-center">
+                            <ActiveSheetStatusIcon className={cn("h-3 w-3", activeSheetStatusColor)} />
+                            <p>{activeSheetStatusLabel}</p>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{activeSheetStatusTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <p className="text-xs text-muted-foreground">
                       Select a sheet to preview its header row and sample data.
-                    </Text>
-                    <Text fontSize="xs" color="subtle">
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       Use the checkbox to include or exclude sheets from
                       submission.
-                    </Text>
-                  </VStack>
-                </CardBody>
+                    </p>
+                  </div>
+                </CardContent>
               </Card>
             )}
-            <HStack>
-              <Text>Select Header Row:</Text>
-              <Select
+            <div className="flex flex-row items-center gap-2">
+              <p>Select Header Row:</p>
+              <select
                 value={headerIndex}
                 onChange={(e) => handleHeaderChange(Number(e.target.value))}
-                w="150px"
+                className="w-[150px] border rounded p-1"
                 aria-label="Select header row"
               >
                 {rawData.slice(0, 20).map((_, index) => (
@@ -1545,461 +1492,449 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                     Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
                   </option>
                 ))}
-              </Select>
-            </HStack>
-            <Box overflowX="auto" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Tbody>
+              </select>
+            </div>
+            <div className="overflow-x-auto border rounded-md p-2">
+              <Table>
+                <TableBody>
                   {rawData.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                    <Tr
+                    <TableRow
                       key={rowIndex}
-                      bg={rowIndex === headerIndex ? "primary.100" : undefined}
-                      fontWeight={rowIndex === headerIndex ? "bold" : "normal"}
-                      cursor="pointer"
+                      className={cn(
+                        "cursor-pointer hover:bg-primary/10",
+                        rowIndex === headerIndex && "bg-primary/20 font-bold"
+                      )}
                       onClick={() => handleHeaderChange(rowIndex)}
-                      role="button"
-                      _hover={{
-                        bg:
-                          rowIndex === headerIndex
-                            ? "primary.200"
-                            : "primary.50",
-                      }}
                     >
                       {row.map((cell, cellIndex) => (
-                        <Td
+                        <TableCell
                           key={cellIndex}
-                          maxW="200px"
-                          isTruncated
-                          border={
-                            rowIndex === headerIndex ? "2px solid" : "1px solid"
-                          }
-                          borderColor={
-                            rowIndex === headerIndex ? "brand.600" : "border"
-                          }
+                          className={cn(
+                            "max-w-[200px] truncate border",
+                            rowIndex === headerIndex ? "border-primary" : "border-gray-200"
+                          )}
                         >
                           {getDisplayValue(cell)}
-                        </Td>
+                        </TableCell>
                       ))}
-                    </Tr>
+                    </TableRow>
                   ))}
-                </Tbody>
+                </TableBody>
               </Table>
               {rawData.length > MAX_PREVIEW_ROWS && (
-                <Text fontSize="sm" color="subtle" mt={2}>
+                <p className="text-sm text-muted-foreground mt-2">
                   Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length}{" "}
                   total rows
-                </Text>
+                </p>
               )}
-            </Box>
-          </VStack>
+            </div>
+          </div>
         )}
 
         {step === "map" && (
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            gap={4}
-            align="stretch"
-            maxH="70vh"
-            overflow="auto"
-          >
-            <VStack
-              gap={4}
-              align="stretch"
-              bg="transparent"
-              p={4}
-              borderRadius="md"
-              borderWidth="1px"
-              borderColor={mappingPanelBorder}
-              w={{ base: "100%", md: "40%" }}
-              overflowY="auto"
-            >
+          <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
+            <div className="flex flex-col gap-4 items-stretch bg-transparent p-4 rounded-md border border-gray-200 w-full md:w-[40%] overflow-y-auto">
               {hasMultipleSheets && (
-                <Card
-                  variant="outline"
-                  bg={mappingPanelBg}
-                  borderColor={mappingPanelBorder}
-                  shadow="xs"
-                >
-                  <CardBody p={4}>
-                    <VStack align="stretch" spacing={3}>
-                      <Flex
-                        direction={{ base: "column", md: "row" }}
-                        justify="space-between"
-                        align={{ base: "flex-start", md: "center" }}
-                        gap={3}
-                      >
-                        <Box>
-                          <Text fontWeight="semibold">Sheets</Text>
-                          <Text fontSize="xs" color="subtle">
+                <Card className="bg-white border-gray-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col gap-3 items-stretch">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                          <p className="font-semibold">Sheets</p>
+                          <p className="text-xs text-muted-foreground">
                             Pick a sheet to adjust its column mapping.
-                          </Text>
-                        </Box>
-                        <Badge colorScheme="brand" variant="subtle">
+                          </p>
+                        </div>
+                        <Badge variant="secondary">
                           {selectedSheetCount} selected
                         </Badge>
-                      </Flex>
+                      </div>
                       {renderSheetButtons("sm")}
-                      <Tooltip
-                        label={activeSheetStatusTooltip}
-                        placement="top"
-                        hasArrow
-                      >
-                        <HStack
-                          spacing={2}
-                          fontSize="xs"
-                          color="subtle"
-                          align="center"
-                        >
-                          <Icon
-                            as={ActiveSheetStatusIcon}
-                            boxSize={3}
-                            color={activeSheetStatusColor}
-                          />
-                          <Text>{activeSheetStatusLabel}</Text>
-                        </HStack>
-                      </Tooltip>
-                      <Text fontSize="xs" color="subtle">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex flex-row gap-2 text-xs text-muted-foreground items-center">
+                              <ActiveSheetStatusIcon className={cn("h-3 w-3", activeSheetStatusColor)} />
+                              <p>{activeSheetStatusLabel}</p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{activeSheetStatusTooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <p className="text-xs text-muted-foreground">
                         {`Currently editing: ${
                           sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`
                         }`}
-                      </Text>
-                      <Text fontSize="xs" color="subtle">
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         Toggle a checkbox to include or exclude a sheet from the
                         submission.
-                      </Text>
-                    </VStack>
-                  </CardBody>
+                      </p>
+                    </div>
+                  </CardContent>
                 </Card>
               )}
               {!validateForm.isValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Missing required columns:{" "}
                   {validateForm.missing
                     .map((field) => formatMappingFieldLabel(field))
                     .join(", ")}
                   . Please map all required columns.
-                </Text>
+                </p>
               )}
               {!headersAreValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Selected header row is empty. Choose a different header row
                   before mapping.
-                </Text>
+                </p>
               )}
-              <Text fontSize="sm" color="subtle">
+              <p className="text-sm text-muted-foreground">
                 Select a field below, then click a column in the preview grid to
                 map it instantly.
-              </Text>
-              <Text fontWeight="bold">Required Columns</Text>
+              </p>
+              <p className="font-bold">Required Columns</p>
               {REQUIRED_COLUMNS.map((field) => (
-                <HStack
+                <div
                   key={field}
-                  gap={2}
-                  align="center"
-                  p={2}
-                  borderRadius="md"
-                  borderWidth={activeMappingField === field ? "2px" : "1px"}
-                  borderColor={
+                  className={cn(
+                    "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
-                      ? SELECTED_BORDER_COLOR
-                      : "transparent"
-                  }
-                  bg={
-                    activeMappingField === field
-                      ? SELECTED_BG_SUBTLE
-                      : "transparent"
-                  }
-                  cursor="pointer"
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent"
+                  )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <Text w="120px" fontWeight="semibold">
+                  <p className="w-[120px] font-semibold">
                     {field}:
-                  </Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={
-                        columnMapping[field] !== null
-                          ? columnMapping[field]!
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleColumnMap(Number(e.target.value), field)
-                      }
-                      onFocus={() => setActiveMappingField(field)}
-                      onClick={() => setActiveMappingField(field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
-                    >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={
-                            mappedDataColumns.has(index) &&
-                            columnMapping[field] !== index
+                  </p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <select
+                          value={
+                            columnMapping[field] !== null
+                              ? columnMapping[field]!
+                              : ""
                           }
+                          onChange={(e) =>
+                            handleColumnMap(Number(e.target.value), field)
+                          }
+                          onFocus={() => setActiveMappingField(field)}
+                          onClick={() => setActiveMappingField(field)}
+                          className="flex-1 border rounded p-1"
+                          aria-label={`Map ${field} column`}
                         >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() =>
-                          handleClearMapping(columnMapping[field]!)
-                        }
-                      />
+                          <option value="">Unmapped</option>
+                          {excelData.headers.map((header, index) => (
+                            <option
+                              key={index}
+                              value={index}
+                              disabled={
+                                mappedDataColumns.has(index) &&
+                                columnMapping[field] !== index
+                              }
+                            >
+                              {header || `Column ${indexToColumnLetter(index)}`}
+                            </option>
+                          ))}
+                        </select>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Select Excel column for {field}</p>
+                      </TooltipContent>
                     </Tooltip>
+                  </TooltipProvider>
+                  {columnMapping[field] !== null && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleClearMapping(columnMapping[field]!)
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Clear mapping</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                  <div className="w-[150px] text-sm text-muted-foreground truncate">
                     {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
+                  </div>
+                </div>
               ))}
               {columnMapping.brand === null && !isManualBrandApplied && (
-                <FormControl>
-                  <HStack gap={2}>
-                    <Text w="120px">Add Brand Column:</Text>
-                    <Tooltip label="Enter a brand to apply to all rows">
-                      <Input
-                        placeholder="Add Brand for All Rows (Optional)"
-                        value={manualBrand}
-                        onChange={(e) => setManualBrand(e.target.value)}
-                        aria-label="Manual brand input"
-                        flex="1"
-                      />
-                    </Tooltip>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-row gap-2 items-center">
+                    <p className="w-[120px]">Add Brand Column:</p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            placeholder="Add Brand for All Rows (Optional)"
+                            value={manualBrand}
+                            onChange={(e) => setManualBrand(e.target.value)}
+                            aria-label="Manual brand input"
+                            className="flex-1"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Enter a brand to apply to all rows</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <Button
-                      colorScheme="brand"
                       size="sm"
                       onClick={applyManualBrand}
-                      isDisabled={!manualBrand.trim()}
+                      disabled={!manualBrand.trim()}
                     >
                       Apply
                     </Button>
                     {isManualBrandApplied && (
                       <Button
-                        colorScheme="red"
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={removeManualBrand}
                       >
                         Remove
                       </Button>
                     )}
-                  </HStack>
+                  </div>
                   {isManualBrandApplied && (
-                    <Badge colorScheme="brand" mt={2}>
+                    <Badge className="mt-2">
                       Manual Brand Column Applied
                     </Badge>
                   )}
-                </FormControl>
+                </div>
               )}
-              <Text fontWeight="bold" mt={4}>
+              <p className="font-bold mt-4">
                 Optional Columns
-              </Text>
+              </p>
               {OPTIONAL_COLUMNS.map((field) => (
-                <HStack
+                <div
                   key={field}
-                  gap={2}
-                  align="center"
-                  p={2}
-                  borderRadius="md"
-                  borderWidth={activeMappingField === field ? "2px" : "1px"}
-                  borderColor={
+                  className={cn(
+                    "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
-                      ? SELECTED_BORDER_COLOR
-                      : "transparent"
-                  }
-                  bg={
-                    activeMappingField === field
-                      ? SELECTED_BG_SUBTLE
-                      : "transparent"
-                  }
-                  cursor="pointer"
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent"
+                  )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <Text w="120px" fontWeight="semibold">
+                  <p className="w-[120px] font-semibold">
                     {field}:
-                  </Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={
-                        columnMapping[field] !== null
-                          ? columnMapping[field]!
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleColumnMap(Number(e.target.value), field)
-                      }
-                      onFocus={() => setActiveMappingField(field)}
-                      onClick={() => setActiveMappingField(field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
-                    >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={
-                            mappedDataColumns.has(index) &&
-                            columnMapping[field] !== index
+                  </p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <select
+                          value={
+                            columnMapping[field] !== null
+                              ? columnMapping[field]!
+                              : ""
                           }
+                          onChange={(e) =>
+                            handleColumnMap(Number(e.target.value), field)
+                          }
+                          onFocus={() => setActiveMappingField(field)}
+                          onClick={() => setActiveMappingField(field)}
+                          className="flex-1 border rounded p-1"
+                          aria-label={`Map ${field} column`}
                         >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() =>
-                          handleClearMapping(columnMapping[field]!)
-                        }
-                      />
+                          <option value="">Unmapped</option>
+                          {excelData.headers.map((header, index) => (
+                            <option
+                              key={index}
+                              value={index}
+                              disabled={
+                                mappedDataColumns.has(index) &&
+                                columnMapping[field] !== index
+                              }
+                            >
+                              {header || `Column ${indexToColumnLetter(index)}`}
+                            </option>
+                          ))}
+                        </select>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Select Excel column for {field}</p>
+                      </TooltipContent>
                     </Tooltip>
+                  </TooltipProvider>
+                  {columnMapping[field] !== null && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleClearMapping(columnMapping[field]!)
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Clear mapping</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                  <div className="w-[150px] text-sm text-muted-foreground truncate">
                     {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
+                  </div>
+                </div>
               ))}
 
               {/* Image-specific columns */}
-              <Text fontWeight="bold" mt={4}>
+              <p className="font-bold mt-4">
                 Image Columns
-              </Text>
-              <HStack gap={2} align="center" p={2} borderRadius="md">
-                <Text w="180px" fontWeight="semibold">
+              </p>
+              <div className="flex flex-row gap-2 items-center p-2 rounded-md">
+                <p className="w-[180px] font-semibold">
                   Image Link Column:
-                </Text>
-                <Tooltip label="Select the Excel column that contains image URLs (links)">
-                  <Select
-                    value={
-                      columnMapping.readImage !== null
-                        ? columnMapping.readImage!
-                        : ""
-                    }
-                    onChange={(e) =>
-                      handleImageColumnMap(Number(e.target.value), "readImage")
-                    }
-                    placeholder="Unmapped"
-                    aria-label="Map image link column"
-                    flex="1"
-                  >
-                    <option value="">Unmapped</option>
-                    {excelData.headers.map((header, index) => (
-                      <option key={index} value={index}>
-                        {header || `Column ${indexToColumnLetter(index)}`}
-                      </option>
-                    ))}
-                  </Select>
-                </Tooltip>
+                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <select
+                        value={
+                          columnMapping.readImage !== null
+                            ? columnMapping.readImage!
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleImageColumnMap(Number(e.target.value), "readImage")
+                        }
+                        className="flex-1 border rounded p-1"
+                        aria-label="Map image link column"
+                      >
+                        <option value="">Unmapped</option>
+                        {excelData.headers.map((header, index) => (
+                          <option key={index} value={index}>
+                            {header || `Column ${indexToColumnLetter(index)}`}
+                          </option>
+                        ))}
+                      </select>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Select the Excel column that contains image URLs (links)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 {columnMapping.readImage !== null && (
-                  <Tooltip label="Clear mapping">
-                    <IconButton
-                      aria-label={"Clear image link mapping"}
-                      icon={<CloseIcon />}
-                      size="sm"
-                      onClick={() => handleClearImageMapping("readImage")}
-                    />
-                  </Tooltip>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleClearImageMapping("readImage")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear mapping</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-                <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                <div className="w-[150px] text-sm text-muted-foreground truncate">
                   {getColumnPreview(columnMapping.readImage, excelData.rows)}
-                </Box>
-              </HStack>
-              <HStack gap={2} align="center" p={2} borderRadius="md">
-                <Text w="180px" fontWeight="semibold">
+                </div>
+              </div>
+              <div className="flex flex-row gap-2 items-center p-2 rounded-md">
+                <p className="w-[180px] font-semibold">
                   Image Anchor / Target Column:
-                </Text>
-                <Tooltip label="Select the Excel column indicating image anchor text or target">
-                  <Select
-                    value={
-                      columnMapping.imageAdd !== null
-                        ? columnMapping.imageAdd!
-                        : ""
-                    }
-                    onChange={(e) =>
-                      handleImageColumnMap(Number(e.target.value), "imageAdd")
-                    }
-                    placeholder="Unmapped"
-                    aria-label="Map image anchor/target column"
-                    flex="1"
-                  >
-                    <option value="">Unmapped</option>
-                    {excelData.headers.map((header, index) => (
-                      <option key={index} value={index}>
-                        {header || `Column ${indexToColumnLetter(index)}`}
-                      </option>
-                    ))}
-                  </Select>
-                </Tooltip>
-                {columnMapping.imageAdd !== null && (
-                  <Tooltip label="Clear mapping">
-                    <IconButton
-                      aria-label={"Clear image anchor/target mapping"}
-                      icon={<CloseIcon />}
-                      size="sm"
-                      onClick={() => handleClearImageMapping("imageAdd")}
-                    />
+                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <select
+                        value={
+                          columnMapping.imageAdd !== null
+                            ? columnMapping.imageAdd!
+                            : ""
+                        }
+                        onChange={(e) =>
+                          handleImageColumnMap(Number(e.target.value), "imageAdd")
+                        }
+                        className="flex-1 border rounded p-1"
+                        aria-label="Map image anchor/target column"
+                      >
+                        <option value="">Unmapped</option>
+                        {excelData.headers.map((header, index) => (
+                          <option key={index} value={index}>
+                            {header || `Column ${indexToColumnLetter(index)}`}
+                          </option>
+                        ))}
+                      </select>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Select the Excel column indicating image anchor text or target</p>
+                    </TooltipContent>
                   </Tooltip>
+                </TooltipProvider>
+                {columnMapping.imageAdd !== null && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleClearImageMapping("imageAdd")}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear mapping</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-                <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                <div className="w-[150px] text-sm text-muted-foreground truncate">
                   {getColumnPreview(columnMapping.imageAdd, excelData.rows)}
-                </Box>
-              </HStack>
-            </VStack>
-            <Box
-              overflow="auto"
-              borderWidth="1px"
-              borderRadius="md"
-              p={2}
-              w={{ base: "100%", md: "60%" }}
-              maxH="70vh"
-              mt={{ base: 4, md: 0 }}
-            >
-              <Table size="sm">
-                <Thead>
-                  <Tr>
+                </div>
+              </div>
+            </div>
+            <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {excelData.headers.map((header, index) => {
                       const isMapped = mappedColumnsForHighlight.has(index)
                       const isSelected = selectedColumnIndex === index
                       return (
-                        <Th
+                        <TableHead
                           key={index}
-                          bg={
+                          className={cn(
+                            "sticky top-0 cursor-pointer",
                             isSelected
-                              ? SELECTED_BG_STRONG
+                              ? "bg-primary/20 border-2 border-primary"
                               : isMapped
-                                ? MAPPED_BG
-                                : "neutral.100"
-                          }
-                          position="sticky"
-                          top={0}
-                          border={
-                            isSelected || isMapped ? "2px solid" : undefined
-                          }
-                          borderColor={
-                            isSelected || isMapped
-                              ? SELECTED_BORDER_COLOR
-                              : "transparent"
-                          }
-                          cursor={activeMappingField ? "pointer" : "default"}
+                                ? "bg-green-100"
+                                : "bg-gray-100",
+                            activeMappingField && "hover:bg-primary/10"
+                          )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
                           onKeyDown={(event) => {
@@ -2011,27 +1946,18 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                           }}
                           role={activeMappingField ? "button" : undefined}
                           aria-pressed={isSelected}
-                          _hover={
-                            activeMappingField
-                              ? {
-                                  bg: isSelected
-                                    ? SELECTED_BG_STRONG
-                                    : SELECTED_BG_SUBTLE,
-                                }
-                              : undefined
-                          }
                         >
                           {header || `Column ${indexToColumnLetter(index)}`}
-                        </Th>
+                        </TableHead>
                       )
                     })}
-                  </Tr>
-                </Thead>
-                <Tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {excelData.rows
                     .slice(0, MAX_PREVIEW_ROWS)
                     .map((row, rowIndex) => (
-                      <Tr key={rowIndex}>
+                      <TableRow key={rowIndex}>
                         {row.map((cell, cellIndex) => {
                           const isMissingRequired = REQUIRED_COLUMNS.some(
                             (requiredField) =>
@@ -2042,168 +1968,167 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          const bgColor = isMissingRequired
-                            ? "danger.100"
-                            : isSelectedColumn
-                              ? SELECTED_BG_SUBTLE
-                              : isMappedColumn
-                                ? MAPPED_BG
-                                : undefined
+                          
                           return (
-                            <Td
+                            <TableCell
                               key={cellIndex}
-                              maxW="200px"
-                              isTruncated
-                              bg={bgColor}
-                              cursor={
-                                activeMappingField ? "pointer" : "default"
-                              }
+                              className={cn(
+                                "max-w-[200px] truncate",
+                                isMissingRequired
+                                  ? "bg-red-100"
+                                  : isSelectedColumn
+                                    ? "bg-primary/10"
+                                    : isMappedColumn
+                                      ? "bg-green-50"
+                                      : "",
+                                activeMappingField ? "cursor-pointer" : "cursor-default"
+                              )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >
                               {getDisplayValue(cell)}
-                            </Td>
+                            </TableCell>
                           )
                         })}
-                      </Tr>
+                      </TableRow>
                     ))}
-                </Tbody>
+                </TableBody>
               </Table>
-            </Box>
-          </Flex>
+            </div>
+          </div>
         )}
         {step === "submit" && (
-          <VStack spacing={4} align="stretch">
-            <VStack align="start" spacing={4}>
+          <div className="flex flex-col gap-4 items-stretch">
+            <div className="flex flex-col items-start gap-4">
               {hasMultipleSheets && (
-                <Box>
-                  <Text fontWeight="semibold">
+                <div>
+                  <p className="font-semibold">
                     Sheets to submit ({selectedSheetCount}/{sheetConfigs.length}
                     )
-                  </Text>
+                  </p>
                   {selectedSheetCount > 0 ? (
-                    <UnorderedList mt={1} pl={4} styleType="disc">
+                    <ul className="mt-1 pl-4 list-disc">
                       {sheetConfigs
                         .map((sheet, index) => ({ sheet, index }))
                         .filter(({ sheet }) => sheet.isSelected)
                         .map(({ sheet, index }) => (
-                          <ListItem key={sheet.name || index}>
+                          <li key={sheet.name || index}>
                             {sheet.name || `Sheet ${index + 1}`}
-                          </ListItem>
+                          </li>
                         ))}
-                    </UnorderedList>
+                    </ul>
                   ) : (
-                    <Text fontSize="sm" color="red.500" mt={1}>
+                    <p className="text-sm text-red-500 mt-1">
                       Select at least one sheet before submitting.
-                    </Text>
+                    </p>
                   )}
-                </Box>
+                </div>
               )}
-              <Text>Rows: {excelData.rows.length}</Text>
-              <FormControl isRequired>
-                <FormLabel>User:</FormLabel>
+              <p>Rows: {excelData.rows.length}</p>
+              <div className="flex flex-col gap-2">
+                <Label>User:</Label>
                 {sendToEmail ? (
-                  <Text fontWeight="medium">{sendToEmail}</Text>
+                  <p className="font-medium">{sendToEmail}</p>
                 ) : (
-                  <Text fontSize="sm" color="red.500">
+                  <p className="text-sm text-red-500">
                     No email parameter detected. Add
                     ?sendToEmail=example@domain.com (or email/userEmail) to the
                     iframe URL.
-                  </Text>
+                  </p>
                 )}
                 {!isEmailValid && sendToEmail && (
-                  <Text fontSize="sm" color="red.500" mt={1}>
+                  <p className="text-sm text-red-500 mt-1">
                     The email supplied the URL looks invalid. Update the iframe
                     query parameter before submitting.
-                  </Text>
+                  </p>
                 )}
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={isIconDistro}
-                  onChange={(e) => setIsIconDistro(e.target.checked)}
-                >
-                  Output as New Distro
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isIconDistro"
+                    checked={isIconDistro}
+                    onCheckedChange={(checked) => setIsIconDistro(checked as boolean)}
+                  />
+                  <Label htmlFor="isIconDistro">Output as New Distro</Label>
+                </div>
+                <p className="text-sm text-muted-foreground pl-6">
                   If not selected, results will be populated into the uploaded
                   file.
-                </Text>
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="brand"
-                  size="lg"
-                  isChecked={skipDataWarehouse}
-                  onChange={(e) => setSkipDataWarehouse(e.target.checked)}
-                >
-                  Skip Data Warehouse Processing
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="skipDataWarehouse"
+                    checked={skipDataWarehouse}
+                    onCheckedChange={(checked) => setSkipDataWarehouse(checked as boolean)}
+                  />
+                  <Label htmlFor="skipDataWarehouse">Skip Data Warehouse Processing</Label>
+                </div>
+                <p className="text-sm text-muted-foreground pl-6">
                   If selected, data will not be processed for the data
                   warehouse.
-                </Text>
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  colorScheme="gray"
-                  size="lg"
-                  isChecked={isAiMode}
-                  isDisabled
-                  onChange={(e) => setIsAiMode(e.target.checked)}
-                >
-                  AI Mode
-                </Checkbox>
-                <Text fontSize="sm" color="subtle" mt={2} pl={8}>
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isAiMode"
+                    checked={isAiMode}
+                    disabled
+                    onCheckedChange={(checked) => setIsAiMode(checked as boolean)}
+                  />
+                  <Label htmlFor="isAiMode" className="text-muted-foreground">AI Mode</Label>
+                </div>
+                <p className="text-sm text-muted-foreground pl-6">
                   AI Mode is currently locked and will submit as disabled.
-                </Text>
-              </FormControl>
-              <Text>Mapped Columns:</Text>
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Field</Th>
-                    <Th>Column</Th>
-                    <Th>Preview</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+                </p>
+              </div>
+              <p>Mapped Columns:</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Field</TableHead>
+                    <TableHead>Column</TableHead>
+                    <TableHead>Preview</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {getColumnMappingEntries(columnMapping)
                     .filter(([_, index]) => index !== null)
                     .map(([col, index]) => (
-                      <Tr key={col}>
-                        <Td>
+                      <TableRow key={col}>
+                        <TableCell>
                           {col === "readImage"
                             ? "Image Link"
                             : col === "imageAdd"
                               ? "Image Anchor / Target"
                               : col}
-                        </Td>
-                        <Td>
+                        </TableCell>
+                        <TableCell>
                           {excelData.headers[index!] ||
                             `Column ${indexToColumnLetter(index!)}`}
-                        </Td>
-                        <Td>{getColumnPreview(index, excelData.rows)}</Td>
-                      </Tr>
+                        </TableCell>
+                        <TableCell>{getColumnPreview(index, excelData.rows)}</TableCell>
+                      </TableRow>
                     ))}
                   {isManualBrandApplied && (
-                    <Tr>
-                      <Td>Manual Brand</Td>
-                      <Td>BRAND (Manual)</Td>
-                      <Td>
+                    <TableRow>
+                      <TableCell>Manual Brand</TableCell>
+                      <TableCell>BRAND (Manual)</TableCell>
+                      <TableCell>
                         {excelData.rows[0]?.[excelData.headers.length - 1] ||
                           manualBrand}
-                      </Td>
-                    </Tr>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </Tbody>
+                </TableBody>
               </Table>
-            </VStack>
-          </VStack>
+            </div>
+          </div>
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 // Data Warehouse Form Component
@@ -2713,50 +2638,36 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   ])
 
   return (
-    <Container maxW="container.xl" p={4} bg="white" color="black">
-      <VStack spacing={6} align="stretch">
+    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
-            alignSelf="flex-start"
             variant="ghost"
             size="sm"
-            leftIcon={<ArrowBackIcon />}
+            className="self-start"
             onClick={() => {
               setStep("upload")
               onBack()
             }}
           >
+            <ArrowLeft className="mr-2 h-4 w-4" />
             {backLabel ?? "Back to tools"}
           </Button>
         )}
-        <HStack
-          justify="space-between"
-          bg="neutral.50"
-          p={2}
-          borderRadius="md"
-          align="center"
-        >
-          <HStack spacing={4}>
+        <div className="flex flex-row justify-between bg-gray-50 p-2 rounded-md items-center">
+          <div className="flex flex-row gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
-              <Text
+              <p
                 key={s}
-                fontWeight={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "bold"
-                    : "normal"
-                }
-                color={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "brand.600"
-                    : "subtle"
-                }
-                cursor={
+                className={cn(
+                  "cursor-pointer",
+                  step === s.toLowerCase().replace("header selection", "preview")
+                    ? "font-bold text-primary"
+                    : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
-                    ? "pointer"
-                    : "default"
-                }
+                    ? "cursor-pointer"
+                    : "cursor-default"
+                )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
                     setStep(
@@ -2767,11 +2678,11 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 }}
               >
                 {i + 1}. {s}
-              </Text>
+              </p>
             ))}
-          </HStack>
+          </div>
           {step !== "upload" && (
-            <HStack>
+            <div className="flex flex-row gap-2">
               {step !== "preview" && (
                 <Button
                   onClick={() =>
@@ -2782,7 +2693,6 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     )
                   }
                   variant="outline"
-                  colorScheme="primary"
                   size="sm"
                 >
                   Back
@@ -2792,7 +2702,6 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 <Button
                   onClick={() => setStep("upload")}
                   variant="outline"
-                  colorScheme="brand"
                   size="sm"
                 >
                   Back
@@ -2800,7 +2709,6 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               )}
               {step !== "submit" && (
                 <Button
-                  colorScheme="brand"
                   onClick={() =>
                     setStep(
                       ["preview", "map", "submit"][
@@ -2809,7 +2717,7 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     )
                   }
                   size="sm"
-                  isDisabled={step === "map" && !validateForm.isValid}
+                  disabled={step === "map" && !validateForm.isValid}
                 >
                   Next:{" "}
                   {
@@ -2821,55 +2729,62 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               )}
               {step === "submit" && (
                 <Button
-                  colorScheme="brand"
                   onClick={handleSubmit}
-                  isLoading={isLoading}
-                  size="sm"
-                  isDisabled={
-                    !validateForm.isValid || !emailRecipient || !isEmailValid
+                  disabled={
+                    isLoading ||
+                    !validateForm.isValid ||
+                    !emailRecipient ||
+                    !isEmailValid
                   }
+                  size="sm"
                 >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Submit
                 </Button>
               )}
-            </HStack>
+            </div>
           )}
-        </HStack>
+        </div>
 
         {step === "upload" && (
-          <VStack spacing={4} align="stretch">
-            <Text fontSize="lg" fontWeight="bold">
+          <div className="flex flex-col gap-4 items-stretch">
+            <p className="text-lg font-bold">
               Upload Excel File · {modeConfig.label}
-            </Text>
-            <Text fontSize="sm" color="subtle">
+            </p>
+            <p className="text-sm text-muted-foreground">
               {modeConfig.description}
-            </Text>
-            <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
-                <Input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileChange}
-                  disabled={isLoading}
-                  bg="white"
-                  borderColor="border"
-                  p={1}
-                  aria-label="Upload Excel file"
-                />
-              </Tooltip>
-            </FormControl>
-            {isLoading && <Spinner mt={4} />}
-          </VStack>
+            </p>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleFileChange}
+                      disabled={isLoading}
+                      className="bg-white border-gray-200"
+                      aria-label="Upload Excel file"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Upload an Excel file (.xlsx or .xls) up to 10MB</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            {isLoading && <Loader2 className="h-8 w-8 animate-spin" />}
+          </div>
         )}
 
         {step === "preview" && (
-          <VStack spacing={4} align="stretch">
-            <HStack>
-              <Text>Select Header Row:</Text>
-              <Select
+          <div className="flex flex-col gap-4 items-stretch">
+            <div className="flex flex-row items-center gap-2">
+              <p>Select Header Row:</p>
+              <select
                 value={headerIndex}
                 onChange={(e) => handleHeaderChange(Number(e.target.value))}
-                w="150px"
+                className="w-[150px] border rounded p-1"
                 aria-label="Select header row"
               >
                 {rawData.slice(0, 20).map((_, index) => (
@@ -2877,195 +2792,86 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
                   </option>
                 ))}
-              </Select>
-            </HStack>
-            <Box overflowX="auto" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Tbody>
+              </select>
+            </div>
+            <div className="overflow-x-auto border rounded-md p-2">
+              <Table>
+                <TableBody>
                   {rawData.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                    <Tr
+                    <TableRow
                       key={rowIndex}
-                      bg={rowIndex === headerIndex ? "primary.100" : undefined}
-                      fontWeight={rowIndex === headerIndex ? "bold" : "normal"}
-                      cursor="pointer"
+                      className={cn(
+                        "cursor-pointer hover:bg-primary/10",
+                        rowIndex === headerIndex && "bg-primary/20 font-bold"
+                      )}
                       onClick={() => handleHeaderChange(rowIndex)}
-                      role="button"
-                      _hover={{
-                        bg:
-                          rowIndex === headerIndex
-                            ? "primary.200"
-                            : "primary.50",
-                      }}
                     >
                       {row.map((cell, cellIndex) => (
-                        <Td
+                        <TableCell
                           key={cellIndex}
-                          maxW="200px"
-                          isTruncated
-                          border={
-                            rowIndex === headerIndex ? "2px solid" : "1px solid"
-                          }
-                          borderColor={
-                            rowIndex === headerIndex ? "brand.600" : "border"
-                          }
+                          className={cn(
+                            "max-w-[200px] truncate border",
+                            rowIndex === headerIndex ? "border-primary" : "border-gray-200"
+                          )}
                         >
                           {getDisplayValue(cell)}
-                        </Td>
+                        </TableCell>
                       ))}
-                    </Tr>
+                    </TableRow>
                   ))}
-                </Tbody>
+                </TableBody>
               </Table>
               {rawData.length > MAX_PREVIEW_ROWS && (
-                <Text fontSize="sm" color="subtle" mt={2}>
+                <p className="text-sm text-muted-foreground mt-2">
                   Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length}{" "}
                   total rows
-                </Text>
+                </p>
               )}
-            </Box>
-          </VStack>
+            </div>
+          </div>
         )}
 
         {step === "map" && (
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            gap={4}
-            align="stretch"
-            maxH="70vh"
-            overflow="auto"
-          >
-            <VStack
-              gap={4}
-              align="stretch"
-              bg="neutral.50"
-              p={4}
-              borderRadius="md"
-              w={{ base: "100%", md: "40%" }}
-              overflowY="auto"
-            >
+          <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
+            <div className="flex flex-col gap-4 items-stretch bg-gray-50 p-4 rounded-md w-full md:w-[40%] overflow-y-auto">
               {!validateForm.isValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Missing required columns:{" "}
                   {validateForm.missing
                     .map((field) => formatMappingFieldLabel(field))
                     .join(", ")}
                   . Please map all required columns.
-                </Text>
+                </p>
               )}
               {!dataHeadersAreValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Selected header row is empty. Choose a different header row
                   before mapping.
-                </Text>
+                </p>
               )}
-              <Text fontSize="sm" color="subtle">
+              <p className="text-sm text-muted-foreground">
                 Select a field below, then click a column in the preview grid to
                 map it instantly.
-              </Text>
-              <Text fontWeight="bold">Required Columns</Text>
+              </p>
+              <p className="font-bold">Required Columns</p>
               {REQUIRED_COLUMNS.map((field) => (
-                <HStack
+                <div
                   key={field}
-                  gap={2}
-                  align="center"
-                  p={2}
-                  borderRadius="md"
-                  borderWidth={activeMappingField === field ? "2px" : "1px"}
-                  borderColor={
+                  className={cn(
+                    "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                     activeMappingField === field
-                      ? SELECTED_BORDER_COLOR
-                      : "transparent"
-                  }
-                  bg={
-                    activeMappingField === field
-                      ? SELECTED_BG_SUBTLE
-                      : "transparent"
-                  }
-                  cursor="pointer"
+                      ? "border-primary bg-primary/10"
+                      : "border-transparent"
+                  )}
                   onClick={() => setActiveMappingField(field)}
                 >
-                  <Text w="120px" fontWeight="semibold">
+                  <p className="w-[120px] font-semibold">
                     {field}:
-                  </Text>
-                  <Tooltip label={`Select Excel column for ${field}`}>
-                    <Select
-                      value={
-                        columnMapping[field] !== null
-                          ? columnMapping[field]!
-                          : ""
-                      }
-                      onChange={(e) =>
-                        handleDataColumnMap(Number(e.target.value), field)
-                      }
-                      onFocus={() => setActiveMappingField(field)}
-                      onClick={() => setActiveMappingField(field)}
-                      placeholder="Unmapped"
-                      aria-label={`Map ${field} column`}
-                      flex="1"
-                    >
-                      <option value="">Unmapped</option>
-                      {excelData.headers.map((header, index) => (
-                        <option
-                          key={index}
-                          value={index}
-                          disabled={
-                            mappedDataColumns.has(index) &&
-                            columnMapping[field] !== index
-                          }
-                        >
-                          {header || `Column ${indexToColumnLetter(index)}`}
-                        </option>
-                      ))}
-                    </Select>
-                  </Tooltip>
-                  {columnMapping[field] !== null && (
-                    <Tooltip label="Clear mapping">
-                      <IconButton
-                        aria-label={`Clear ${field} mapping`}
-                        icon={<CloseIcon />}
-                        size="sm"
-                        onClick={() =>
-                          handleClearMapping(columnMapping[field]!)
-                        }
-                      />
-                    </Tooltip>
-                  )}
-                  <Box w="150px" fontSize="sm" color="subtle" isTruncated>
-                    {getColumnPreview(columnMapping[field], excelData.rows)}
-                  </Box>
-                </HStack>
-              ))}
-              {OPTIONAL_COLUMNS.length > 0 && (
-                <>
-                  <Text fontWeight="bold" mt={4}>
-                    Optional Columns
-                  </Text>
-                  {OPTIONAL_COLUMNS.map((field) => (
-                    <HStack
-                      key={field}
-                      gap={2}
-                      align="center"
-                      p={2}
-                      borderRadius="md"
-                      borderWidth={activeMappingField === field ? "2px" : "1px"}
-                      borderColor={
-                        activeMappingField === field
-                          ? SELECTED_BORDER_COLOR
-                          : "transparent"
-                      }
-                      bg={
-                        activeMappingField === field
-                          ? SELECTED_BG_SUBTLE
-                          : "transparent"
-                      }
-                      cursor="pointer"
-                      onClick={() => setActiveMappingField(field)}
-                    >
-                      <Text w="120px" fontWeight="semibold">
-                        {field}:
-                      </Text>
-                      <Tooltip label={`Select Excel column for ${field}`}>
-                        <Select
+                  </p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <select
                           value={
                             columnMapping[field] !== null
                               ? columnMapping[field]!
@@ -3076,9 +2882,8 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           }
                           onFocus={() => setActiveMappingField(field)}
                           onClick={() => setActiveMappingField(field)}
-                          placeholder="Unmapped"
+                          className="flex-1 border rounded p-1"
                           aria-label={`Map ${field} column`}
-                          flex="1"
                         >
                           <option value="">Unmapped</option>
                           {excelData.headers.map((header, index) => (
@@ -3093,174 +2898,266 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                               {header || `Column ${indexToColumnLetter(index)}`}
                             </option>
                           ))}
-                        </Select>
-                      </Tooltip>
-                      {columnMapping[field] !== null && (
-                        <Tooltip label="Clear mapping">
-                          <IconButton
-                            aria-label={`Clear ${field} mapping`}
-                            icon={<CloseIcon />}
-                            size="sm"
-                            onClick={() =>
+                        </select>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Select Excel column for {field}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  {columnMapping[field] !== null && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
                               handleClearMapping(columnMapping[field]!)
-                            }
-                          />
-                        </Tooltip>
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Clear mapping</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <div className="w-[150px] text-sm text-muted-foreground truncate">
+                    {getColumnPreview(columnMapping[field], excelData.rows)}
+                  </div>
+                </div>
+              ))}
+              {OPTIONAL_COLUMNS.length > 0 && (
+                <>
+                  <p className="font-bold mt-4">
+                    Optional Columns
+                  </p>
+                  {OPTIONAL_COLUMNS.map((field) => (
+                    <div
+                      key={field}
+                      className={cn(
+                        "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
+                        activeMappingField === field
+                          ? "border-primary bg-primary/10"
+                          : "border-transparent"
                       )}
-                      <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                      onClick={() => setActiveMappingField(field)}
+                    >
+                      <p className="w-[120px] font-semibold">
+                        {field}:
+                      </p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <select
+                              value={
+                                columnMapping[field] !== null
+                                  ? columnMapping[field]!
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                handleDataColumnMap(Number(e.target.value), field)
+                              }
+                              onFocus={() => setActiveMappingField(field)}
+                              onClick={() => setActiveMappingField(field)}
+                              className="flex-1 border rounded p-1"
+                              aria-label={`Map ${field} column`}
+                            >
+                              <option value="">Unmapped</option>
+                              {excelData.headers.map((header, index) => (
+                                <option
+                                  key={index}
+                                  value={index}
+                                  disabled={
+                                    mappedDataColumns.has(index) &&
+                                    columnMapping[field] !== index
+                                  }
+                                >
+                                  {header || `Column ${indexToColumnLetter(index)}`}
+                                </option>
+                              ))}
+                            </select>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Select Excel column for {field}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {columnMapping[field] !== null && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleClearMapping(columnMapping[field]!)
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Clear mapping</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <div className="w-[150px] text-sm text-muted-foreground truncate">
                         {getColumnPreview(columnMapping[field], excelData.rows)}
-                      </Box>
-                    </HStack>
+                      </div>
+                    </div>
                   ))}
                 </>
               )}
               {OPTIONAL_COLUMNS.includes("brand") &&
                 columnMapping.brand === null &&
                 !isManualBrandApplied && (
-                  <FormControl>
-                    <HStack gap={2}>
-                      <Text w="120px">Add Brand Column:</Text>
-                      <Tooltip label="Enter a brand to apply to all rows">
-                        <Input
-                          placeholder="Add Brand for All Rows (Optional)"
-                          value={manualBrand}
-                          onChange={(e) => setManualBrand(e.target.value)}
-                          aria-label="Manual brand input"
-                          flex="1"
-                        />
-                      </Tooltip>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-row gap-2 items-center">
+                      <p className="w-[120px]">Add Brand Column:</p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              placeholder="Add Brand for All Rows (Optional)"
+                              value={manualBrand}
+                              onChange={(e) => setManualBrand(e.target.value)}
+                              aria-label="Manual brand input"
+                              className="flex-1"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Enter a brand to apply to all rows</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <Button
-                        colorScheme="brand"
                         size="sm"
                         onClick={applyManualBrand}
-                        isDisabled={!manualBrand.trim()}
+                        disabled={!manualBrand.trim()}
                       >
                         Apply
                       </Button>
                       {isManualBrandApplied && (
                         <Button
-                          colorScheme="red"
-                          variant="outline"
+                          variant="destructive"
                           size="sm"
                           onClick={removeManualBrand}
                         >
                           Remove
                         </Button>
                       )}
-                    </HStack>
+                    </div>
                     {isManualBrandApplied && (
-                      <Badge colorScheme="brand" mt={2}>
+                      <Badge className="mt-2">
                         Manual Brand Column Applied
                       </Badge>
                     )}
-                  </FormControl>
+                  </div>
                 )}
               {enableImageTargetMapping && (
                 <>
-                  <Text fontWeight="bold" mt={4}>
+                  <p className="font-bold mt-4">
                     Image Target Column
-                  </Text>
-                  <HStack
-                    gap={2}
-                    align="center"
-                    p={2}
-                    borderRadius="md"
-                    borderWidth={
-                      activeMappingField === "imageColumn" ? "2px" : "1px"
-                    }
-                    borderColor={
+                  </p>
+                  <div
+                    className={cn(
+                      "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
                       activeMappingField === "imageColumn"
-                        ? SELECTED_BORDER_COLOR
-                        : "transparent"
-                    }
-                    bg={
-                      activeMappingField === "imageColumn"
-                        ? SELECTED_BG_SUBTLE
-                        : "transparent"
-                    }
-                    cursor="pointer"
+                        ? "border-primary bg-primary/10"
+                        : "border-transparent"
+                    )}
                     onClick={() => setActiveMappingField("imageColumn")}
                   >
-                    <Text w="120px" fontWeight="semibold">
+                    <p className="w-[120px] font-semibold">
                       Target Anchor:
-                    </Text>
-                    <Tooltip label="Select the column that contains the target anchor used to place downloaded images">
-                      <Select
-                        value={imageColumnIndex ?? ""}
-                        onChange={(e) =>
-                          handleImageColumnMap(
-                            e.target.value === ""
-                              ? null
-                              : Number(e.target.value),
-                          )
-                        }
-                        onFocus={() => setActiveMappingField("imageColumn")}
-                        onClick={() => setActiveMappingField("imageColumn")}
-                        placeholder="Unmapped"
-                        aria-label="Map image column"
-                        flex="1"
-                      >
-                        <option value="">Unmapped</option>
-                        {excelData.headers.map((header, index) => (
-                          <option key={index} value={index}>
-                            {header || `Column ${indexToColumnLetter(index)}`}
-                          </option>
-                        ))}
-                      </Select>
-                    </Tooltip>
-                    {imageColumnIndex !== null && (
-                      <Tooltip label="Clear mapping">
-                        <IconButton
-                          aria-label="Clear image column mapping"
-                          icon={<CloseIcon />}
-                          size="sm"
-                          onClick={() => handleImageColumnMap(null)}
-                        />
+                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <select
+                            value={imageColumnIndex ?? ""}
+                            onChange={(e) =>
+                              handleImageColumnMap(
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value),
+                              )
+                            }
+                            onFocus={() => setActiveMappingField("imageColumn")}
+                            onClick={() => setActiveMappingField("imageColumn")}
+                            className="flex-1 border rounded p-1"
+                            aria-label="Map image column"
+                          >
+                            <option value="">Unmapped</option>
+                            {excelData.headers.map((header, index) => (
+                              <option key={index} value={index}>
+                                {header || `Column ${indexToColumnLetter(index)}`}
+                              </option>
+                            ))}
+                          </select>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Select the column that contains the target anchor used to place downloaded images</p>
+                        </TooltipContent>
                       </Tooltip>
+                    </TooltipProvider>
+                    {imageColumnIndex !== null && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleImageColumnMap(null)
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Clear mapping</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
-                    <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    <div className="w-[150px] text-sm text-muted-foreground truncate">
                       {getColumnPreview(imageColumnIndex, excelData.rows)}
-                    </Box>
-                  </HStack>
+                    </div>
+                  </div>
                 </>
               )}
-            </VStack>
-            <Box
-              overflow="auto"
-              borderWidth="1px"
-              borderRadius="md"
-              p={2}
-              w={{ base: "100%", md: "60%" }}
-              maxH="70vh"
-              mt={{ base: 4, md: 0 }}
-            >
-              <Table size="sm">
-                <Thead>
-                  <Tr>
+            </div>
+            <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {excelData.headers.map((header, index) => {
                       const isMapped = mappedColumnsForHighlight.has(index)
                       const isSelected = selectedColumnIndex === index
                       return (
-                        <Th
+                        <TableHead
                           key={index}
-                          bg={
+                          className={cn(
+                            "sticky top-0 cursor-pointer",
                             isSelected
-                              ? SELECTED_BG_STRONG
+                              ? "bg-primary/20 border-2 border-primary"
                               : isMapped
-                                ? MAPPED_BG
-                                : "neutral.100"
-                          }
-                          position="sticky"
-                          top={0}
-                          border={
-                            isSelected || isMapped ? "2px solid" : undefined
-                          }
-                          borderColor={
-                            isSelected || isMapped
-                              ? SELECTED_BORDER_COLOR
-                              : "transparent"
-                          }
-                          cursor={activeMappingField ? "pointer" : "default"}
+                                ? "bg-green-100"
+                                : "bg-gray-100",
+                            activeMappingField && "hover:bg-primary/10"
+                          )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
                           onKeyDown={(event) => {
@@ -3272,27 +3169,18 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           }}
                           role={activeMappingField ? "button" : undefined}
                           aria-pressed={isSelected}
-                          _hover={
-                            activeMappingField
-                              ? {
-                                  bg: isSelected
-                                    ? SELECTED_BG_STRONG
-                                    : SELECTED_BG_SUBTLE,
-                                }
-                              : undefined
-                          }
                         >
                           {header || `Column ${indexToColumnLetter(index)}`}
-                        </Th>
+                        </TableHead>
                       )
                     })}
-                  </Tr>
-                </Thead>
-                <Tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {excelData.rows
                     .slice(0, MAX_PREVIEW_ROWS)
                     .map((row, rowIndex) => (
-                      <Tr key={rowIndex}>
+                      <TableRow key={rowIndex}>
                         {row.map((cell, cellIndex) => {
                           const isMissingRequired =
                             (columnMapping.style === cellIndex ||
@@ -3302,82 +3190,81 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          const bgColor = isMissingRequired
-                            ? "red.100"
-                            : isSelectedColumn
-                              ? SELECTED_BG_SUBTLE
-                              : isMappedColumn
-                                ? MAPPED_BG
-                                : undefined
+                          
                           return (
-                            <Td
+                            <TableCell
                               key={cellIndex}
-                              maxW="200px"
-                              isTruncated
-                              bg={bgColor}
-                              cursor={
-                                activeMappingField ? "pointer" : "default"
-                              }
+                              className={cn(
+                                "max-w-[200px] truncate",
+                                isMissingRequired
+                                  ? "bg-red-100"
+                                  : isSelectedColumn
+                                    ? "bg-primary/10"
+                                    : isMappedColumn
+                                      ? "bg-green-50"
+                                      : "",
+                                activeMappingField ? "cursor-pointer" : "cursor-default"
+                              )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >
                               {getDisplayValue(cell)}
-                            </Td>
+                            </TableCell>
                           )
                         })}
-                      </Tr>
+                      </TableRow>
                     ))}
-                </Tbody>
+                </TableBody>
               </Table>
-            </Box>
-          </Flex>
+            </div>
+          </div>
         )}
         {step === "submit" && (
-          <VStack spacing={4} align="stretch">
-            <VStack align="start" spacing={4}>
-              <Text>Rows: {excelData.rows.length}</Text>
-              <FormControl isRequired>
-                <FormLabel>Send results to email</FormLabel>
+          <div className="flex flex-col gap-4 items-stretch">
+            <div className="flex flex-col items-start gap-4">
+              <p>Rows: {excelData.rows.length}</p>
+              <div className="flex flex-col gap-2">
+                <Label>Send results to email</Label>
                 {emailRecipient ? (
-                  <Text fontWeight="medium">{emailRecipient}</Text>
+                  <p className="font-medium">{emailRecipient}</p>
                 ) : (
-                  <Text fontSize="sm" color="red.500">
+                  <p className="text-sm text-red-500">
                     No email parameter detected. Add
                     ?sendToEmail=example@domain.com (or email/userEmail) to the
                     iframe URL.
-                  </Text>
+                  </p>
                 )}
                 {!isEmailValid && emailRecipient && (
-                  <Text fontSize="sm" color="red.500" mt={1}>
+                  <p className="text-sm text-red-500 mt-1">
                     The email supplied via the URL looks invalid. Update the
                     iframe query parameter before submitting.
-                  </Text>
+                  </p>
                 )}
-              </FormControl>
+              </div>
               {mode !== "imagesOnly" && (
-                <HStack>
-                  <Text>Currency:</Text>
-                  <Select
+                <div className="flex flex-row items-center gap-2">
+                  <p>Currency:</p>
+                  <select
                     value={currency}
                     onChange={(e) =>
                       setCurrency(e.target.value as "USD" | "EUR")
                     }
-                    w="100px"
+                    className="w-[100px] border rounded p-1"
                   >
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
-                  </Select>
-                </HStack>
+                  </select>
+                </div>
               )}
-              <Text>Mapped Columns:</Text>
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Field</Th>
-                    <Th>Column</Th>
-                    <Th>Preview</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+              <p>Mapped Columns:</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Field</TableHead>
+                    <TableHead>Column</TableHead>
+                    <TableHead>Preview</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {getColumnMappingEntries(columnMapping)
                     .filter(
                       ([col, index]) =>
@@ -3386,44 +3273,44 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         col !== "imageAdd",
                     )
                     .map(([col, index]) => (
-                      <Tr key={col}>
-                        <Td>{col}</Td>
-                        <Td>
+                      <TableRow key={col}>
+                        <TableCell>{col}</TableCell>
+                        <TableCell>
                           {excelData.headers[index!] ||
                             `Column ${indexToColumnLetter(index!)}`}
-                        </Td>
-                        <Td>{getColumnPreview(index, excelData.rows)}</Td>
-                      </Tr>
+                        </TableCell>
+                        <TableCell>{getColumnPreview(index, excelData.rows)}</TableCell>
+                      </TableRow>
                     ))}
                   {enableImageTargetMapping && imageColumnIndex !== null && (
-                    <Tr>
-                      <Td>Image Target</Td>
-                      <Td>
+                    <TableRow>
+                      <TableCell>Image Target</TableCell>
+                      <TableCell>
                         {excelData.headers[imageColumnIndex] ||
                           `Column ${indexToColumnLetter(imageColumnIndex)}`}
-                      </Td>
-                      <Td>
+                      </TableCell>
+                      <TableCell>
                         {getColumnPreview(imageColumnIndex, excelData.rows)}
-                      </Td>
-                    </Tr>
+                      </TableCell>
+                    </TableRow>
                   )}
                   {isManualBrandApplied && (
-                    <Tr>
-                      <Td>Manual Brand</Td>
-                      <Td>BRAND (Manual)</Td>
-                      <Td>
+                    <TableRow>
+                      <TableCell>Manual Brand</TableCell>
+                      <TableCell>BRAND (Manual)</TableCell>
+                      <TableCell>
                         {excelData.rows[0]?.[excelData.headers.length - 1] ||
                           manualBrand}
-                      </Td>
-                    </Tr>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </Tbody>
+                </TableBody>
               </Table>
-            </VStack>
-          </VStack>
+            </div>
+          </div>
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 
@@ -3432,22 +3319,22 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({
   backLabel,
 }) => {
   return (
-    <Container maxW="container.xl" p={4} bg="surface" color="text">
-      <VStack spacing={6} align="stretch">
+    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
-            alignSelf="flex-start"
             variant="ghost"
             size="sm"
-            leftIcon={<ArrowBackIcon />}
+            className="self-start"
             onClick={onBack}
           >
+            <ArrowLeft className="mr-2 h-4 w-4" />
             {backLabel ?? "Back to tools"}
           </Button>
         )}
         <SubmitImageLinkForm />
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 
@@ -3456,22 +3343,22 @@ const ImageCropToolForm: React.FC<FormWithBackProps> = ({
   backLabel,
 }) => {
   return (
-    <Container maxW="container.xl" p={4} bg="surface" color="text">
-      <VStack spacing={6} align="stretch">
+    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
-            alignSelf="flex-start"
             variant="ghost"
             size="sm"
-            leftIcon={<ArrowBackIcon />}
+            className="self-start"
             onClick={onBack}
           >
+            <ArrowLeft className="mr-2 h-4 w-4" />
             {backLabel ?? "Back to tools"}
           </Button>
         )}
         <SubmitCropForm />
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 
@@ -3504,26 +3391,26 @@ const CMSGoogleSerpForm: React.FC = () => {
     }
 
     return (
-      <Container maxW="container.xl" p={4} bg="white" color="black">
-        <VStack spacing={6} align="stretch">
+      <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+        <div className="flex flex-col gap-6 items-stretch">
           <Button
-            alignSelf="flex-start"
             variant="ghost"
             size="sm"
-            leftIcon={<ArrowBackIcon />}
+            className="self-start"
             onClick={handleBackToTools}
           >
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to tools
           </Button>
-          <VStack align="start" spacing={1}>
-            <Text fontSize="lg" fontWeight="bold">
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-lg font-bold">
               Choose a Data Warehouse job
-            </Text>
-            <Text fontSize="sm" color="subtle">
+            </p>
+            <p className="text-sm text-muted-foreground">
               Pick the workflow you need for this upload.
-            </Text>
-          </VStack>
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(
               Object.entries(DATA_WAREHOUSE_MODE_CONFIG) as [
                 DataWarehouseMode,
@@ -3532,35 +3419,33 @@ const CMSGoogleSerpForm: React.FC = () => {
             ).map(([modeKey, config]) => (
               <Card
                 key={modeKey}
-                cursor="pointer"
+                className={cn(
+                  "cursor-pointer hover:shadow-md hover:border-primary/50 transition-all",
+                  modeKey === "imagesAndMsrp" ? "border-2 border-primary/20" : "border"
+                )}
                 onClick={() => setDataWarehouseMode(modeKey)}
-                borderWidth={modeKey === "imagesAndMsrp" ? "2px" : "1px"}
-                borderColor={
-                  modeKey === "imagesAndMsrp" ? "brand.200" : "border"
-                }
-                _hover={{ shadow: "md", borderColor: "brand.400" }}
               >
                 <CardHeader>
-                  <HStack>
-                    <Icon as={config.icon} boxSize={6} color="gray.600" />
-                    <Text fontSize="xl" fontWeight="semibold">
+                  <div className="flex flex-row items-center gap-2">
+                    <config.icon className="h-6 w-6 text-gray-600" />
+                    <CardTitle className="text-xl font-semibold">
                       {config.label}
-                    </Text>
+                    </CardTitle>
                     {modeKey === "imagesAndMsrp" && (
-                      <Badge colorScheme="brand" ml="auto">
+                      <Badge variant="default" className="ml-auto">
                         Default
                       </Badge>
                     )}
-                  </HStack>
+                  </div>
                 </CardHeader>
-                <CardBody>
-                  <Text>{config.description}</Text>
-                </CardBody>
+                <CardContent>
+                  <p>{config.description}</p>
+                </CardContent>
               </Card>
             ))}
-          </SimpleGrid>
-        </VStack>
-      </Container>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -3573,273 +3458,221 @@ const CMSGoogleSerpForm: React.FC = () => {
   }
 
   return (
-    <Container maxW="container.xl" p={4} bg="white" color="black">
-      <VStack spacing={6} align="stretch">
+    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="flex flex-col gap-6 items-stretch">
         {/* Mine Data */}
-        <Text fontSize="lg" fontWeight="bold">
+        <p className="text-lg font-bold">
           Mine Data
-        </Text>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-          <Card cursor="pointer" onClick={() => setSelectedType("images")}>
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => setSelectedType("images")}>
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuSearch}
-                  boxSize={6}
-                  color="gray.600"
-                  strokeWidth={1.75}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuSearch className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <CardTitle className="text-xl font-semibold">
                   Google Images
-                </Text>
-              </HStack>
+                </CardTitle>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>Search and collect images from Google.</Text>
-            </CardBody>
+            <CardContent>
+              <p>Search and collect images from Google.</p>
+            </CardContent>
           </Card>
           <Card
-            cursor="pointer"
+            className="cursor-pointer hover:shadow-md transition-all"
             onClick={() => {
               setDataWarehouseMode(null)
               setSelectedType("data")
             }}
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuDatabase}
-                  boxSize={6}
-                  color="gray.600"
-                  strokeWidth={1.75}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuDatabase className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <CardTitle className="text-xl font-semibold">
                   Data Warehouse
-                </Text>
-              </HStack>
+                </CardTitle>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>Internal product database jobs (choose a mode).</Text>
-            </CardBody>
+            <CardContent>
+              <p>Internal product database jobs (choose a mode).</p>
+            </CardContent>
           </Card>
           {/* Reverse Image Search (Locked) */}
           <Card
-            cursor="not-allowed"
+            className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
             aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuSearch}
-                  boxSize={6}
-                  color="gray.400"
-                  strokeWidth={1.5}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuSearch className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+                <CardTitle className="text-xl font-semibold">
                   Reverse Image Search
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>
+            <CardContent>
+              <p>
                 Image search using a reference photo and reverse image search.
-              </Text>
-            </CardBody>
+              </p>
+            </CardContent>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* Transform Excel */}
-        <Text fontSize="lg" fontWeight="bold" mt={2}>
+        <p className="text-lg font-bold mt-2">
           Transform Excel
-        </Text>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
-            cursor="pointer"
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all",
+              showDevUI() && "bg-red-50 border-red-200"
+            )}
             onClick={() => setSelectedType("imageLinks")}
-            bg={showDevUI() ? "red.50" : undefined}
-            borderWidth={showDevUI() ? "1px" : undefined}
-            borderColor={showDevUI() ? "red.200" : undefined}
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuLink}
-                  boxSize={6}
-                  color="gray.600"
-                  strokeWidth={1.75}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuLink className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <CardTitle className="text-xl font-semibold">
                   Image URL Download
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>Convert image links to excel pictures.</Text>
-            </CardBody>
+            <CardContent>
+              <p>Convert image links to excel pictures.</p>
+            </CardContent>
           </Card>
           <Card
-            cursor="pointer"
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all",
+              showDevUI() && "bg-red-50 border-red-200"
+            )}
             onClick={() => setSelectedType("crop")}
-            bg={showDevUI() ? "red.50" : undefined}
-            borderWidth={showDevUI() ? "1px" : undefined}
-            borderColor={showDevUI() ? "red.200" : undefined}
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuCrop}
-                  boxSize={6}
-                  color="gray.600"
-                  strokeWidth={1.75}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuCrop className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                <CardTitle className="text-xl font-semibold">
                   Image crop
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>Remove whitespace from Excel pictures.</Text>
-            </CardBody>
+            <CardContent>
+              <p>Remove whitespace from Excel pictures.</p>
+            </CardContent>
           </Card>
           <Card
-            cursor="not-allowed"
+            className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
             aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuFileText}
-                  boxSize={6}
-                  color="gray.400"
-                  strokeWidth={1.5}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuFileText className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+                <CardTitle className="text-xl font-semibold">
                   PDF → Excel
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>
+            <CardContent>
+              <p>
                 Convert PDFs (catalogs, invoices, spec sheets) into structured
                 Excel/CSV data.
-              </Text>
-            </CardBody>
+              </p>
+            </CardContent>
           </Card>
-        </SimpleGrid>
+        </div>
 
         {/* Enhance Images (Gen AI) - coming soon */}
-        <Text fontSize="lg" fontWeight="bold" mt={2}>
+        <p className="text-lg font-bold mt-2">
           Enhance Images (Gen AI)
-        </Text>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card
-            cursor="not-allowed"
+            className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
             aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuEraser}
-                  boxSize={6}
-                  color="gray.400"
-                  strokeWidth={1.5}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuEraser className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+                <CardTitle className="text-xl font-semibold">
                   Background remover
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <Text>Remove image backgrounds. (Nano Banana)</Text>
-            </CardBody>
+            <CardContent>
+              <p>Remove image backgrounds. (Nano Banana)</p>
+            </CardContent>
           </Card>
 
           <Card
-            cursor="not-allowed"
+            className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
             aria-disabled
-            bg="gray.100"
-            borderColor="gray.200"
-            color="gray.500"
           >
             <CardHeader>
-              <HStack>
-                <Icon
-                  as={LuWand2}
-                  boxSize={6}
-                  color="gray.400"
-                  strokeWidth={1.5}
-                />
-                <Text fontSize="xl" fontWeight="semibold">
+              <div className="flex flex-row items-center gap-2">
+                <LuWand2 className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+                <CardTitle className="text-xl font-semibold">
                   Image generator
-                </Text>
+                </CardTitle>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">
+                  <Badge variant="destructive" className="ml-auto">
                     DEV
                   </Badge>
                 )}
-              </HStack>
+              </div>
             </CardHeader>
-            <CardBody>
-              <VStack align="start" spacing={1}>
-                <Text>
+            <CardContent>
+              <div className="flex flex-col items-start gap-1">
+                <p>
                   Generate studio-style product photos from reference shots.
                   (Nano Banana)
-                </Text>
-                <Text fontWeight="semibold">Convert:</Text>
-                <Text m={0} p={0} pl={0} whiteSpace="nowrap">
-                  <Text as="span" mx={2}>
+                </p>
+                <p className="font-semibold">Convert:</p>
+                <p className="m-0 p-0 pl-0 whitespace-nowrap">
+                  <span className="mx-2">
                     •
-                  </Text>
+                  </span>
                   Lifestyle shots{" "}
-                  <Text as="span" mx={2}>
+                  <span className="mx-2">
                     •
-                  </Text>{" "}
+                  </span>{" "}
                   Mockups/CAD
-                  <Text as="span" mx={2}>
+                  <span className="mx-2">
                     •
-                  </Text>{" "}
+                  </span>{" "}
                   Low‑quality product photos
-                </Text>
-              </VStack>
-            </CardBody>
+                </p>
+              </div>
+            </CardContent>
           </Card>
-        </SimpleGrid>
-      </VStack>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }
 

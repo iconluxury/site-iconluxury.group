@@ -1,5 +1,5 @@
-import { Flex, Spinner } from "@chakra-ui/react"
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
+import { Loader2 } from "lucide-react"
 
 import Sidebar from "../components/Common/Sidebar"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
@@ -19,15 +19,15 @@ function Layout() {
   const { isLoading } = useAuth()
 
   return (
-    <Flex maxW="large" h="auto" position="relative">
+    <div className="flex max-w-full h-auto relative">
       <Sidebar />
       {isLoading ? (
-        <Flex justify="center" align="center" height="100vh" width="full">
-          <Spinner size="xl" color="ui.main" />
-        </Flex>
+        <div className="flex justify-center items-center h-screen w-full">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
       ) : (
         <Outlet />
       )}
-    </Flex>
+    </div>
   )
 }

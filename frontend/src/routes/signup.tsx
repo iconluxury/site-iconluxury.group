@@ -1,15 +1,5 @@
-import {
-  Button,
-  Container,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Image,
-  Input,
-  Link,
-  Text,
-} from "@chakra-ui/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Link as RouterLink,
   createFileRoute,
@@ -60,30 +50,15 @@ function SignUp() {
   }
 
   return (
-    <>
-      <Flex flexDir={{ base: "column", md: "row" }} justify="center" h="100vh">
-        <Container
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
-          h="100vh"
-          maxW="sm"
-          alignItems="stretch"
-          justifyContent="center"
-          gap={4}
-          centerContent
-        >
-          <Image
-            src={Logo}
-            alt="logo"
-            height="auto"
-            maxW="2xs"
-            alignSelf="center"
-            mb={4}
-          />
-          <FormControl id="full_name" isInvalid={!!errors.full_name}>
-            <FormLabel htmlFor="full_name" srOnly>
-              Full Name
-            </FormLabel>
+    <div className="flex h-screen flex-col items-center justify-center md:flex-row">
+      <div className="container flex h-screen max-w-sm flex-col items-stretch justify-center gap-4 mx-auto">
+        <img
+          src={Logo}
+          alt="logo"
+          className="h-auto max-w-[200px] self-center mb-4"
+        />
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <div className="grid gap-2">
             <Input
               id="full_name"
               minLength={3}
@@ -92,13 +67,12 @@ function SignUp() {
               type="text"
             />
             {errors.full_name && (
-              <FormErrorMessage>{errors.full_name.message}</FormErrorMessage>
+              <span className="text-red-500 text-sm">
+                {errors.full_name.message}
+              </span>
             )}
-          </FormControl>
-          <FormControl id="email" isInvalid={!!errors.email}>
-            <FormLabel htmlFor="email" srOnly>
-              Email
-            </FormLabel>
+          </div>
+          <div className="grid gap-2">
             <Input
               id="email"
               {...register("email", {
@@ -109,13 +83,12 @@ function SignUp() {
               type="email"
             />
             {errors.email && (
-              <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+              <span className="text-red-500 text-sm">
+                {errors.email.message}
+              </span>
             )}
-          </FormControl>
-          <FormControl id="password" isInvalid={!!errors.password}>
-            <FormLabel htmlFor="password" srOnly>
-              Password
-            </FormLabel>
+          </div>
+          <div className="grid gap-2">
             <Input
               id="password"
               {...register("password", passwordRules())}
@@ -123,17 +96,12 @@ function SignUp() {
               type="password"
             />
             {errors.password && (
-              <FormErrorMessage>{errors.password.message}</FormErrorMessage>
+              <span className="text-red-500 text-sm">
+                {errors.password.message}
+              </span>
             )}
-          </FormControl>
-          <FormControl
-            id="confirm_password"
-            isInvalid={!!errors.confirm_password}
-          >
-            <FormLabel htmlFor="confirm_password" srOnly>
-              Confirm Password
-            </FormLabel>
-
+          </div>
+          <div className="grid gap-2">
             <Input
               id="confirm_password"
               {...register("confirm_password", confirmPasswordRules(getValues))}
@@ -141,23 +109,23 @@ function SignUp() {
               type="password"
             />
             {errors.confirm_password && (
-              <FormErrorMessage>
+              <span className="text-red-500 text-sm">
                 {errors.confirm_password.message}
-              </FormErrorMessage>
+              </span>
             )}
-          </FormControl>
-          <Button variant="primary" type="submit" isLoading={isSubmitting}>
+          </div>
+          <Button type="submit" disabled={isSubmitting}>
             Sign Up
           </Button>
-          <Text>
-            Already have an account?{" "}
-            <Link as={RouterLink} to="/login" color="blue.500">
-              Log In
-            </Link>
-          </Text>
-        </Container>
-      </Flex>
-    </>
+        </form>
+        <div className="text-center">
+          Already have an account?{" "}
+          <RouterLink to="/login" className="text-blue-500 hover:underline">
+            Log In
+          </RouterLink>
+        </div>
+      </div>
+    </div>
   )
 }
 

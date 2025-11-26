@@ -1,12 +1,5 @@
-import {
-  Button,
-  Container,
-  FormControl,
-  FormErrorMessage,
-  Heading,
-  Input,
-  Text,
-} from "@chakra-ui/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -66,39 +59,32 @@ function RecoverPassword() {
   }
 
   return (
-    <Container
-      as="form"
-      onSubmit={handleSubmit(onSubmit)}
-      h="100vh"
-      maxW="sm"
-      alignItems="stretch"
-      justifyContent="center"
-      gap={4}
-      centerContent
-    >
-      <Heading size="xl" color="ui.main" textAlign="center" mb={2}>
+    <div className="container flex h-screen max-w-sm flex-col items-stretch justify-center gap-4 mx-auto">
+      <h1 className="text-3xl font-bold text-primary text-center mb-2">
         Password Recovery
-      </Heading>
-      <Text align="center">
+      </h1>
+      <p className="text-center text-muted-foreground">
         A password recovery email will be sent to the registered account.
-      </Text>
-      <FormControl isInvalid={!!errors.email}>
-        <Input
-          id="email"
-          {...register("email", {
-            required: "Email is required",
-            pattern: emailPattern,
-          })}
-          placeholder="Email"
-          type="email"
-        />
-        {errors.email && (
-          <FormErrorMessage>{errors.email.message}</FormErrorMessage>
-        )}
-      </FormControl>
-      <Button variant="primary" type="submit" isLoading={isSubmitting}>
-        Continue
-      </Button>
-    </Container>
+      </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <div className="grid gap-2">
+          <Input
+            id="email"
+            {...register("email", {
+              required: "Email is required",
+              pattern: emailPattern,
+            })}
+            placeholder="Email"
+            type="email"
+          />
+          {errors.email && (
+            <span className="text-red-500 text-sm">{errors.email.message}</span>
+          )}
+        </div>
+        <Button type="submit" disabled={isSubmitting}>
+          Continue
+        </Button>
+      </form>
+    </div>
   )
 }

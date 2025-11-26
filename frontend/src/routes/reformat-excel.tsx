@@ -1,39 +1,42 @@
-import { CheckIcon, CloseIcon, SearchIcon, WarningIcon } from "@chakra-ui/icons"
 import {
-  Badge,
-  Box,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Checkbox,
-  Container,
-  Flex,
-  FormControl,
-  FormLabel,
-  HStack,
-  Heading,
-  Icon,
-  IconButton,
-  Input,
-  Radio,
-  RadioGroup,
+  AlertTriangle,
+  Check,
+  CheckIcon,
+  Info,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
   Select,
-  SimpleGrid,
-  Spinner,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   Tooltip,
-  Tr,
-  VStack,
-  Wrap,
-  WrapItem,
-  useColorModeValue,
-} from "@chakra-ui/react"
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -230,19 +233,19 @@ const MappedColumnSummary: React.FC<{
   )
 
   if (mappedColumns.length === 0) {
-    return <Text>No columns mapped.</Text>
+    return <p className="text-sm text-muted-foreground">No columns mapped.</p>
   }
 
   return (
-    <Wrap>
+    <div className="flex flex-wrap gap-2">
       {mappedColumns.map((type) => (
-        <WrapItem key={type}>
-          <Badge colorScheme="blue">
+        <div key={type}>
+          <Badge variant="secondary">
             {type === "readImage" ? "PICTURE" : type.toUpperCase()}
           </Badge>
-        </WrapItem>
+        </div>
       ))}
-    </Wrap>
+    </div>
   )
 }
 
@@ -273,112 +276,107 @@ const SubmitStep: React.FC<{
   onCurrencyChange,
   sheetValidationResults,
 }) => {
-  const cardBg = useColorModeValue("white", "gray.700")
-  const tableHeadBg = useColorModeValue("gray.50", "gray.800")
-
   return (
-    <Container maxW="container.xl" py={5}>
-      <VStack spacing={6} align="stretch">
-        <Card variant="outline" bg={cardBg}>
+    <div className="container mx-auto py-5">
+      <div className="flex flex-col gap-6">
+        <Card>
           <CardHeader>
-            <Heading size="md">Step 4: Confirm and Submit</Heading>
+            <CardTitle>Step 4: Confirm and Submit</CardTitle>
           </CardHeader>
-          <CardBody>
-            <Text>
+          <CardContent>
+            <p>
               Review the mapped columns for each sheet. The processed file will
               be sent to <strong>{sendToEmail}</strong>.
-            </Text>
-          </CardBody>
+            </p>
+          </CardContent>
         </Card>
 
-        <Card variant="outline" bg={cardBg}>
-          <CardBody>
-            <FormControl as="fieldset">
-              <FormLabel as="legend" fontWeight="semibold">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-4">
+              <Label className="font-semibold">
                 Select Currency
-              </FormLabel>
-              <RadioGroup onChange={onCurrencyChange} value={currency}>
-                <HStack spacing="24px">
-                  <Radio value="USD">USD</Radio>
-                  <Radio value="EUR">EUR</Radio>
-                </HStack>
+              </Label>
+              <RadioGroup onValueChange={onCurrencyChange} value={currency} className="flex flex-row gap-6">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="USD" id="r1" />
+                  <Label htmlFor="r1">USD</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="EUR" id="r2" />
+                  <Label htmlFor="r2">EUR</Label>
+                </div>
               </RadioGroup>
-            </FormControl>
-          </CardBody>
+            </div>
+          </CardContent>
         </Card>
 
-        <Card variant="outline" bg={cardBg}>
+        <Card>
           <CardHeader>
-            <Heading size="sm">Submission Summary</Heading>
+            <CardTitle className="text-lg">Submission Summary</CardTitle>
           </CardHeader>
-          <CardBody>
-            <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
-              <Table variant="simple">
-                <Thead bg={tableHeadBg}>
-                  <Tr>
-                    <Th>Sheet Name</Th>
-                    <Th>Status</Th>
-                    <Th>Mapped Columns</Th>
-                    <Th>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+          <CardContent>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Sheet Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Mapped Columns</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {sheetConfigs.map((sheet, index) => {
                     const validation = sheetValidationResults[index]
                     const isReady = validation?.isValid ?? false
                     return (
-                      <Tr key={index}>
-                        <Td fontWeight="medium">{sheet.name}</Td>
-                        <Td>
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{sheet.name}</TableCell>
+                        <TableCell>
                           <Badge
-                            colorScheme={isReady ? "green" : "yellow"}
-                            variant="subtle"
+                            variant={isReady ? "default" : "destructive"}
+                            className={cn("flex w-fit items-center gap-1", isReady ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600")}
                           >
-                            <HStack>
-                              <Icon
-                                as={isReady ? CheckIcon : WarningIcon}
-                                boxSize={3}
-                              />
-                              <Text>
-                                {isReady
-                                  ? "Ready"
-                                  : `Missing: ${validation?.missing.join(
-                                      ", ",
-                                    )}`}
-                              </Text>
-                            </HStack>
+                            {isReady ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                            <span>
+                              {isReady
+                                ? "Ready"
+                                : `Missing: ${validation?.missing.join(
+                                    ", ",
+                                  )}`}
+                            </span>
                           </Badge>
-                        </Td>
-                        <Td>
+                        </TableCell>
+                        <TableCell>
                           <MappedColumnSummary
                             sheetConfig={sheet}
                             ALL_COLUMNS={ALL_COLUMNS}
                           />
-                        </Td>
-                        <Td>
+                        </TableCell>
+                        <TableCell>
                           <Button
-                            colorScheme="brand"
                             onClick={() => onSubmit(index)}
-                            isLoading={submittingSheetIndex === index}
-                            isDisabled={
+                            disabled={
                               !isReady ||
                               !isEmailValid ||
                               submittingSheetIndex !== null
                             }
                           >
+                            {submittingSheetIndex === index && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Submit
                           </Button>
-                        </Td>
-                      </Tr>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
-                </Tbody>
+                </TableBody>
               </Table>
-            </Box>
-          </CardBody>
+            </div>
+          </CardContent>
         </Card>
 
-        <HStack justifyContent="space-between" mt={4}>
+        <div className="flex justify-between mt-4">
           <Button
             onClick={onBack}
             disabled={submittingSheetIndex !== null}
@@ -386,9 +384,9 @@ const SubmitStep: React.FC<{
           >
             Back
           </Button>
-        </HStack>
-      </VStack>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -599,12 +597,7 @@ const ReformatExcelForm: React.FC = () => {
   const manualValues = activeSheet?.manualValues ?? {}
   const isManualBrandApplied = Boolean(manualValues.brand)
   const hasMultipleSheets = sheetConfigs.length > 1
-  const mappingPanelBg = useColorModeValue("white", "gray.800")
-  const mappingPanelBorder = useColorModeValue("gray.200", "gray.700")
-  const sheetInactiveBg = useColorModeValue("gray.100", "gray.700")
-  const sheetInactiveHover = useColorModeValue("gray.200", "gray.600")
-  const sheetWarningHover = useColorModeValue("yellow.100", "yellow.400")
-
+  
   const updateSheetConfig = useCallback(
     (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
       setSheetConfigs((prev) => {
@@ -1015,8 +1008,8 @@ const ReformatExcelForm: React.FC = () => {
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
-  const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
-  const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
+  const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
+  const activeSheetStatusColor = activeSheetIsReady ? "text-green-500" : "text-yellow-500"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "All required columns are mapped."
     : activeSheetMissingColumns.length > 0
@@ -1025,16 +1018,16 @@ const ReformatExcelForm: React.FC = () => {
 
   const renderSheetButtons = useCallback(
     (size: "xs" | "sm" | "md" = "sm") => (
-      <Wrap spacing={2} shouldWrapChildren>
+      <div className="flex flex-wrap gap-2">
         {sheetConfigs.map((sheet, index) => {
           const isActive = index === activeSheetIndex
           const validation = sheetValidationResults[index]
           const isComplete = validation?.isValid
           const hasMissing = (validation?.missing ?? []).length > 0
           const icon = isComplete ? (
-            <CheckIcon boxSize={3} />
+            <Check className="h-3 w-3" />
           ) : (
-            <WarningIcon boxSize={3} />
+            <AlertTriangle className="h-3 w-3" />
           )
           const sheetLabel = sheet.name || `Sheet ${index + 1}`
           const tooltipLabel = isComplete
@@ -1043,53 +1036,40 @@ const ReformatExcelForm: React.FC = () => {
               ? `Missing: ${(validation?.missing ?? []).join(", ")}`
               : "Map required columns"
           return (
-            <WrapItem key={sheet.name || index}>
-              <Tooltip label={tooltipLabel} placement="top" hasArrow>
-                <Button
-                  size={size}
-                  variant={isActive ? "solid" : "ghost"}
-                  colorScheme={
-                    isActive ? "brand" : isComplete ? "gray" : "yellow"
-                  }
-                  rightIcon={icon}
-                  onClick={() => handleActiveSheetChange(index)}
-                  cursor="pointer"
-                  bg={
-                    isActive
-                      ? undefined
-                      : isComplete
-                        ? sheetInactiveBg
-                        : sheetWarningHover
-                  }
-                  _hover={{
-                    bg: isActive
-                      ? undefined
-                      : isComplete
-                        ? sheetInactiveHover
-                        : sheetWarningHover,
-                  }}
-                  transition="all 0.2s ease"
-                  fontWeight={isActive ? "bold" : "semibold"}
-                  borderWidth={isActive ? "1px" : "0px"}
-                  borderColor={isActive ? "brand.500" : "transparent"}
-                  aria-pressed={isActive}
-                >
-                  {sheetLabel}
-                </Button>
-              </Tooltip>
-            </WrapItem>
+            <div key={sheet.name || index}>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size={size === "xs" ? "sm" : size === "md" ? "default" : size}
+                      variant={isActive ? "default" : "ghost"}
+                      className={cn(
+                        "gap-2",
+                        isActive ? "" : isComplete ? "text-muted-foreground" : "text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50",
+                        size === "xs" && "h-7 px-2 text-xs"
+                      )}
+                      onClick={() => handleActiveSheetChange(index)}
+                      aria-pressed={isActive}
+                    >
+                      {sheetLabel}
+                      {icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tooltipLabel}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           )
         })}
-      </Wrap>
+      </div>
     ),
     [
       activeSheetIndex,
       handleActiveSheetChange,
       sheetConfigs,
-      sheetInactiveBg,
-      sheetInactiveHover,
       sheetValidationResults,
-      sheetWarningHover,
     ],
   )
 
@@ -1249,36 +1229,22 @@ const ReformatExcelForm: React.FC = () => {
   )
 
   return (
-    <Container maxW="container.xl" p={4} bg="surface" color="text">
-      <VStack spacing={6} align="stretch">
-        <HStack
-          justify="space-between"
-          bg="neutral.50"
-          p={2}
-          borderRadius="md"
-          align="center"
-        >
-          <HStack spacing={4}>
+    <div className="container mx-auto p-4 bg-background text-foreground">
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-between bg-muted/50 p-2 rounded-md items-center">
+          <div className="flex gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
-              <Text
+              <p
                 key={s}
-                fontWeight={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "bold"
-                    : "normal"
-                }
-                color={
-                  step ===
-                  s.toLowerCase().replace("header selection", "preview")
-                    ? "brand.600"
-                    : "subtle"
-                }
-                cursor={
+                className={cn(
+                  "cursor-pointer",
+                  step === s.toLowerCase().replace("header selection", "preview")
+                    ? "font-bold text-primary"
+                    : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
-                    ? "pointer"
-                    : "default"
-                }
+                    ? "cursor-pointer"
+                    : "cursor-default"
+                )}
                 onClick={() => {
                   if (i < ["upload", "preview", "map", "submit"].indexOf(step))
                     setStep(
@@ -1289,11 +1255,11 @@ const ReformatExcelForm: React.FC = () => {
                 }}
               >
                 {i + 1}. {s}
-              </Text>
+              </p>
             ))}
-          </HStack>
+          </div>
           {step !== "upload" && (
-            <HStack>
+            <div className="flex gap-2">
               {step !== "preview" && (
                 <Button
                   onClick={() =>
@@ -1328,7 +1294,7 @@ const ReformatExcelForm: React.FC = () => {
                     )
                   }
                   size="sm"
-                  isDisabled={step === "map" && !validateForm.isValid}
+                  disabled={step === "map" && !validateForm.isValid}
                 >
                   Next:{" "}
                   {
@@ -1338,227 +1304,181 @@ const ReformatExcelForm: React.FC = () => {
                   }
                 </Button>
               )}
-            </HStack>
+            </div>
           )}
-        </HStack>
+        </div>
 
         {step === "upload" && (
-          <VStack spacing={4} align="stretch">
-            <Text fontSize="lg" fontWeight="bold">
+          <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-bold">
               Upload Excel File
-            </Text>
-            <FormControl>
-              <Tooltip label="Upload an Excel file (.xlsx or .xls) up to 10MB">
-                <Input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileChange}
-                  disabled={isLoading}
-                  bg="white"
-                  borderColor="border"
-                  p={1}
-                  aria-label="Upload Excel file"
-                />
-              </Tooltip>
-            </FormControl>
-            {isLoading && <Spinner mt={4} />}
-          </VStack>
+            </h2>
+            <div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleFileChange}
+                      disabled={isLoading}
+                      className="bg-white border p-1"
+                      aria-label="Upload Excel file"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Upload an Excel file (.xlsx or .xls) up to 10MB</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            {isLoading && <Loader2 className="mt-4 h-6 w-6 animate-spin" />}
+          </div>
         )}
 
         {step === "preview" && (
-          <VStack spacing={4} align="stretch">
+          <div className="flex flex-col gap-4">
             {hasMultipleSheets && (
-              <Card
-                variant="outline"
-                bg={mappingPanelBg}
-                borderColor={mappingPanelBorder}
-              >
-                <CardBody py={3} px={4}>
-                  <VStack align="stretch" spacing={2}>
-                    <HStack justify="space-between" align="center">
-                      <Text fontWeight="semibold">Sheets</Text>
-                      <Text fontSize="xs" color="subtle">
+              <Card>
+                <CardContent className="py-3 px-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <p className="font-semibold">Sheets</p>
+                      <p className="text-xs text-muted-foreground">
                         Viewing{" "}
                         {sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`}
-                      </Text>
-                    </HStack>
+                      </p>
+                    </div>
                     {renderSheetButtons("xs")}
-                    <Tooltip
-                      label={activeSheetStatusTooltip}
-                      placement="top"
-                      hasArrow
-                    >
-                      <HStack
-                        spacing={2}
-                        fontSize="xs"
-                        color="subtle"
-                        align="center"
-                      >
-                        <Icon
-                          as={ActiveSheetStatusIcon}
-                          boxSize={3}
-                          color={activeSheetStatusColor}
-                        />
-                        <Text>{activeSheetStatusLabel}</Text>
-                      </HStack>
-                    </Tooltip>
-                    <Text fontSize="xs" color="subtle">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex gap-2 text-xs text-muted-foreground items-center">
+                            {activeSheetIsReady ? <Check className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+                            <p>{activeSheetStatusLabel}</p>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{activeSheetStatusTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <p className="text-xs text-muted-foreground">
                       Select a sheet to preview its header row and sample data.
-                    </Text>
-                  </VStack>
-                </CardBody>
+                    </p>
+                  </div>
+                </CardContent>
               </Card>
             )}
-            <HStack>
-              <Text>Select Header Row:</Text>
+            <div className="flex gap-4 items-center">
+              <p>Select Header Row:</p>
               <Select
-                value={headerIndex}
-                onChange={(e) => handleHeaderChange(Number(e.target.value))}
-                w="150px"
-                aria-label="Select header row"
+                value={String(headerIndex)}
+                onValueChange={(val) => handleHeaderChange(Number(val))}
               >
-                {rawData.slice(0, 20).map((_, index) => (
-                  <option key={index} value={index}>
-                    Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
-                  </option>
-                ))}
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Select row" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rawData.slice(0, 20).map((_, index) => (
+                    <SelectItem key={index} value={String(index)}>
+                      Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </HStack>
-            <Box overflowX="auto" borderWidth="1px" borderRadius="md" p={2}>
-              <Table size="sm">
-                <Tbody>
+            </div>
+            <div className="overflow-x-auto border rounded-md p-2">
+              <Table>
+                <TableBody>
                   {rawData.slice(0, MAX_PREVIEW_ROWS).map((row, rowIndex) => (
-                    <Tr
+                    <TableRow
                       key={rowIndex}
-                      bg={rowIndex === headerIndex ? "primary.100" : undefined}
-                      fontWeight={rowIndex === headerIndex ? "bold" : "normal"}
-                      cursor="pointer"
+                      className={cn(
+                        "cursor-pointer hover:bg-muted/50",
+                        rowIndex === headerIndex && "bg-primary/10 font-bold"
+                      )}
                       onClick={() => handleHeaderChange(rowIndex)}
-                      role="button"
-                      _hover={{
-                        bg:
-                          rowIndex === headerIndex
-                            ? "primary.200"
-                            : "primary.50",
-                      }}
                     >
                       {row.map((cell, cellIndex) => (
-                        <Td
+                        <TableCell
                           key={cellIndex}
-                          maxW="200px"
-                          isTruncated
-                          border={
-                            rowIndex === headerIndex ? "2px solid" : "1px solid"
-                          }
-                          borderColor={
-                            rowIndex === headerIndex ? "brand.600" : "border"
-                          }
+                          className={cn(
+                            "max-w-[200px] truncate border",
+                            rowIndex === headerIndex ? "border-primary" : "border-border"
+                          )}
                         >
                           {getDisplayValue(cell)}
-                        </Td>
+                        </TableCell>
                       ))}
-                    </Tr>
+                    </TableRow>
                   ))}
-                </Tbody>
+                </TableBody>
               </Table>
               {rawData.length > MAX_PREVIEW_ROWS && (
-                <Text fontSize="sm" color="subtle" mt={2}>
+                <p className="text-sm text-muted-foreground mt-2">
                   Showing first {MAX_PREVIEW_ROWS} rows of {rawData.length}{" "}
                   total rows
-                </Text>
+                </p>
               )}
-            </Box>
-          </VStack>
+            </div>
+          </div>
         )}
 
         {step === "map" && (
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            gap={4}
-            align="stretch"
-            maxH="70vh"
-            overflow="auto"
-          >
-            <VStack
-              gap={4}
-              align="stretch"
-              bg="transparent"
-              p={4}
-              borderRadius="md"
-              borderWidth="1px"
-              borderColor={mappingPanelBorder}
-              w={{ base: "100%", md: "40%" }}
-              overflowY="auto"
-            >
+          <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
+            <div className="flex flex-col gap-4 items-stretch bg-transparent p-4 rounded-md border w-full md:w-[40%] overflow-y-auto">
               {hasMultipleSheets && (
-                <Card
-                  variant="outline"
-                  bg={mappingPanelBg}
-                  borderColor={mappingPanelBorder}
-                  shadow="xs"
-                >
-                  <CardBody p={4}>
-                    <VStack align="stretch" spacing={3}>
-                      <Flex
-                        direction={{ base: "column", md: "row" }}
-                        justify="space-between"
-                        align={{ base: "flex-start", md: "center" }}
-                        gap={3}
-                      >
-                        <Box>
-                          <Text fontWeight="semibold">Sheets</Text>
-                          <Text fontSize="xs" color="subtle">
-                            Pick a sheet to adjust its column mapping.
-                          </Text>
-                        </Box>
-                      </Flex>
+                <Card className="shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <p className="font-semibold">Sheets</p>
+                        <div className="text-xs text-muted-foreground">
+                          <p>Pick a sheet to adjust its column mapping.</p>
+                        </div>
+                      </div>
                       {renderSheetButtons("sm")}
-                      <Tooltip
-                        label={activeSheetStatusTooltip}
-                        placement="top"
-                        hasArrow
-                      >
-                        <HStack
-                          spacing={2}
-                          fontSize="xs"
-                          color="subtle"
-                          align="center"
-                        >
-                          <Icon
-                            as={ActiveSheetStatusIcon}
-                            boxSize={3}
-                            color={activeSheetStatusColor}
-                          />
-                          <Text>{activeSheetStatusLabel}</Text>
-                        </HStack>
-                      </Tooltip>
-                      <Text fontSize="xs" color="subtle">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex gap-2 text-xs text-muted-foreground items-center">
+                              {activeSheetIsReady ? <Check className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+                              <p>{activeSheetStatusLabel}</p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{activeSheetStatusTooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <p className="text-xs text-muted-foreground">
                         {`Currently editing: ${
                           sheetConfigs[activeSheetIndex]?.name ||
                           `Sheet ${activeSheetIndex + 1}`
                         }`}
-                      </Text>
-                    </VStack>
-                  </CardBody>
+                      </p>
+                    </div>
+                  </CardContent>
                 </Card>
               )}
               {!validateForm.isValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Missing required columns: {validateForm.missing.join(", ")}.
                   Please map all required columns.
-                </Text>
+                </p>
               )}
               {!headersAreValid && (
-                <Text color="red.500" fontSize="sm" fontWeight="medium">
+                <p className="text-red-500 text-sm font-medium">
                   Selected header row is empty. Choose a different header row
                   before mapping.
-                </Text>
+                </p>
               )}
-              <Text fontSize="sm" color="subtle">
+              <p className="text-sm text-muted-foreground">
                 Select a field below, then click a column in the preview grid to
                 map it instantly.
-              </Text>
+              </p>
               {DISPLAY_ORDER.map((field) => {
                 const isRequired = REQUIRED_COLUMNS.includes(
                   field as ColumnType,
@@ -1578,71 +1498,70 @@ const ReformatExcelForm: React.FC = () => {
                   const typedField = field as "brand" | "gender" | "category"
                   const isManualApplied = Boolean(manualValues[typedField])
                   return (
-                    <HStack
+                    <div
                       key={field}
-                      gap={2}
-                      align="center"
-                      p={2}
-                      borderRadius="md"
-                      borderWidth={activeMappingField === field ? "2px" : "1px"}
-                      borderColor={
+                      className={cn(
+                        "flex gap-2 items-center p-2 rounded-md border cursor-pointer",
                         activeMappingField === field
-                          ? SELECTED_BORDER_COLOR
-                          : "transparent"
-                      }
-                      bg={
-                        activeMappingField === field
-                          ? SELECTED_BG_SUBTLE
-                          : "transparent"
-                      }
-                      cursor="pointer"
+                          ? "border-primary bg-primary/10"
+                          : "border-transparent"
+                      )}
                       onClick={() =>
                         setActiveMappingField(field as ColumnType | null)
                       }
                     >
-                      <Text w="120px" fontWeight="semibold">
+                      <p className="w-[120px] font-semibold">
                         {label}:
-                      </Text>
-                      <Tooltip label={`Select Excel column for ${label}`}>
-                        <Select
-                          value={columnMapping[typedField] ?? ""}
-                          onChange={(e) =>
-                            handleColumnMap(Number(e.target.value), field)
-                          }
-                          onFocus={() =>
-                            setActiveMappingField(field as ColumnType | null)
-                          }
-                          onClick={() =>
-                            setActiveMappingField(field as ColumnType | null)
-                          }
-                          placeholder="Unmapped"
-                          aria-label={`Map ${label} column`}
-                          flex="1"
-                          isDisabled={isManualApplied}
-                        >
-                          <option value="">Unmapped</option>
-                          {excelData.headers.map((header, index) => (
-                            <option
-                              key={index}
-                              value={index}
-                              disabled={
-                                mappedDataColumns.has(index) &&
-                                columnMapping[typedField] !== index
-                              }
-                            >
-                              {header || `Column ${indexToColumnLetter(index)}`}
-                            </option>
-                          ))}
-                        </Select>
-                      </Tooltip>
+                      </p>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex-1">
+                              <Select
+                                value={columnMapping[typedField] !== null ? String(columnMapping[typedField]) : ""}
+                                onValueChange={(val) =>
+                                  handleColumnMap(Number(val), field)
+                                }
+                                disabled={isManualApplied}
+                              >
+                                <SelectTrigger 
+                                  className="w-full"
+                                  onFocus={() => setActiveMappingField(field as ColumnType | null)}
+                                  onClick={() => setActiveMappingField(field as ColumnType | null)}
+                                >
+                                  <SelectValue placeholder="Unmapped" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unmapped">Unmapped</SelectItem>
+                                  {excelData.headers.map((header, index) => (
+                                    <SelectItem
+                                      key={index}
+                                      value={String(index)}
+                                      disabled={
+                                        mappedDataColumns.has(index) &&
+                                        columnMapping[typedField] !== index
+                                      }
+                                    >
+                                      {header || `Column ${indexToColumnLetter(index)}`}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Select Excel column for {label}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       {columnMapping[typedField] === null &&
                         !isManualApplied && (
                           <>
-                            <Text fontSize="sm" color="subtle">
+                            <p className="text-sm text-muted-foreground">
                               Or
-                            </Text>
+                            </p>
                             <Input
-                              w="150px"
+                              className="w-[150px] h-8"
                               placeholder={`Add Manual ${label}`}
                               value={manualInputs[typedField] || ""}
                               onChange={(e) =>
@@ -1652,13 +1571,11 @@ const ReformatExcelForm: React.FC = () => {
                                 }))
                               }
                               aria-label={`Manual ${label} input`}
-                              size="sm"
                             />
                             <Button
-                              colorScheme="brand"
                               size="sm"
                               onClick={() => applyManualValue(typedField)}
-                              isDisabled={!manualInputs[typedField]?.trim()}
+                              disabled={!manualInputs[typedField]?.trim()}
                             >
                               Apply
                             </Button>
@@ -1666,13 +1583,13 @@ const ReformatExcelForm: React.FC = () => {
                         )}
                       {isManualApplied && (
                         <>
-                          <Badge colorScheme="green" noOfLines={1}>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
                             Manual: {manualValues[typedField]}
                           </Badge>
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="ghost"
-                            colorScheme="red"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 px-2"
                             onClick={() => removeManualValue(typedField)}
                           >
                             Remove
@@ -1681,144 +1598,145 @@ const ReformatExcelForm: React.FC = () => {
                       )}
                       {columnMapping[typedField] !== null &&
                         !isManualApplied && (
-                          <Tooltip label="Clear mapping">
-                            <IconButton
-                              aria-label={`Clear ${label} mapping`}
-                              icon={<CloseIcon />}
-                              size="sm"
-                              onClick={() =>
-                                handleClearMapping(columnMapping[typedField]!)
-                              }
-                            />
-                          </Tooltip>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleClearMapping(columnMapping[typedField]!)
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Clear mapping</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                    </HStack>
+                    </div>
                   )
                 }
 
                 return (
-                  <HStack
+                  <div
                     key={field}
-                    gap={2}
-                    align="center"
-                    p={2}
-                    borderRadius="md"
-                    borderWidth={activeMappingField === field ? "2px" : "1px"}
-                    borderColor={
+                    className={cn(
+                      "flex gap-2 items-center p-2 rounded-md border cursor-pointer",
                       activeMappingField === field
-                        ? SELECTED_BORDER_COLOR
-                        : "transparent"
-                    }
-                    bg={
-                      activeMappingField === field
-                        ? SELECTED_BG_SUBTLE
-                        : "transparent"
-                    }
-                    cursor="pointer"
+                        ? "border-primary bg-primary/10"
+                        : "border-transparent"
+                    )}
                     onClick={() =>
                       setActiveMappingField(field as ColumnType | null)
                     }
                   >
-                    <Text w="120px" fontWeight="semibold">
+                    <p className="w-[120px] font-semibold">
                       {label}:
                       {isRequired && <span style={{ color: "red" }}>*</span>}
-                    </Text>
-                    <Tooltip label={`Select Excel column for ${label}`}>
-                      <Select
-                        value={
-                          columnMapping[field as keyof ColumnMapping] !== null
-                            ? columnMapping[field as keyof ColumnMapping]!
-                            : ""
-                        }
-                        onChange={(e) =>
-                          handleColumnMap(Number(e.target.value), field)
-                        }
-                        onFocus={() =>
-                          setActiveMappingField(field as ColumnType | null)
-                        }
-                        onClick={() =>
-                          setActiveMappingField(field as ColumnType | null)
-                        }
-                        placeholder="Unmapped"
-                        aria-label={`Map ${label} column`}
-                        flex="1"
-                      >
-                        <option value="">Unmapped</option>
-                        {excelData.headers.map((header, index) => (
-                          <option
-                            key={index}
-                            value={index}
-                            disabled={
-                              mappedDataColumns.has(index) &&
-                              columnMapping[field as keyof ColumnMapping] !==
-                                index
-                            }
-                          >
-                            {header || `Column ${indexToColumnLetter(index)}`}
-                          </option>
-                        ))}
-                      </Select>
-                    </Tooltip>
-                    {columnMapping[field as keyof ColumnMapping] !== null && (
-                      <Tooltip label="Clear mapping">
-                        <IconButton
-                          aria-label={`Clear ${label} mapping`}
-                          icon={<CloseIcon />}
-                          size="sm"
-                          onClick={() =>
-                            handleClearMapping(
-                              columnMapping[field as keyof ColumnMapping]!,
-                            )
-                          }
-                        />
+                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex-1">
+                            <Select
+                              value={
+                                columnMapping[field as keyof ColumnMapping] !== null
+                                  ? String(columnMapping[field as keyof ColumnMapping]!)
+                                  : ""
+                              }
+                              onValueChange={(val) =>
+                                handleColumnMap(Number(val), field)
+                              }
+                            >
+                              <SelectTrigger 
+                                className="w-full"
+                                onFocus={() => setActiveMappingField(field as ColumnType | null)}
+                                onClick={() => setActiveMappingField(field as ColumnType | null)}
+                              >
+                                <SelectValue placeholder="Unmapped" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unmapped">Unmapped</SelectItem>
+                                {excelData.headers.map((header, index) => (
+                                  <SelectItem
+                                    key={index}
+                                    value={String(index)}
+                                    disabled={
+                                      mappedDataColumns.has(index) &&
+                                      columnMapping[field as keyof ColumnMapping] !==
+                                        index
+                                    }
+                                  >
+                                    {header || `Column ${indexToColumnLetter(index)}`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Select Excel column for {label}</p>
+                        </TooltipContent>
                       </Tooltip>
+                    </TooltipProvider>
+                    {columnMapping[field as keyof ColumnMapping] !== null && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleClearMapping(
+                                  columnMapping[field as keyof ColumnMapping]!,
+                                )
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Clear mapping</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
-                    <Box w="150px" fontSize="sm" color="subtle" isTruncated>
+                    <div className="w-[150px] text-sm text-muted-foreground truncate">
                       {getColumnPreview(
                         columnMapping[field as keyof ColumnMapping],
                         excelData.rows,
                       )}
-                    </Box>
-                  </HStack>
+                    </div>
+                  </div>
                 )
               })}
-            </VStack>
-            <Box
-              overflow="auto"
-              borderWidth="1px"
-              borderRadius="md"
-              p={2}
-              w={{ base: "100%", md: "60%" }}
-              maxH="70vh"
-              mt={{ base: 4, md: 0 }}
-            >
-              <Table size="sm">
-                <Thead>
-                  <Tr>
+            </div>
+            <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {excelData.headers.map((header, index) => {
                       const isMapped = mappedColumnsForHighlight.has(index)
                       const isSelected = selectedColumnIndex === index
                       return (
-                        <Th
+                        <TableHead
                           key={index}
-                          bg={
+                          className={cn(
+                            "sticky top-0 cursor-pointer",
                             isSelected
-                              ? SELECTED_BG_STRONG
+                              ? "bg-primary/20 border-2 border-primary"
                               : isMapped
-                                ? MAPPED_BG
-                                : "neutral.100"
-                          }
-                          position="sticky"
-                          top={0}
-                          border={
-                            isSelected || isMapped ? "2px solid" : undefined
-                          }
-                          borderColor={
-                            isSelected || isMapped
-                              ? SELECTED_BORDER_COLOR
-                              : "transparent"
-                          }
-                          cursor={activeMappingField ? "pointer" : "default"}
+                                ? "bg-green-100"
+                                : "bg-muted"
+                          )}
                           onClick={() => handleColumnMapFromGrid(index)}
                           tabIndex={activeMappingField ? 0 : undefined}
                           onKeyDown={(event) => {
@@ -1830,27 +1748,18 @@ const ReformatExcelForm: React.FC = () => {
                           }}
                           role={activeMappingField ? "button" : undefined}
                           aria-pressed={isSelected}
-                          _hover={
-                            activeMappingField
-                              ? {
-                                  bg: isSelected
-                                    ? SELECTED_BG_STRONG
-                                    : SELECTED_BG_SUBTLE,
-                                }
-                              : undefined
-                          }
                         >
                           {header || `Column ${indexToColumnLetter(index)}`}
-                        </Th>
+                        </TableHead>
                       )
                     })}
-                  </Tr>
-                </Thead>
-                <Tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {excelData.rows
                     .slice(0, MAX_PREVIEW_ROWS)
                     .map((row, rowIndex) => (
-                      <Tr key={rowIndex}>
+                      <TableRow key={rowIndex}>
                         {row.map((cell, cellIndex) => {
                           const isMissingRequired = REQUIRED_COLUMNS.some(
                             (requiredField) =>
@@ -1861,34 +1770,32 @@ const ReformatExcelForm: React.FC = () => {
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
                             mappedColumnsForHighlight.has(cellIndex)
-                          const bgColor = isMissingRequired
-                            ? "danger.100"
-                            : isSelectedColumn
-                              ? SELECTED_BG_SUBTLE
-                              : isMappedColumn
-                                ? MAPPED_BG
-                                : undefined
+                          
                           return (
-                            <Td
+                            <TableCell
                               key={cellIndex}
-                              maxW="200px"
-                              isTruncated
-                              bg={bgColor}
-                              cursor={
-                                activeMappingField ? "pointer" : "default"
-                              }
+                              className={cn(
+                                "max-w-[200px] truncate cursor-pointer",
+                                isMissingRequired
+                                  ? "bg-red-100"
+                                  : isSelectedColumn
+                                    ? "bg-primary/10"
+                                    : isMappedColumn
+                                      ? "bg-green-50"
+                                      : ""
+                              )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}
                             >
                               {getDisplayValue(cell)}
-                            </Td>
+                            </TableCell>
                           )
                         })}
-                      </Tr>
+                      </TableRow>
                     ))}
-                </Tbody>
+                </TableBody>
               </Table>
-            </Box>
-          </Flex>
+            </div>
+          </div>
         )}
         {step === "submit" && (
           <SubmitStep
@@ -1904,8 +1811,8 @@ const ReformatExcelForm: React.FC = () => {
             sheetValidationResults={sheetValidationResults}
           />
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   )
 }
 
