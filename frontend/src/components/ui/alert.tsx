@@ -1,5 +1,5 @@
-import * as React from "react"
 import { cn } from "@/lib/utils"
+import * as React from "react"
 
 const alertVariants = {
   default: "bg-background text-foreground",
@@ -9,7 +9,9 @@ const alertVariants = {
 
 const Alert = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { variant?: keyof typeof alertVariants }
+  React.HTMLAttributes<HTMLDivElement> & {
+    variant?: keyof typeof alertVariants
+  }
 >(({ className, variant = "default", ...props }, ref) => (
   <div
     ref={ref}
@@ -28,7 +30,11 @@ const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <h5 ref={ref} className={cn("mb-1 font-medium leading-none", className)} {...props} />
+  <h5
+    ref={ref}
+    className={cn("mb-1 font-medium leading-none", className)}
+    {...props}
+  />
 ))
 AlertTitle.displayName = "AlertTitle"
 

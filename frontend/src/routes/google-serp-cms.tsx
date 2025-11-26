@@ -20,6 +20,7 @@ import {
   Icon,
   IconButton,
   Input,
+  ListItem,
   Select,
   SimpleGrid,
   Spinner,
@@ -31,33 +32,32 @@ import {
   Thead,
   Tooltip,
   Tr,
+  UnorderedList,
   VStack,
   Wrap,
   WrapItem,
   useColorModeValue,
-  UnorderedList,
-  ListItem,
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { IconType } from "react-icons"
 import {
-  LuSearch,
-  LuDatabase,
-  LuLink,
   LuCrop,
+  LuDatabase,
+  LuDollarSign,
   LuEraser,
   LuFileText,
-  LuWand2,
   LuImage,
-  LuDollarSign,
   LuLayers,
+  LuLink,
+  LuSearch,
+  LuWand2,
 } from "react-icons/lu"
 import * as XLSX from "xlsx"
-import useCustomToast from "../hooks/useCustomToast"
 import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
+import useCustomToast from "../hooks/useCustomToast"
 import { showDevUI } from "../utils"
 
 // Shared Constants and Types
@@ -107,7 +107,10 @@ type DataWarehouseModeConfig = {
   icon: IconType
 }
 
-const DATA_WAREHOUSE_MODE_CONFIG: Record<DataWarehouseMode, DataWarehouseModeConfig> = {
+const DATA_WAREHOUSE_MODE_CONFIG: Record<
+  DataWarehouseMode,
+  DataWarehouseModeConfig
+> = {
   imagesAndMsrp: {
     label: "Images + MSRP",
     description: "Pull images and price data.",
@@ -194,7 +197,7 @@ const withManualBrandValue = (
     sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
     MANUAL_BRAND_HEADER
 
-  if (manualBrandValue && manualBrandValue.trim()) {
+  if (manualBrandValue?.trim()) {
     const trimmed = manualBrandValue.trim()
     if (hasManualColumn) {
       const updatedRows = sheet.excelData.rows.map((row) => {
@@ -422,7 +425,10 @@ const useIframeEmail = (): string | null => {
 }
 
 // Google Images Form Component
-const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
+const GoogleImagesForm: React.FC<FormWithBackProps> = ({
+  onBack,
+  backLabel,
+}) => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -460,7 +466,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
     const sanitized: XLSX.WorkSheet = { ...worksheet }
 
     const sanitizeDimensionEntries = (entries: any[] | undefined) => {
-      
       if (!Array.isArray(entries)) return entries
       return entries.map((entry) => {
         if (!entry || typeof entry !== "object") return entry
@@ -511,7 +516,6 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
     },
     [sheetConfigs.length],
   )
-
 
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
   const OPTIONAL_COLUMNS: ColumnType[] = [
@@ -705,7 +709,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
         if (field === "brand" && sheet.manualBrandValue) {
           workingSheet = withManualBrandValue(sheet, null)
         }
-        let newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        const newMapping = cloneColumnMapping(workingSheet.columnMapping)
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
           if (
             newMapping[key] === index &&
@@ -765,10 +769,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
           columnMapping: workingMapping,
         }
       })
-      if (
-        columnMapping.brand !== null &&
-        columnMapping.brand === index
-      ) {
+      if (columnMapping.brand !== null && columnMapping.brand === index) {
         setManualBrand("")
       }
     },
@@ -880,9 +881,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
     )
     return {
       isValid:
-        missing.length === 0 &&
-        excelData.rows.length > 0 &&
-        headersAreValid,
+        missing.length === 0 && excelData.rows.length > 0 && headersAreValid,
       missing,
     }
   }, [
@@ -897,9 +896,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
     () =>
       sheetConfigs.map((sheet, index) => {
         const mapping = sheet.columnMapping ?? createEmptyColumnMapping()
-        const missing = REQUIRED_COLUMNS.filter(
-          (col) => mapping[col] === null,
-        )
+        const missing = REQUIRED_COLUMNS.filter((col) => mapping[col] === null)
         const headersValid = sheet.excelData.headers.some(
           (header) => String(header).trim() !== "",
         )
@@ -924,8 +921,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
     [sheetConfigs, sheetValidationResults],
   )
 
-  const activeSheetValidation =
-    sheetValidationResults[activeSheetIndex] ?? null
+  const activeSheetValidation = sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
   const activeSheetIsSelected = activeSheet?.isSelected ?? false
@@ -974,14 +970,18 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                 : "Mapping ready",
             )
           } else if (hasMissing) {
-            tooltipParts.push(`Missing required: ${(validation?.missing ?? []).join(", ")}`)
+            tooltipParts.push(
+              `Missing required: ${(validation?.missing ?? []).join(", ")}`,
+            )
           }
           const tooltipLabel = tooltipParts.join(" • ")
-          const statusIcon = !isSelected
-            ? <CloseIcon boxSize={3} />
-            : showWarning
-              ? <WarningIcon boxSize={3} />
-              : <CheckIcon boxSize={3} />
+          const statusIcon = !isSelected ? (
+            <CloseIcon boxSize={3} />
+          ) : showWarning ? (
+            <WarningIcon boxSize={3} />
+          ) : (
+            <CheckIcon boxSize={3} />
+          )
           const resolvedBg = isActive
             ? undefined
             : !isSelected
@@ -1008,11 +1008,15 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                       event.stopPropagation()
                       handleToggleSheetSelection(index)
                     }}
-                    aria-label={`${isSelected ? "Exclude" : "Include"} ${sheetLabel}`}
+                    aria-label={`${
+                      isSelected ? "Exclude" : "Include"
+                    } ${sheetLabel}`}
                   />
                   <Button
                     size={size}
-                    variant={isActive ? "solid" : isSelected ? "ghost" : "outline"}
+                    variant={
+                      isActive ? "solid" : isSelected ? "ghost" : "outline"
+                    }
                     colorScheme={
                       isActive
                         ? "brand"
@@ -1176,7 +1180,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
         `Sheet ${invalidSheet.sheetIndex + 1}`
       showToast(
         "Validation Error",
-        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(", ")}`,
+        `Missing required columns in ${sheetName}: ${invalidSheet.missing.join(
+          ", ",
+        )}`,
         "warning",
       )
       setActiveSheetIndex(invalidSheet.sheetIndex)
@@ -1214,7 +1220,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
         const mapping = sheet.columnMapping
         if (mapping.style === null) {
           throw new Error(
-            `Sheet "${sheet.name || `Sheet ${index + 1}`}" is missing a mapped style column.`,
+            `Sheet "${
+              sheet.name || `Sheet ${index + 1}`
+            }" is missing a mapped style column.`,
           )
         }
 
@@ -1233,10 +1241,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
         )
         const formData = new FormData()
         formData.append("fileUploadImage", sheetFile)
-        formData.append(
-          "searchColImage",
-          indexToColumnLetter(mapping.style),
-        )
+        formData.append("searchColImage", indexToColumnLetter(mapping.style))
 
         if (sheet.manualBrandValue) {
           formData.append("brandColImage", "MANUAL")
@@ -1271,16 +1276,13 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
             indexToColumnLetter(mapping.category),
           )
         }
-        formData.append(
-          "header_index",
-          String(sheet.headerIndex + 1),
-        )
+        formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
-          formData.append("sheetIndex", String(index + 1))
-          formData.append("isIconDistro", String(isIconDistro))
-          formData.append("isAiMode", String(isAiMode))
-          formData.append("skipDataWarehouse", String(skipDataWarehouse))
+        formData.append("sheetIndex", String(index + 1))
+        formData.append("isIconDistro", String(isIconDistro))
+        formData.append("isAiMode", String(isAiMode))
+        formData.append("skipDataWarehouse", String(skipDataWarehouse))
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
@@ -1290,9 +1292,9 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
         if (!response.ok) {
           const errorText = await response.text()
           throw new Error(
-            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${response.status}): ${
-              errorText || response.statusText
-            }`,
+            `Server error for sheet "${sheet.name || `Sheet ${index + 1}`}" (${
+              response.status
+            }): ${errorText || response.statusText}`,
           )
         }
       }
@@ -1493,7 +1495,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                           {selectedSheetCount} selected
                         </Badge>
                         <Text fontSize="xs" color="subtle">
-                          Viewing {sheetConfigs[activeSheetIndex]?.name ||
+                          Viewing{" "}
+                          {sheetConfigs[activeSheetIndex]?.name ||
                             `Sheet ${activeSheetIndex + 1}`}
                         </Text>
                       </HStack>
@@ -1522,7 +1525,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                       Select a sheet to preview its header row and sample data.
                     </Text>
                     <Text fontSize="xs" color="subtle">
-                      Use the checkbox to include or exclude sheets from submission.
+                      Use the checkbox to include or exclude sheets from
+                      submission.
                     </Text>
                   </VStack>
                 </CardBody>
@@ -1661,7 +1665,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                         }`}
                       </Text>
                       <Text fontSize="xs" color="subtle">
-                        Toggle a checkbox to include or exclude a sheet from the submission.
+                        Toggle a checkbox to include or exclude a sheet from the
+                        submission.
                       </Text>
                     </VStack>
                   </CardBody>
@@ -1669,10 +1674,11 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
               )}
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
-                  Missing required columns: {validateForm.missing
+                  Missing required columns:{" "}
+                  {validateForm.missing
                     .map((field) => formatMappingFieldLabel(field))
-                    .join(", ")}.
-                  Please map all required columns.
+                    .join(", ")}
+                  . Please map all required columns.
                 </Text>
               )}
               {!headersAreValid && (
@@ -1906,7 +1912,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                 {columnMapping.readImage !== null && (
                   <Tooltip label="Clear mapping">
                     <IconButton
-                      aria-label={`Clear image link mapping`}
+                      aria-label={"Clear image link mapping"}
                       icon={<CloseIcon />}
                       size="sm"
                       onClick={() => handleClearImageMapping("readImage")}
@@ -1946,7 +1952,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                 {columnMapping.imageAdd !== null && (
                   <Tooltip label="Clear mapping">
                     <IconButton
-                      aria-label={`Clear image anchor/target mapping`}
+                      aria-label={"Clear image anchor/target mapping"}
                       icon={<CloseIcon />}
                       size="sm"
                       onClick={() => handleClearImageMapping("imageAdd")}
@@ -2071,7 +2077,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
               {hasMultipleSheets && (
                 <Box>
                   <Text fontWeight="semibold">
-                    Sheets to submit ({selectedSheetCount}/{sheetConfigs.length})
+                    Sheets to submit ({selectedSheetCount}/{sheetConfigs.length}
+                    )
                   </Text>
                   {selectedSheetCount > 0 ? (
                     <UnorderedList mt={1} pl={4} styleType="disc">
@@ -2105,8 +2112,8 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                 )}
                 {!isEmailValid && sendToEmail && (
                   <Text fontSize="sm" color="red.500" mt={1}>
-                    The email supplied the URL looks invalid. Update the
-                    iframe query parameter before submitting.
+                    The email supplied the URL looks invalid. Update the iframe
+                    query parameter before submitting.
                   </Text>
                 )}
               </FormControl>
@@ -2146,7 +2153,7 @@ const GoogleImagesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) =>
                   isDisabled
                   onChange={(e) => setIsAiMode(e.target.checked)}
                 >
-                  AI Mode 
+                  AI Mode
                 </Checkbox>
                 <Text fontSize="sm" color="subtle" mt={2} pl={8}>
                   AI Mode is currently locked and will submit as disabled.
@@ -2379,21 +2386,19 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       if (field && !ALL_COLUMNS.includes(field)) return
       setColumnMapping((prev) => {
         const newMapping = { ...prev }
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach(
-          (key) => {
-            if (
-              newMapping[key] === index &&
-              key !== "readImage" &&
-              key !== "imageAdd"
-            ) {
-              newMapping[key] = null
-              if (key === "brand") {
-                setManualBrand("")
-                setIsManualBrandApplied(false)
-              }
+        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+          if (
+            newMapping[key] === index &&
+            key !== "readImage" &&
+            key !== "imageAdd"
+          ) {
+            newMapping[key] = null
+            if (key === "brand") {
+              setManualBrand("")
+              setIsManualBrandApplied(false)
             }
-          },
-        )
+          }
+        })
         if (field && ALL_COLUMNS.includes(field)) {
           newMapping[field as keyof ColumnMapping] = index
           if (field === "brand") {
@@ -2610,10 +2615,7 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       formData.append("searchColImage", "")
     }
     if (columnMapping.msrp !== null) {
-      formData.append(
-        "msrpColImage",
-        indexToColumnLetter(columnMapping.msrp),
-      )
+      formData.append("msrpColImage", indexToColumnLetter(columnMapping.msrp))
     } else {
       formData.append("msrpColImage", "")
     }
@@ -2634,7 +2636,9 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     const imageColumnIndexForSubmit = enableImageTargetMapping
       ? columnMapping.imageAdd
       : allowImageColumnMapping
-        ? columnMapping.readImage ?? columnMapping.imageAdd ?? fallbackImageColumnIndex
+        ? columnMapping.readImage ??
+          columnMapping.imageAdd ??
+          fallbackImageColumnIndex
         : null
 
     formData.append(
@@ -2941,10 +2945,11 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             >
               {!validateForm.isValid && (
                 <Text color="red.500" fontSize="sm" fontWeight="medium">
-                  Missing required columns: {validateForm.missing
+                  Missing required columns:{" "}
+                  {validateForm.missing
                     .map((field) => formatMappingFieldLabel(field))
-                    .join(", ")}.
-                  Please map all required columns.
+                    .join(", ")}
+                  . Please map all required columns.
                 </Text>
               )}
               {!dataHeadersAreValid && (
@@ -3112,44 +3117,44 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               {OPTIONAL_COLUMNS.includes("brand") &&
                 columnMapping.brand === null &&
                 !isManualBrandApplied && (
-                <FormControl>
-                  <HStack gap={2}>
-                    <Text w="120px">Add Brand Column:</Text>
-                    <Tooltip label="Enter a brand to apply to all rows">
-                      <Input
-                        placeholder="Add Brand for All Rows (Optional)"
-                        value={manualBrand}
-                        onChange={(e) => setManualBrand(e.target.value)}
-                        aria-label="Manual brand input"
-                        flex="1"
-                      />
-                    </Tooltip>
-                    <Button
-                      colorScheme="brand"
-                      size="sm"
-                      onClick={applyManualBrand}
-                      isDisabled={!manualBrand.trim()}
-                    >
-                      Apply
-                    </Button>
-                    {isManualBrandApplied && (
+                  <FormControl>
+                    <HStack gap={2}>
+                      <Text w="120px">Add Brand Column:</Text>
+                      <Tooltip label="Enter a brand to apply to all rows">
+                        <Input
+                          placeholder="Add Brand for All Rows (Optional)"
+                          value={manualBrand}
+                          onChange={(e) => setManualBrand(e.target.value)}
+                          aria-label="Manual brand input"
+                          flex="1"
+                        />
+                      </Tooltip>
                       <Button
-                        colorScheme="red"
-                        variant="outline"
+                        colorScheme="brand"
                         size="sm"
-                        onClick={removeManualBrand}
+                        onClick={applyManualBrand}
+                        isDisabled={!manualBrand.trim()}
                       >
-                        Remove
+                        Apply
                       </Button>
+                      {isManualBrandApplied && (
+                        <Button
+                          colorScheme="red"
+                          variant="outline"
+                          size="sm"
+                          onClick={removeManualBrand}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </HStack>
+                    {isManualBrandApplied && (
+                      <Badge colorScheme="brand" mt={2}>
+                        Manual Brand Column Applied
+                      </Badge>
                     )}
-                  </HStack>
-                  {isManualBrandApplied && (
-                    <Badge colorScheme="brand" mt={2}>
-                      Manual Brand Column Applied
-                    </Badge>
-                  )}
-                </FormControl>
-              )}
+                  </FormControl>
+                )}
               {enableImageTargetMapping && (
                 <>
                   <Text fontWeight="bold" mt={4}>
@@ -3422,7 +3427,10 @@ const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   )
 }
 
-const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
+const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({
+  onBack,
+  backLabel,
+}) => {
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -3443,7 +3451,10 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({ onBack, backLab
   )
 }
 
-const ImageCropToolForm: React.FC<FormWithBackProps> = ({ onBack, backLabel }) => {
+const ImageCropToolForm: React.FC<FormWithBackProps> = ({
+  onBack,
+  backLabel,
+}) => {
   return (
     <Container maxW="container.xl" p={4} bg="surface" color="text">
       <VStack spacing={6} align="stretch">
@@ -3513,10 +3524,12 @@ const CMSGoogleSerpForm: React.FC = () => {
             </Text>
           </VStack>
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-            {(Object.entries(DATA_WAREHOUSE_MODE_CONFIG) as [
-              DataWarehouseMode,
-              DataWarehouseModeConfig,
-            ][]).map(([modeKey, config]) => (
+            {(
+              Object.entries(DATA_WAREHOUSE_MODE_CONFIG) as [
+                DataWarehouseMode,
+                DataWarehouseModeConfig,
+              ][]
+            ).map(([modeKey, config]) => (
               <Card
                 key={modeKey}
                 cursor="pointer"
@@ -3562,14 +3575,23 @@ const CMSGoogleSerpForm: React.FC = () => {
   return (
     <Container maxW="container.xl" p={4} bg="white" color="black">
       <VStack spacing={6} align="stretch">
-  {/* Mine Data */}
-  <Text fontSize="lg" fontWeight="bold">Mine Data</Text>
+        {/* Mine Data */}
+        <Text fontSize="lg" fontWeight="bold">
+          Mine Data
+        </Text>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <Card cursor="pointer" onClick={() => setSelectedType("images")}>
             <CardHeader>
               <HStack>
-                <Icon as={LuSearch} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Google Images</Text>
+                <Icon
+                  as={LuSearch}
+                  boxSize={6}
+                  color="gray.600"
+                  strokeWidth={1.75}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Google Images
+                </Text>
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3585,8 +3607,15 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuDatabase} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Data Warehouse</Text>
+                <Icon
+                  as={LuDatabase}
+                  boxSize={6}
+                  color="gray.600"
+                  strokeWidth={1.75}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Data Warehouse
+                </Text>
               </HStack>
             </CardHeader>
             <CardBody>
@@ -3603,10 +3632,19 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuSearch} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">Reverse Image Search</Text>
+                <Icon
+                  as={LuSearch}
+                  boxSize={6}
+                  color="gray.400"
+                  strokeWidth={1.5}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Reverse Image Search
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
@@ -3618,8 +3656,10 @@ const CMSGoogleSerpForm: React.FC = () => {
           </Card>
         </SimpleGrid>
 
-  {/* Transform Excel */}
-  <Text fontSize="lg" fontWeight="bold" mt={2}>Transform Excel</Text>
+        {/* Transform Excel */}
+        <Text fontSize="lg" fontWeight="bold" mt={2}>
+          Transform Excel
+        </Text>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <Card
             cursor="pointer"
@@ -3630,10 +3670,19 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuLink} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Image URL Download</Text>
+                <Icon
+                  as={LuLink}
+                  boxSize={6}
+                  color="gray.600"
+                  strokeWidth={1.75}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Image URL Download
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
@@ -3650,10 +3699,19 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuCrop} boxSize={6} color="gray.600" strokeWidth={1.75} />
-                <Text fontSize="xl" fontWeight="semibold">Image crop</Text>
+                <Icon
+                  as={LuCrop}
+                  boxSize={6}
+                  color="gray.600"
+                  strokeWidth={1.75}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Image crop
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
@@ -3670,10 +3728,19 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuFileText} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">PDF → Excel</Text>
+                <Icon
+                  as={LuFileText}
+                  boxSize={6}
+                  color="gray.400"
+                  strokeWidth={1.5}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  PDF → Excel
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
@@ -3686,8 +3753,10 @@ const CMSGoogleSerpForm: React.FC = () => {
           </Card>
         </SimpleGrid>
 
-  {/* Enhance Images (Gen AI) - coming soon */}
-  <Text fontSize="lg" fontWeight="bold" mt={2}>Enhance Images (Gen AI)</Text>
+        {/* Enhance Images (Gen AI) - coming soon */}
+        <Text fontSize="lg" fontWeight="bold" mt={2}>
+          Enhance Images (Gen AI)
+        </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Card
             cursor="not-allowed"
@@ -3698,10 +3767,19 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuEraser} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">Background remover</Text>
+                <Icon
+                  as={LuEraser}
+                  boxSize={6}
+                  color="gray.400"
+                  strokeWidth={1.5}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Background remover
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
@@ -3719,22 +3797,42 @@ const CMSGoogleSerpForm: React.FC = () => {
           >
             <CardHeader>
               <HStack>
-                <Icon as={LuWand2} boxSize={6} color="gray.400" strokeWidth={1.5} />
-                <Text fontSize="xl" fontWeight="semibold">Image generator</Text>
+                <Icon
+                  as={LuWand2}
+                  boxSize={6}
+                  color="gray.400"
+                  strokeWidth={1.5}
+                />
+                <Text fontSize="xl" fontWeight="semibold">
+                  Image generator
+                </Text>
                 {showDevUI() && (
-                  <Badge colorScheme="red" ml="auto">DEV</Badge>
+                  <Badge colorScheme="red" ml="auto">
+                    DEV
+                  </Badge>
                 )}
               </HStack>
             </CardHeader>
             <CardBody>
               <VStack align="start" spacing={1}>
                 <Text>
-                  Generate studio-style product photos from reference shots. (Nano Banana)
+                  Generate studio-style product photos from reference shots.
+                  (Nano Banana)
                 </Text>
                 <Text fontWeight="semibold">Convert:</Text>
-                <Text m={0} p={0} pl={0} whiteSpace="nowrap"><Text as="span" mx={2}>•</Text>
-                  Lifestyle shots <Text as="span" mx={2}>•</Text> Mockups/CAD
-                  <Text as="span" mx={2}>•</Text> Low‑quality product photos
+                <Text m={0} p={0} pl={0} whiteSpace="nowrap">
+                  <Text as="span" mx={2}>
+                    •
+                  </Text>
+                  Lifestyle shots{" "}
+                  <Text as="span" mx={2}>
+                    •
+                  </Text>{" "}
+                  Mockups/CAD
+                  <Text as="span" mx={2}>
+                    •
+                  </Text>{" "}
+                  Low‑quality product photos
                 </Text>
               </VStack>
             </CardBody>

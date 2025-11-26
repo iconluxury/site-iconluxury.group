@@ -13,9 +13,9 @@ import {
   Badge,
   Box,
   Button,
-  Checkbox,
   Card,
   CardBody,
+  Checkbox,
   Container,
   Flex,
   FormControl,
@@ -435,9 +435,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetValidation = sheetValidationResults[activeSheetIndex] ?? null
   const activeSheetIsReady = Boolean(activeSheetValidation?.isValid)
   const activeSheetMissingColumns = activeSheetValidation?.missing ?? []
-  const activeSheetStatusLabel = activeSheetIsReady
-    ? "Ready"
-    : "Needs mapping"
+  const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? CheckIcon : WarningIcon
   const activeSheetStatusColor = activeSheetIsReady ? "green.400" : "yellow.400"
   const activeSheetStatusTooltip = activeSheetIsReady

@@ -1,5 +1,5 @@
-import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -22,8 +22,7 @@ const AlertDialogOverlay = React.forwardRef<
     {...props}
   />
 ))
-AlertDialogOverlay.displayName =
-  AlertDialogPrimitive.Overlay.displayName
+AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
@@ -41,14 +40,19 @@ const AlertDialogContent = React.forwardRef<
     />
   </AlertDialogPortal>
 ))
-AlertDialogContent.displayName =
-  AlertDialogPrimitive.Content.displayName
+AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
 const AlertDialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)} {...props} />
+  <div
+    className={cn(
+      "flex flex-col space-y-2 text-center sm:text-left",
+      className,
+    )}
+    {...props}
+  />
 )
 AlertDialogHeader.displayName = "AlertDialogHeader"
 
@@ -56,7 +60,13 @@ const AlertDialogFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)} {...props} />
+  <div
+    className={cn(
+      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+      className,
+    )}
+    {...props}
+  />
 )
 AlertDialogFooter.displayName = "AlertDialogFooter"
 

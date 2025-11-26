@@ -18,11 +18,7 @@ const mapStatusToToaster = (status: ToastStatus) => {
 
 const useCustomToast = () => {
   return useCallback(
-    (
-      title: string,
-      description: string,
-      status: ToastStatus = "info",
-    ) => {
+    (title: string, description: string, status: ToastStatus = "info") => {
       const show = mapStatusToToaster(status)
       show(title, {
         description,
