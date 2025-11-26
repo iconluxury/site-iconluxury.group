@@ -15,6 +15,7 @@ import {
   LuDatabase,
   LuLink,
   LuSearch,
+  LuLayoutGrid,
 } from "react-icons/lu"
 import { useTheme } from "next-themes"
 import { Badge } from "./ui/badge"
@@ -22,6 +23,7 @@ import { Button } from "./ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "./ui/card"
@@ -152,6 +154,27 @@ export default function JobsDashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Tools Access Card */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="space-y-1">
+            <CardTitle className="text-xl">All Tools</CardTitle>
+            <CardDescription>
+              Access scraping tools, data warehouse, and analytics.
+              {inProgressJobs > 0 && (
+                <span className="ml-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                  {inProgressJobs} Jobs Running
+                </span>
+              )}
+            </CardDescription>
+          </div>
+          <Button onClick={() => navigate({ to: "/google-serp-cms" })}>
+            <LuLayoutGrid className="mr-2 h-4 w-4" />
+            Open Tools & Reports
+          </Button>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Middle Content (Feed) */}
