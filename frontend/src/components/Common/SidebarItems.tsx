@@ -21,6 +21,12 @@ import {
   Link as LinkIcon,
   Crop,
   Wrench,
+  Settings,
+  Package,
+  BarChart,
+  Briefcase,
+  FileSpreadsheet,
+  Layout,
 } from "lucide-react"
 import type { UserPublic } from "../../client"
 import useAuth from "../../hooks/useAuth"
@@ -35,6 +41,7 @@ interface SidebarItem {
 
 const sidebarStructure: SidebarItem[] = [
   { title: "Dashboard", path: "/", icon: Home },
+  { title: "Items", path: "/items", icon: Package },
   { title: "File Explorer", path: "/file-explorer", icon: Archive },
   {
     title: "Tools",
@@ -44,6 +51,7 @@ const sidebarStructure: SidebarItem[] = [
       { title: "Data Warehouse", path: "/tools/data-warehouse", icon: Database },
       { title: "Image Links", path: "/tools/image-links", icon: LinkIcon },
       { title: "Crop Tool", path: "/tools/crop", icon: Crop },
+      { title: "Reformat Excel", path: "/reformat-excel", icon: FileSpreadsheet },
     ],
   },
   {
@@ -51,13 +59,12 @@ const sidebarStructure: SidebarItem[] = [
     icon: Search,
     subItems: [
       { title: "Jobs", path: "/scraping-api/explore", icon: Search },
-      {
-        title: "Google SERP",
-        path: "/scraping-api/google-serp",
-        icon: Globe,
-      },
+      { title: "Scraping Jobs", path: "/scraping-api/scraping-jobs", icon: Briefcase },
+      { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
+      { title: "Google SERP CMS", path: "/google-serp-cms", icon: Layout },
     ],
   },
+  { title: "Settings", path: "/settings", icon: Settings },
   { title: "Support Ticket", path: "/support-ticket", icon: HelpCircle },
   { title: "Sign out", icon: LogOut, action: () => {} },
 ]
