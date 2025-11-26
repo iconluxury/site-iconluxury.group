@@ -65,13 +65,7 @@ const sidebarStructure: SidebarItem[] = [
     icon: Search,
     subItems: [
       { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
-      {
-        title: "Scraping Jobs",
-        path: "/scraping-api/scraping-jobs",
-        icon: Briefcase,
-      },
       { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
-      { title: "Google SERP CMS", path: "/google-serp-cms", icon: Layout },
     ],
   },
   { title: "Settings", path: "/settings", icon: Settings },
