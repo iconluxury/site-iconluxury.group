@@ -23,17 +23,77 @@ logger = logging.getLogger(__name__)
 s3_router = APIRouter(prefix="/s3", tags=["s3"])
 r2_router = APIRouter(prefix="/r2", tags=["r2"])
 
-# Configure S3 client (used for both S3 and R2)
-s3_client = client(
-    "s3",
-    region_name="auto",
-    endpoint_url=os.getenv("R2_ENDPOINT", "https://97d91ece470eb7b9aa71ca0c781cfacc.r2.cloudflarestorage.com"),
-    aws_access_key_id=os.getenv("R2_ACCESS_KEY_ID", "5547ff7ffb8f3b16a15d6f38322cd8bd"),
-    aws_secret_access_key=os.getenv("R2_SECRET_ACCESS_KEY", "771014b01093eceb212dfea5eec0673842ca4a39456575ca7ff43f768cf42978")
-)
+# Global S3 Client and Config
+s3_client = None
+BUCKET_NAME = "iconluxurygroup"
+
+class S3Config(BaseModel):
+    endpoint_url: str
+    access_key_id: str
+    secret_access_key: str
+    bucket_name: str = "iconluxurygroup"
+
+def init_s3_client(config: Optional[S3Config] = None):
+    global s3_client, BUCKET_NAME
+    
+    if config:
+        endpoint = config.endpoint_url
+        access_key = config.access_key_id
+        secret_key = config.secret_access_key
+        BUCKET_NAME = config.bucket_name
+    else:
+        endpoint = os.getenv("R2_ENDPOINT", "https://97d91ece470eb7b9aa71ca0c781cfacc.r2.cloudflarestorage.com")
+        access_key = os.getenv("R2_ACCESS_KEY_ID", "5547ff7ffb8f3b16a15d6f38322cd8bd")
+        secret_key = os.getenv("R2_SECRET_ACCESS_KEY", "771014b01093eceb212dfea5eec0673842ca4a39456575ca7ff43f768cf42978")
+        BUCKET_NAME = os.getenv("R2_BUCKET_NAME", "iconluxurygroup")
+
+    try:
+        s3_client = client(
+            "s3",
+            region_name="auto",
+            endpoint_url=endpoint,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+        logger.info("S3 client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize S3 client: {e}")
+        s3_client = None
+
+# Initialize on startup
+init_s3_client()
+
+@s3_router.get("/config")
+async def get_s3_config():
+    """Check if S3 is configured and return status."""
+    global s3_client
+    is_configured = s3_client is not None
+    # We can try a simple list operation to verify credentials
+    if is_configured:
+        try:
+            s3_client.list_objects_v2(Bucket=BUCKET_NAME, MaxKeys=1)
+        except Exception as e:
+            logger.error(f"S3 configuration invalid: {e}")
+            is_configured = False
+            
+    return {
+        "configured": is_configured,
+        "bucket_name": BUCKET_NAME
+    }
+
+@s3_router.post("/config")
+async def update_s3_config(config: S3Config):
+    """Update S3 configuration."""
+    try:
+        init_s3_client(config)
+        # Verify
+        s3_client.list_objects_v2(Bucket=BUCKET_NAME, MaxKeys=1)
+        return {"message": "S3 configuration updated successfully"}
+    except Exception as e:
+        # Revert or leave as is? For now, just report error
+        raise HTTPException(status_code=400, detail=f"Failed to configure S3: {str(e)}")
 
 # Constants
-BUCKET_NAME = "iconluxurygroup"
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 JSON_STORE_PATH = "file_store/file_store.json"
 
