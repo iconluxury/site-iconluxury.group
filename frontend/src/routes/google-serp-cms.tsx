@@ -13,11 +13,8 @@ import {
   LuCrop,
   LuDatabase,
   LuEraser,
-  LuFileBarChart,
   LuFileText,
-  LuHelpCircle,
   LuImage,
-  LuLayoutDashboard,
   LuLink,
   LuSearch,
   LuWand2,
@@ -201,56 +198,6 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <p>Convert and transform PDF documents.</p>
-          </CardContent>
-        </Card>
-
-        {/* Support Ticket */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <LuHelpCircle className="h-6 w-6 text-primary" />
-              <CardTitle>Support</CardTitle>
-            </div>
-            <CardDescription>Report issues or request help.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/support-ticket">Contact Support</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Dashboard / Portal */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <LuLayoutDashboard className="h-6 w-6 text-primary" />
-              <CardTitle>Dash / Portal</CardTitle>
-            </div>
-            <CardDescription>
-              Go to the main dashboard and portal.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/">Open Dashboard</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Jobs Report */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <LuFileBarChart className="h-6 w-6 text-primary" />
-              <CardTitle>Jobs Report</CardTitle>
-            </div>
-            <CardDescription>View scraping jobs and analytics.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/scraping-api/insights">Open Report</Link>
-            </Button>
           </CardContent>
         </Card>
       </div>

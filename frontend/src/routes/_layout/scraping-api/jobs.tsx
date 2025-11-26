@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
 import PromoSERP from "../../../components/ComingSoon"
 import ApiStatusManagement from "../../../components/Admin/ApiStatusManagement"
+import Changelog from "../../../components/Changelog"
 
 import { Badge } from "../../../components/ui/badge"
 import { Button } from "../../../components/ui/button"
@@ -339,8 +340,8 @@ function Jobs() {
     <div className="container mx-auto p-6 bg-white text-gray-800">
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
-          <h1 className="text-xl font-bold text-black">All Jobs</h1>
-          <p className="text-sm text-gray-600">View and manage all job types</p>
+          <h1 className="text-xl font-bold text-black">Latest Jobs</h1>
+          <p className="text-sm text-gray-600">View and manage your recent scraping jobs</p>
         </div>
       </div>
 
@@ -490,6 +491,9 @@ function Jobs() {
                 )
               )}
             </div>
+          </div>
+          <div className="hidden md:block w-full md:w-[30%] min-w-[300px]">
+            <Changelog />
           </div>
         </div>
       )}
