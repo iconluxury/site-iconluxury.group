@@ -83,31 +83,31 @@ const getJobTypeName = (id?: number) => {
 const chartConfig = {
   "Google Scrape": {
     label: "Google Scrape",
-    color: "hsl(var(--chart-1))",
+    color: "#15803d",
   },
   "Crop Batch": {
     label: "Crop Batch",
-    color: "hsl(var(--chart-2))",
+    color: "#16a34a",
   },
   "Warehouse Batch": {
     label: "Warehouse Batch",
-    color: "hsl(var(--chart-3))",
+    color: "#22c55e",
   },
   "Unknown": {
     label: "Unknown",
-    color: "hsl(var(--chart-4))",
+    color: "#4ade80",
   },
   Completed: {
     label: "Completed",
-    color: "#22c55e",
+    color: "#15803d",
   },
   "In Progress": {
     label: "In Progress",
-    color: "#3b82f6",
+    color: "#22c55e",
   },
   Pending: {
     label: "Pending",
-    color: "#f59e0b",
+    color: "#86efac",
   },
 } satisfies ChartConfig
 
@@ -277,7 +277,7 @@ export default function JobsDashboard() {
             <CardTitle>Jobs Over Time</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
               <BarChart accessibilityLayer data={chartData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
@@ -317,7 +317,7 @@ export default function JobsDashboard() {
             <CardTitle>Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <ChartLegend content={<ChartLegendContent />} />
