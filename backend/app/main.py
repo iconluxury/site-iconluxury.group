@@ -21,10 +21,9 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=
-    [
+    allow_origins=[
         "https://dashboard.iconluxury.group",
-        "https://site-iconluxury-group-15582159051.us-east1.run.app/",
+        "https://site-iconluxury-group-15582159051.us-east1.run.app",
     ],  # Specify your frontend origin
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "OPTIONS"],  # Add PATCH
