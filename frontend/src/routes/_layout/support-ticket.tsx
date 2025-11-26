@@ -32,6 +32,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { TicketsService } from "../../client"
 
+import { OpenAPI } from "../../client"
+
 export const Route = createFileRoute("/_layout/support-ticket")({
   component: SupportTicketPage,
 })
@@ -41,6 +43,7 @@ type SupportTicketForm = {
   category: string
   priority: string
   description: string
+  attachment?: FileList
 }
 
 function SupportTicketPage() {
@@ -71,15 +74,55 @@ function SupportTicketPage() {
     },
   })
 
-  const onSubmit = (data: SupportTicketForm) => {
+  const onSubmit = async (data: SupportTicketForm) => {
+    let description = `Category: ${data.category}\nPriority: ${data.priority}\n\n${data.description}`
+
+    if (data.attachment && data.attachment.length > 0) {
+      const file = data.attachment[0]
+      const formData = new FormData()
+      formData.append("file", file)
+
+      try {
+        const token = localStorage.getItem("access_token")
+        const response = await fetch(
+          `${OpenAPI.BASE}/api/v1/s3/upload?path=support-tickets`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          },
+        )
+
+        if (response.ok) {
+          const result = await response.json()
+          description += `\n\n[Attachment Uploaded: ${result.filename}]`
+        } else {
+          showToast(
+            "Warning",
+            "Failed to upload attachment. Submitting ticket without it.",
+            "warning",
+          )
+        }
+      } catch (error) {
+        console.error("Upload failed", error)
+        showToast(
+          "Warning",
+          "Failed to upload attachment. Submitting ticket without it.",
+          "warning",
+        )
+      }
+    }
+
     createTicketMutation.mutate({
       title: data.subject,
-      description: `Category: ${data.category}\nPriority: ${data.priority}\n\n${data.description}`,
+      description: description,
     })
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-8 container mx-auto space-y-8">
       <Card>
         <CardHeader>
           <CardTitle>Submit Support Ticket</CardTitle>
@@ -137,6 +180,15 @@ function SupportTicketPage() {
                 placeholder="Detailed description of the issue..."
                 className="min-h-[150px]"
                 {...register("description", { required: true })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="attachment">Attachment (Optional)</Label>
+              <Input
+                id="attachment"
+                type="file"
+                {...register("attachment")}
               />
             </div>
 
