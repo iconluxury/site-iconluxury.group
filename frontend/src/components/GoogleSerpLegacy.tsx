@@ -89,7 +89,7 @@ type FormWithBackProps = {
   backLabel?: string
 }
 
-type DataWarehouseMode = "imagesAndMsrp" | "imagesOnly" | "msrpOnly"
+export type DataWarehouseMode = "imagesAndMsrp" | "imagesOnly" | "msrpOnly"
 
 type DataWarehouseModeConfig = {
   label: string
@@ -101,7 +101,7 @@ type DataWarehouseModeConfig = {
   icon: IconType
 }
 
-const DATA_WAREHOUSE_MODE_CONFIG: Record<
+export const DATA_WAREHOUSE_MODE_CONFIG: Record<
   DataWarehouseMode,
   DataWarehouseModeConfig
 > = {
@@ -419,7 +419,7 @@ const useIframeEmail = (): string | null => {
 }
 
 // Google Images Form Component
-const GoogleImagesForm: React.FC<FormWithBackProps> = ({
+export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   onBack,
   backLabel,
 }) => {
@@ -2138,7 +2138,7 @@ type DataWarehouseFormProps = FormWithBackProps & {
 
 type DataWarehouseMappingField = ColumnType | "imageColumn"
 
-const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
+export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   onBack,
   backLabel,
   mode,
@@ -3677,8 +3677,8 @@ const CMSGoogleSerpForm: React.FC = () => {
 }
 
 // Export
-export const Route = createFileRoute("/google-serp-cms")({
-  component: () => <CMSGoogleSerpForm />,
-})
+// export const Route = createFileRoute("/google-serp-cms")({
+//   component: () => <CMSGoogleSerpForm />,
+// })
 
 export default CMSGoogleSerpForm

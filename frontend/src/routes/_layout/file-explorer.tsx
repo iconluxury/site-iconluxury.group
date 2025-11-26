@@ -7,6 +7,8 @@ import {
   Container,
   Divider,
   Flex,
+  FormControl,
+  FormLabel,
   HStack,
   IconButton,
   Image,
@@ -27,12 +29,11 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import {
-  FaFile,
   FaFileExcel,
   FaFileImage,
   FaFilePdf,
@@ -52,6 +53,7 @@ import {
   FiGrid,
   FiInfo,
   FiList,
+  FiSettings,
 } from "react-icons/fi"
 import * as XLSX from "xlsx"
 import ExcelDataTable, {
@@ -78,7 +80,41 @@ interface S3ListResponse {
   nextContinuationToken: string | null
 }
 
+interface S3Config {
+  endpoint_url: string
+  access_key_id: string
+  secret_access_key: string
+  bucket_name: string
+}
+
+interface S3ConfigStatus {
+  configured: boolean
+  bucket_name: string
+}
+
 // API Functions
+async function checkS3Config(): Promise<S3ConfigStatus> {
+  const response = await fetch(`${API_BASE_URL}/s3/config`)
+  if (!response.ok) {
+    throw new Error("Failed to check S3 configuration")
+  }
+  return response.json()
+}
+
+async function updateS3Config(config: S3Config): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/s3/config`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(config),
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || "Failed to update S3 configuration")
+  }
+}
+
 async function listS3Objects(
   prefix: string,
   page: number,
@@ -669,6 +705,106 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   )
 }
 
+// Config Modal Component
+interface ConfigModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
+}
+
+const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const [config, setConfig] = useState<S3Config>({
+    endpoint_url: "",
+    access_key_id: "",
+    secret_access_key: "",
+    bucket_name: "iconluxurygroup",
+  })
+  const toast = useToast()
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: updateS3Config,
+    onSuccess: () => {
+      toast({
+        title: "Configuration Updated",
+        status: "success",
+        duration: 3000,
+      })
+      queryClient.invalidateQueries({ queryKey: ["s3Config"] })
+      onSuccess()
+      onClose()
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Configuration Failed",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+      })
+    },
+  })
+
+  const handleSubmit = () => {
+    mutation.mutate(config)
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>S3/R2 Configuration</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <VStack spacing={4}>
+            <Text fontSize="sm" color="gray.600">
+              Please configure your S3 or Cloudflare R2 credentials to access the file explorer.
+            </Text>
+            <FormControl isRequired>
+              <FormLabel>Endpoint URL</FormLabel>
+              <Input
+                value={config.endpoint_url}
+                onChange={(e) => setConfig({ ...config, endpoint_url: e.target.value })}
+                placeholder="https://<accountid>.r2.cloudflarestorage.com"
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Access Key ID</FormLabel>
+              <Input
+                value={config.access_key_id}
+                onChange={(e) => setConfig({ ...config, access_key_id: e.target.value })}
+                type="password"
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Secret Access Key</FormLabel>
+              <Input
+                value={config.secret_access_key}
+                onChange={(e) => setConfig({ ...config, secret_access_key: e.target.value })}
+                type="password"
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Bucket Name</FormLabel>
+              <Input
+                value={config.bucket_name}
+                onChange={(e) => setConfig({ ...config, bucket_name: e.target.value })}
+              />
+            </FormControl>
+          </VStack>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="ghost" mr={3} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button colorScheme="blue" onClick={handleSubmit} isLoading={mutation.isPending}>
+            Save Configuration
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
 // Main Component
 function FileExplorer() {
   const toast = useToast()
@@ -677,6 +813,12 @@ function FileExplorer() {
     onOpen: onDetailsOpen,
     onClose: onDetailsClose,
   } = useDisclosure()
+  const {
+    isOpen: isConfigOpen,
+    onOpen: onConfigOpen,
+    onClose: onConfigClose,
+  } = useDisclosure()
+
   const [state, setState] = useState({
     currentPath: "",
     searchQuery: "",
@@ -699,18 +841,30 @@ function FileExplorer() {
   const [previewUrl, setPreviewUrl] = useState("")
   const [previewContent, setPreviewContent] = useState<string | ExcelData>("")
 
+  // Check Config
+  const { data: configStatus, isLoading: isConfigLoading } = useQuery({
+    queryKey: ["s3Config"],
+    queryFn: checkS3Config,
+  })
+
+  useEffect(() => {
+    if (configStatus && !configStatus.configured) {
+      onConfigOpen()
+    }
+  }, [configStatus, onConfigOpen])
+
   const {
     data,
     isFetching,
     error: s3Error,
+    refetch,
   } = useQuery<S3ListResponse, Error>({
     queryKey: ["s3Objects", state.currentPath, state.page, continuationToken],
     queryFn: () =>
       listS3Objects(state.currentPath, state.page, 10, continuationToken),
     placeholderData: keepPreviousData,
-    retry: 2,
-    retryDelay: 1000,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: 1,
+    enabled: !!configStatus?.configured,
   })
 
   useEffect(() => {
@@ -915,17 +1069,10 @@ function FileExplorer() {
       return state.sortOrder === "asc" ? comparison : -comparison
     })
 
-  if (s3Error) {
+  if (isConfigLoading) {
     return (
       <Container maxW="full" bg="white" color="gray.800" py={6}>
-        <Text color="red.500">{s3Error.message}</Text>
-        <Button
-          mt={4}
-          colorScheme="blue"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
+        <Text>Checking configuration...</Text>
       </Container>
     )
   }
@@ -942,6 +1089,15 @@ function FileExplorer() {
           </Text>
         </Box>
         <HStack>
+          <Tooltip label="Settings">
+            <IconButton
+              aria-label="Settings"
+              icon={<FiSettings />}
+              size="sm"
+              colorScheme="gray"
+              onClick={onConfigOpen}
+            />
+          </Tooltip>
           <Tooltip
             label={state.isPreviewOpen ? "Hide Preview" : "Show Preview"}
           >
@@ -1005,134 +1161,147 @@ function FileExplorer() {
 
       <Divider my="4" borderColor="gray.200" />
 
-      <Flex
-        gap={6}
-        justify={state.viewMode === "grid" ? "flex-start" : "space-between"}
-        align="stretch"
-        wrap="wrap"
-      >
-        <Box
-          flex={state.viewMode === "grid" ? "0 0 40%" : "1"}
-          minW={{ base: "100%", md: state.viewMode === "grid" ? "40%" : "40%" }}
-          maxW={
-            state.viewMode === "grid" ? { base: "100%", md: "50%" } : "none"
-          }
-          maxH="70vh"
-          overflowY="auto"
-          overflowX="auto"
-          pr={state.isPreviewOpen ? 0 : 4}
+      {s3Error && !isConfigOpen ? (
+        <Container maxW="full" bg="white" color="gray.800" py={6}>
+          <Text color="red.500">{s3Error.message}</Text>
+          <Button
+            mt={4}
+            colorScheme="blue"
+            onClick={() => refetch()}
+          >
+            Retry
+          </Button>
+        </Container>
+      ) : (
+        <Flex
+          gap={6}
+          justify={state.viewMode === "grid" ? "flex-start" : "space-between"}
+          align="stretch"
+          wrap="wrap"
         >
-          <Flex direction={{ base: "column", md: "row" }} gap={4} mb={4}>
-            <Input
-              placeholder="Search Files/Folders..."
-              value={state.searchQuery}
-              onChange={(e) =>
-                setState((prev) => ({ ...prev, searchQuery: e.target.value }))
-              }
-              w={{ base: "100%", md: "250px" }}
-              borderColor="green.300"
-              _focus={{
-                borderColor: "green.500",
-                boxShadow: "0 0 0 1px green.500",
-              }}
-              bg="white"
-              color="gray.800"
-            />
-            <Select
-              value={state.typeFilter}
-              onChange={(e) =>
-                setState((prev) => ({
-                  ...prev,
-                  typeFilter: e.target.value as "all" | "folder" | "file",
-                }))
-              }
-              w={{ base: "100%", md: "200px" }}
-              borderColor="green.300"
-              _focus={{
-                borderColor: "green.500",
-                boxShadow: "0 0 0 1px green.500",
-              }}
-              bg="white"
-              color="gray.700"
-            >
-              <option value="all">All</option>
-              <option value="folder">Folders</option>
-              <option value="file">Files</option>
-            </Select>
-          </Flex>
-
-          <FileList
-            objects={filteredObjects}
-            viewMode={state.viewMode}
-            selectedFile={selectedFile}
-            sortField={state.sortField}
-            sortOrder={state.sortOrder}
-            expandedFolders={expandedFolders}
-            isFetching={isFetching}
-            onFolderClick={handleFolderClick}
-            onFileClick={handleFileClick}
-            onSort={handleSort}
-            onDownload={handleDownload}
-            onCopyUrl={handleCopyUrl}
-          />
-
-          {filteredObjects.length === 0 && !isFetching && (
-            <Text fontSize="sm" color="gray.500" mt={4}>
-              No items match your criteria
-            </Text>
-          )}
-          {isFetching && (
-            <Text fontSize="sm" color="gray.500" mt={4}>
-              Loading...
-            </Text>
-          )}
-          {!isFetching && hasMore && filteredObjects.length > 0 && (
-            <Button
-              colorScheme="green"
-              size="sm"
-              onClick={handleLoadMore}
-              mt={4}
-              alignSelf="center"
-              isDisabled={isFetching}
-            >
-              Load More
-            </Button>
-          )}
-        </Box>
-
-        {state.isPreviewOpen && (
           <Box
-            w={{ base: "100%", md: `${state.previewWidth}px` }}
-            p={4}
-            borderLeft={{ md: "1px solid" }}
-            borderColor="gray.200"
-            position="sticky"
-            top="0"
-            alignSelf="flex-start"
+            flex={state.viewMode === "grid" ? "0 0 40%" : "1"}
+            minW={{ base: "100%", md: state.viewMode === "grid" ? "40%" : "40%" }}
+            maxW={
+              state.viewMode === "grid" ? { base: "100%", md: "50%" } : "none"
+            }
             maxH="70vh"
             overflowY="auto"
-            pos="relative"
-            flex={state.viewMode === "grid" ? "1" : "0 0 auto"}
+            overflowX="auto"
+            pr={state.isPreviewOpen ? 0 : 4}
           >
-            <ResizeHandle
-              onResize={(width) =>
-                setState((prev) => ({ ...prev, previewWidth: width }))
-              }
-            />
-            <Text fontWeight="bold" mb={2}>
-              Preview
-            </Text>
-            <PreviewPanel
+            <Flex direction={{ base: "column", md: "row" }} gap={4} mb={4}>
+              <Input
+                placeholder="Search Files/Folders..."
+                value={state.searchQuery}
+                onChange={(e) =>
+                  setState((prev) => ({ ...prev, searchQuery: e.target.value }))
+                }
+                w={{ base: "100%", md: "250px" }}
+                borderColor="green.300"
+                _focus={{
+                  borderColor: "green.500",
+                  boxShadow: "0 0 0 1px green.500",
+                }}
+                bg="white"
+                color="gray.800"
+              />
+              <Select
+                value={state.typeFilter}
+                onChange={(e) =>
+                  setState((prev) => ({
+                    ...prev,
+                    typeFilter: e.target.value as "all" | "folder" | "file",
+                  }))
+                }
+                w={{ base: "100%", md: "200px" }}
+                borderColor="green.300"
+                _focus={{
+                  borderColor: "green.500",
+                  boxShadow: "0 0 0 1px green.500",
+                }}
+                bg="white"
+                color="gray.700"
+              >
+                <option value="all">All</option>
+                <option value="folder">Folders</option>
+                <option value="file">Files</option>
+              </Select>
+            </Flex>
+
+            <FileList
+              objects={filteredObjects}
+              viewMode={state.viewMode}
               selectedFile={selectedFile}
-              previewUrl={previewUrl}
-              previewContent={previewContent}
-              onCopyContent={handleCopyContent}
-              onCopyUrl={handleCopyUrl}
+              sortField={state.sortField}
+              sortOrder={state.sortOrder}
+              expandedFolders={expandedFolders}
+              isFetching={isFetching}
+              onFolderClick={handleFolderClick}
+              onFileClick={handleFileClick}
+              onSort={handleSort}
               onDownload={handleDownload}
+              onCopyUrl={handleCopyUrl}
             />
+
+            {filteredObjects.length === 0 && !isFetching && (
+              <Text fontSize="sm" color="gray.500" mt={4}>
+                No items match your criteria
+              </Text>
+            )}
+            {isFetching && (
+              <Text fontSize="sm" color="gray.500" mt={4}>
+                Loading...
+              </Text>
+            )}
+            {!isFetching && hasMore && filteredObjects.length > 0 && (
+              <Button
+                colorScheme="green"
+                size="sm"
+                onClick={handleLoadMore}
+                mt={4}
+                alignSelf="center"
+                isDisabled={isFetching}
+              >
+                Load More
+              </Button>
+            )}
           </Box>
-        )}
-      </Flex>
+
+          {state.isPreviewOpen && (
+            <Box
+              w={{ base: "100%", md: `${state.previewWidth}px` }}
+              p={4}
+              borderLeft={{ md: "1px solid" }}
+              borderColor="gray.200"
+              position="sticky"
+              top="0"
+              alignSelf="flex-start"
+              maxH="70vh"
+              overflowY="auto"
+              pos="relative"
+              flex={state.viewMode === "grid" ? "1" : "0 0 auto"}
+            >
+              <ResizeHandle
+                onResize={(width) =>
+                  setState((prev) => ({ ...prev, previewWidth: width }))
+                }
+              />
+              <Text fontWeight="bold" mb={2}>
+                Preview
+              </Text>
+              <PreviewPanel
+                selectedFile={selectedFile}
+                previewUrl={previewUrl}
+                previewContent={previewContent}
+                onCopyContent={handleCopyContent}
+                onCopyUrl={handleCopyUrl}
+                onDownload={handleDownload}
+              />
+            </Box>
+          )}
+        </Flex>
+      )}
 
       <Modal isOpen={isDetailsOpen} onClose={onDetailsClose}>
         <ModalOverlay />
@@ -1187,11 +1356,17 @@ function FileExplorer() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <ConfigModal 
+        isOpen={isConfigOpen} 
+        onClose={onConfigClose} 
+        onSuccess={() => refetch()} 
+      />
     </Container>
   )
 }
 
-export const Route = createFileRoute("/_layout/explore")({
+export const Route = createFileRoute("/_layout/file-explorer")({
   component: FileExplorer,
 })
 

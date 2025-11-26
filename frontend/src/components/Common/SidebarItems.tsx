@@ -16,6 +16,11 @@ import {
   Search,
   Shield,
   Users,
+  Image,
+  Database,
+  Link as LinkIcon,
+  Crop,
+  Wrench,
 } from "lucide-react"
 import type { UserPublic } from "../../client"
 import useAuth from "../../hooks/useAuth"
@@ -30,7 +35,17 @@ interface SidebarItem {
 
 const sidebarStructure: SidebarItem[] = [
   { title: "Dashboard", path: "/", icon: Home },
-  { title: "Archive", path: "/explore", icon: Archive },
+  { title: "File Explorer", path: "/file-explorer", icon: Archive },
+  {
+    title: "Tools",
+    icon: Wrench,
+    subItems: [
+      { title: "Google Images", path: "/tools/google-images", icon: Image },
+      { title: "Data Warehouse", path: "/tools/data-warehouse", icon: Database },
+      { title: "Image Links", path: "/tools/image-links", icon: LinkIcon },
+      { title: "Crop Tool", path: "/tools/crop", icon: Crop },
+    ],
+  },
   {
     title: "Scraper",
     icon: Search,
@@ -89,7 +104,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       [
         "Scraper",
         "Jobs",
-        "Archive",
+        "File Explorer",
         "Google SERP",
         "Logs",
         "Network Logs",
@@ -109,7 +124,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       if (!enabled) {
         return null
       }
-      const showAdminLabel = ["Archive", "VPN", "Admin"].includes(title)
+      const showAdminLabel = ["File Explorer", "VPN", "Admin"].includes(title)
       const isActive =
         path === location.pathname || (path === "/" && location.pathname === "")
       return (

@@ -16,6 +16,7 @@ import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
+import { Route as InsightsImport } from './routes/insights'
 import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
@@ -25,10 +26,13 @@ import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutOrdersImport } from './routes/_layout/orders'
 import { Route as LayoutOffersImport } from './routes/_layout/offers'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
-import { Route as LayoutExploreImport } from './routes/_layout/explore'
+import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
 import { Route as LayoutCustomersImport } from './routes/_layout/customers'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
-import { Route as LayoutDropshipIndexImport } from './routes/_layout/dropship/index'
+import { Route as LayoutToolsImageLinksImport } from './routes/_layout/tools/image-links'
+import { Route as LayoutToolsGoogleImagesImport } from './routes/_layout/tools/google-images'
+import { Route as LayoutToolsDataWarehouseImport } from './routes/_layout/tools/data-warehouse'
+import { Route as LayoutToolsCropImport } from './routes/_layout/tools/crop'
 import { Route as LayoutSupplierDashboardImport } from './routes/_layout/supplier/dashboard'
 import { Route as LayoutSubmitFormSuccessImport } from './routes/_layout/submit-form/success'
 import { Route as LayoutSubmitFormOfferImport } from './routes/_layout/submit-form/offer'
@@ -68,6 +72,12 @@ const RecoverPasswordRoute = RecoverPasswordImport.update({
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InsightsRoute = InsightsImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -124,9 +134,9 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutExploreRoute = LayoutExploreImport.update({
-  id: '/explore',
-  path: '/explore',
+const LayoutFileExplorerRoute = LayoutFileExplorerImport.update({
+  id: '/file-explorer',
+  path: '/file-explorer',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -142,9 +152,27 @@ const LayoutAdminRoute = LayoutAdminImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutDropshipIndexRoute = LayoutDropshipIndexImport.update({
-  id: '/dropship/',
-  path: '/dropship/',
+const LayoutToolsImageLinksRoute = LayoutToolsImageLinksImport.update({
+  id: '/tools/image-links',
+  path: '/tools/image-links',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutToolsGoogleImagesRoute = LayoutToolsGoogleImagesImport.update({
+  id: '/tools/google-images',
+  path: '/tools/google-images',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutToolsDataWarehouseRoute = LayoutToolsDataWarehouseImport.update({
+  id: '/tools/data-warehouse',
+  path: '/tools/data-warehouse',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutToolsCropRoute = LayoutToolsCropImport.update({
+  id: '/tools/crop',
+  path: '/tools/crop',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -224,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoogleSerpCmsImport
       parentRoute: typeof rootRoute
     }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsImport
+      parentRoute: typeof rootRoute
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -273,11 +308,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCustomersImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/explore': {
-      id: '/_layout/explore'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof LayoutExploreImport
+    '/_layout/file-explorer': {
+      id: '/_layout/file-explorer'
+      path: '/file-explorer'
+      fullPath: '/file-explorer'
+      preLoaderRoute: typeof LayoutFileExplorerImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/items': {
@@ -371,11 +406,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSupplierDashboardImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/dropship/': {
-      id: '/_layout/dropship/'
-      path: '/dropship'
-      fullPath: '/dropship'
-      preLoaderRoute: typeof LayoutDropshipIndexImport
+    '/_layout/tools/crop': {
+      id: '/_layout/tools/crop'
+      path: '/tools/crop'
+      fullPath: '/tools/crop'
+      preLoaderRoute: typeof LayoutToolsCropImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/tools/data-warehouse': {
+      id: '/_layout/tools/data-warehouse'
+      path: '/tools/data-warehouse'
+      fullPath: '/tools/data-warehouse'
+      preLoaderRoute: typeof LayoutToolsDataWarehouseImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/tools/google-images': {
+      id: '/_layout/tools/google-images'
+      path: '/tools/google-images'
+      fullPath: '/tools/google-images'
+      preLoaderRoute: typeof LayoutToolsGoogleImagesImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/tools/image-links': {
+      id: '/_layout/tools/image-links'
+      path: '/tools/image-links'
+      fullPath: '/tools/image-links'
+      preLoaderRoute: typeof LayoutToolsImageLinksImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/scraping-api/scraping-jobs/$jobId': {
@@ -407,7 +463,7 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutCustomersRoute: typeof LayoutCustomersRoute
-  LayoutExploreRoute: typeof LayoutExploreRoute
+  LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutOffersRoute: typeof LayoutOffersRoute
   LayoutOrdersRoute: typeof LayoutOrdersRoute
@@ -420,7 +476,10 @@ interface LayoutRouteChildren {
   LayoutSubmitFormOfferRoute: typeof LayoutSubmitFormOfferRoute
   LayoutSubmitFormSuccessRoute: typeof LayoutSubmitFormSuccessRoute
   LayoutSupplierDashboardRoute: typeof LayoutSupplierDashboardRoute
-  LayoutDropshipIndexRoute: typeof LayoutDropshipIndexRoute
+  LayoutToolsCropRoute: typeof LayoutToolsCropRoute
+  LayoutToolsDataWarehouseRoute: typeof LayoutToolsDataWarehouseRoute
+  LayoutToolsGoogleImagesRoute: typeof LayoutToolsGoogleImagesRoute
+  LayoutToolsImageLinksRoute: typeof LayoutToolsImageLinksRoute
   LayoutScrapingApiScrapingJobsJobIdRoute: typeof LayoutScrapingApiScrapingJobsJobIdRoute
   LayoutSupplierOfferFileIdRoute: typeof LayoutSupplierOfferFileIdRoute
   LayoutScrapingApiScrapingJobsIndexRoute: typeof LayoutScrapingApiScrapingJobsIndexRoute
@@ -429,7 +488,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutCustomersRoute: LayoutCustomersRoute,
-  LayoutExploreRoute: LayoutExploreRoute,
+  LayoutFileExplorerRoute: LayoutFileExplorerRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutOffersRoute: LayoutOffersRoute,
   LayoutOrdersRoute: LayoutOrdersRoute,
@@ -442,7 +501,10 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSubmitFormOfferRoute: LayoutSubmitFormOfferRoute,
   LayoutSubmitFormSuccessRoute: LayoutSubmitFormSuccessRoute,
   LayoutSupplierDashboardRoute: LayoutSupplierDashboardRoute,
-  LayoutDropshipIndexRoute: LayoutDropshipIndexRoute,
+  LayoutToolsCropRoute: LayoutToolsCropRoute,
+  LayoutToolsDataWarehouseRoute: LayoutToolsDataWarehouseRoute,
+  LayoutToolsGoogleImagesRoute: LayoutToolsGoogleImagesRoute,
+  LayoutToolsImageLinksRoute: LayoutToolsImageLinksRoute,
   LayoutScrapingApiScrapingJobsJobIdRoute:
     LayoutScrapingApiScrapingJobsJobIdRoute,
   LayoutSupplierOfferFileIdRoute: LayoutSupplierOfferFileIdRoute,
@@ -456,6 +518,7 @@ const LayoutRouteWithChildren =
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
   '/google-serp-cms': typeof GoogleSerpCmsRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -463,7 +526,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/customers': typeof LayoutCustomersRoute
-  '/explore': typeof LayoutExploreRoute
+  '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
   '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
@@ -477,7 +540,10 @@ export interface FileRoutesByFullPath {
   '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/supplier/dashboard': typeof LayoutSupplierDashboardRoute
-  '/dropship': typeof LayoutDropshipIndexRoute
+  '/tools/crop': typeof LayoutToolsCropRoute
+  '/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
+  '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
+  '/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
   '/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
@@ -485,6 +551,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/google-serp-cms': typeof GoogleSerpCmsRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -492,7 +559,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/customers': typeof LayoutCustomersRoute
-  '/explore': typeof LayoutExploreRoute
+  '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
   '/offers': typeof LayoutOffersRoute
   '/orders': typeof LayoutOrdersRoute
@@ -506,7 +573,10 @@ export interface FileRoutesByTo {
   '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/supplier/dashboard': typeof LayoutSupplierDashboardRoute
-  '/dropship': typeof LayoutDropshipIndexRoute
+  '/tools/crop': typeof LayoutToolsCropRoute
+  '/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
+  '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
+  '/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
   '/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
@@ -516,6 +586,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/google-serp-cms': typeof GoogleSerpCmsRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -523,7 +594,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/customers': typeof LayoutCustomersRoute
-  '/_layout/explore': typeof LayoutExploreRoute
+  '/_layout/file-explorer': typeof LayoutFileExplorerRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/offers': typeof LayoutOffersRoute
   '/_layout/orders': typeof LayoutOrdersRoute
@@ -537,7 +608,10 @@ export interface FileRoutesById {
   '/_layout/submit-form/offer': typeof LayoutSubmitFormOfferRoute
   '/_layout/submit-form/success': typeof LayoutSubmitFormSuccessRoute
   '/_layout/supplier/dashboard': typeof LayoutSupplierDashboardRoute
-  '/_layout/dropship/': typeof LayoutDropshipIndexRoute
+  '/_layout/tools/crop': typeof LayoutToolsCropRoute
+  '/_layout/tools/data-warehouse': typeof LayoutToolsDataWarehouseRoute
+  '/_layout/tools/google-images': typeof LayoutToolsGoogleImagesRoute
+  '/_layout/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/_layout/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
   '/_layout/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/_layout/scraping-api/scraping-jobs/': typeof LayoutScrapingApiScrapingJobsIndexRoute
@@ -548,6 +622,7 @@ export interface FileRouteTypes {
   fullPaths:
     | ''
     | '/google-serp-cms'
+    | '/insights'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -555,7 +630,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/customers'
-    | '/explore'
+    | '/file-explorer'
     | '/items'
     | '/offers'
     | '/orders'
@@ -569,13 +644,17 @@ export interface FileRouteTypes {
     | '/submit-form/offer'
     | '/submit-form/success'
     | '/supplier/dashboard'
-    | '/dropship'
+    | '/tools/crop'
+    | '/tools/data-warehouse'
+    | '/tools/google-images'
+    | '/tools/image-links'
     | '/scraping-api/scraping-jobs/$jobId'
     | '/supplier/offer/$fileId'
     | '/scraping-api/scraping-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/google-serp-cms'
+    | '/insights'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -583,7 +662,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/customers'
-    | '/explore'
+    | '/file-explorer'
     | '/items'
     | '/offers'
     | '/orders'
@@ -597,7 +676,10 @@ export interface FileRouteTypes {
     | '/submit-form/offer'
     | '/submit-form/success'
     | '/supplier/dashboard'
-    | '/dropship'
+    | '/tools/crop'
+    | '/tools/data-warehouse'
+    | '/tools/google-images'
+    | '/tools/image-links'
     | '/scraping-api/scraping-jobs/$jobId'
     | '/supplier/offer/$fileId'
     | '/scraping-api/scraping-jobs'
@@ -605,6 +687,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_layout'
     | '/google-serp-cms'
+    | '/insights'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -612,7 +695,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/customers'
-    | '/_layout/explore'
+    | '/_layout/file-explorer'
     | '/_layout/items'
     | '/_layout/offers'
     | '/_layout/orders'
@@ -626,7 +709,10 @@ export interface FileRouteTypes {
     | '/_layout/submit-form/offer'
     | '/_layout/submit-form/success'
     | '/_layout/supplier/dashboard'
-    | '/_layout/dropship/'
+    | '/_layout/tools/crop'
+    | '/_layout/tools/data-warehouse'
+    | '/_layout/tools/google-images'
+    | '/_layout/tools/image-links'
     | '/_layout/scraping-api/scraping-jobs/$jobId'
     | '/_layout/supplier/offer/$fileId'
     | '/_layout/scraping-api/scraping-jobs/'
@@ -636,6 +722,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
+  InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ReformatExcelRoute: typeof ReformatExcelRoute
@@ -647,6 +734,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   GoogleSerpCmsRoute: GoogleSerpCmsRoute,
+  InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ReformatExcelRoute: ReformatExcelRoute,
@@ -667,6 +755,7 @@ export const routeTree = rootRoute
       "children": [
         "/_layout",
         "/google-serp-cms",
+        "/insights",
         "/login",
         "/recover-password",
         "/reformat-excel",
@@ -680,7 +769,7 @@ export const routeTree = rootRoute
       "children": [
         "/_layout/admin",
         "/_layout/customers",
-        "/_layout/explore",
+        "/_layout/file-explorer",
         "/_layout/items",
         "/_layout/offers",
         "/_layout/orders",
@@ -693,7 +782,10 @@ export const routeTree = rootRoute
         "/_layout/submit-form/offer",
         "/_layout/submit-form/success",
         "/_layout/supplier/dashboard",
-        "/_layout/dropship/",
+        "/_layout/tools/crop",
+        "/_layout/tools/data-warehouse",
+        "/_layout/tools/google-images",
+        "/_layout/tools/image-links",
         "/_layout/scraping-api/scraping-jobs/$jobId",
         "/_layout/supplier/offer/$fileId",
         "/_layout/scraping-api/scraping-jobs/"
@@ -701,6 +793,9 @@ export const routeTree = rootRoute
     },
     "/google-serp-cms": {
       "filePath": "google-serp-cms.tsx"
+    },
+    "/insights": {
+      "filePath": "insights.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
@@ -725,8 +820,8 @@ export const routeTree = rootRoute
       "filePath": "_layout/customers.tsx",
       "parent": "/_layout"
     },
-    "/_layout/explore": {
-      "filePath": "_layout/explore.tsx",
+    "/_layout/file-explorer": {
+      "filePath": "_layout/file-explorer.tsx",
       "parent": "/_layout"
     },
     "/_layout/items": {
@@ -780,8 +875,20 @@ export const routeTree = rootRoute
       "filePath": "_layout/supplier/dashboard.tsx",
       "parent": "/_layout"
     },
-    "/_layout/dropship/": {
-      "filePath": "_layout/dropship/index.tsx",
+    "/_layout/tools/crop": {
+      "filePath": "_layout/tools/crop.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/tools/data-warehouse": {
+      "filePath": "_layout/tools/data-warehouse.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/tools/google-images": {
+      "filePath": "_layout/tools/google-images.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/tools/image-links": {
+      "filePath": "_layout/tools/image-links.tsx",
       "parent": "/_layout"
     },
     "/_layout/scraping-api/scraping-jobs/$jobId": {

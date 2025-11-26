@@ -10,17 +10,13 @@ import {
   RefreshCw,
   Sun,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-} from "recharts"
+  LuCrop,
+  LuDatabase,
+  LuLink,
+  LuSearch,
+} from "react-icons/lu"
+import { useTheme } from "next-themes"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import {
@@ -30,14 +26,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "./ui/chart"
 import { ScrollArea } from "./ui/scroll-area"
 import {
   Table,
@@ -48,6 +36,7 @@ import {
   TableRow,
 } from "./ui/table"
 import { useNavigate } from "@tanstack/react-router"
+import Changelog from "./Changelog"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -80,37 +69,6 @@ const getJobTypeName = (id?: number) => {
   if (!id) return "Unknown"
   return JOB_TYPES[id] || `Type ${id}`
 }
-
-const chartConfig = {
-  "Google Scrape": {
-    label: "Google Scrape",
-    color: "#15803d",
-  },
-  "Crop Batch": {
-    label: "Crop Batch",
-    color: "#16a34a",
-  },
-  "Warehouse Batch": {
-    label: "Warehouse Batch",
-    color: "#22c55e",
-  },
-  "Unknown": {
-    label: "Unknown",
-    color: "#4ade80",
-  },
-  Completed: {
-    label: "Completed",
-    color: "#15803d",
-  },
-  "In Progress": {
-    label: "In Progress",
-    color: "#22c55e",
-  },
-  Pending: {
-    label: "Pending",
-    color: "#86efac",
-  },
-} satisfies ChartConfig
 
 
 const getAuthToken = (): string | null => {
@@ -175,38 +133,6 @@ export default function JobsDashboard() {
   ).length
   const pendingJobs = jobs.filter((job) => getStatus(job) === "Pending").length
 
-  // Chart Data
-  const statusData = [
-    { name: "Completed", value: completedJobs },
-    { name: "In Progress", value: inProgressJobs },
-    { name: "Pending", value: pendingJobs },
-  ]
-
-  const chartData = React.useMemo(() => {
-    const dataMap = new Map<string, any>()
-
-    jobs.forEach((job) => {
-      const date = job.imageStart
-        ? new Date(job.imageStart).toLocaleDateString()
-        : "Unknown"
-
-      if (date === "Unknown") return
-
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date })
-      }
-
-      const entry = dataMap.get(date)
-      const typeName = getJobTypeName(job.fileTypeId)
-
-      entry[typeName] = (entry[typeName] || 0) + 1
-    })
-
-    return Array.from(dataMap.values())
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-7)
-  }, [jobs])
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
     return new Date(dateString).toLocaleString()
@@ -232,253 +158,259 @@ export default function JobsDashboard() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
-            <File className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalJobs}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedJobs}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <RefreshCw className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressJobs}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingJobs}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Middle Content (Feed) */}
+        <div className="lg:col-span-3 space-y-8">
+          {/* KPI Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+                <File className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalJobs}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{completedJobs}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+                <RefreshCw className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{inProgressJobs}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                <Clock className="h-4 w-4 text-yellow-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{pendingJobs}</div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Jobs Over Time</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-              <BarChart accessibilityLayer data={chartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString("en-US", {
-                      weekday: "short",
-                    })
-                  }
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={10}
-                  tickFormatter={(value) => `${value}`}
-                />
-                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                {Object.keys(chartConfig).map((key) => (
-                  <Bar
-                    key={key}
-                    dataKey={key}
-                    stackId="a"
-                    fill={`var(--color-${key})`}
-                    radius={[0, 0, 0, 0]}
-                  />
-                ))}
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Status Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-              <PieChart>
-                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Pie
-                  data={statusData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        chartConfig[entry.name as keyof typeof chartConfig]
-                          ?.color
-                      }
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Tools Shortcuts */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+              onClick={() => navigate({ to: "/tools/google-images" } as any)}
+            >
+                <CardHeader>
+                  <div className="flex flex-row items-center gap-2">
+                    <LuSearch className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                    <CardTitle className="text-xl font-semibold">
+                      Google Images
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Search and collect images from Google.</p>
+                </CardContent>
+            </Card>
 
-      {/* Data Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Jobs</CardTitle>
-          <CardDescription>
-            A list of your recent scraping jobs and their status.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[600px] w-full rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">ID</TableHead>
-                  <TableHead>File Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Start Time</TableHead>
-                  <TableHead>Completion Time</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : jobs.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">
-                      No jobs found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  jobs.map((job) => {
-                    const status = getStatus(job)
-                    return (
-                      <TableRow
-                        key={job.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          navigate({
-                            to: `/scraping-api/scraping-jobs/${job.id}`,
-                          })
-                        }
-                      >
-                        <TableCell className="font-medium">{job.id}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{job.inputFile}</span>
-                            <a
-                              href={job.fileLocationUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-muted-foreground hover:underline truncate max-w-[200px]"
-                            >
-                              Original File
-                            </a>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusColor(status) as any}>
-                            {status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {job.img} / {job.rec}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span>{job.user}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {job.userEmail}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          {formatDate(job.imageStart)}
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          {formatDate(job.fileEnd)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            {job.fileLocationURLComplete && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                asChild
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <a
-                                  href={job.fileLocationURLComplete}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  title="Download Result"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </a>
-                              </Button>
-                            )}
-                            {job.logFileUrl && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                asChild
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <a
-                                  href={job.logFileUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  title="View Log"
-                                >
-                                  <FileText className="h-4 w-4" />
-                                </a>
-                              </Button>
-                            )}
-                          </div>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+              onClick={() => navigate({ to: "/tools/data-warehouse" } as any)}
+            >
+                <CardHeader>
+                  <div className="flex flex-row items-center gap-2">
+                    <LuDatabase className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                    <CardTitle className="text-xl font-semibold">
+                      Data Warehouse
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Internal product database jobs.</p>
+                </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+              onClick={() => navigate({ to: "/tools/image-links" } as any)}
+            >
+                <CardHeader>
+                  <div className="flex flex-row items-center gap-2">
+                    <LuLink className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                    <CardTitle className="text-xl font-semibold">
+                      Image URL Download
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Convert image links to excel pictures.</p>
+                </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50" 
+              onClick={() => navigate({ to: "/tools/crop" } as any)}
+            >
+                <CardHeader>
+                  <div className="flex flex-row items-center gap-2">
+                    <LuCrop className="h-6 w-6 text-gray-600" strokeWidth={1.75} />
+                    <CardTitle className="text-xl font-semibold">
+                      Image crop
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Remove whitespace from Excel pictures.</p>
+                </CardContent>
+            </Card>
+          </div>
+
+          {/* Data Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Jobs</CardTitle>
+              <CardDescription>
+                A list of your recent scraping jobs and their status.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[600px] w-full rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">ID</TableHead>
+                      <TableHead>File Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Progress</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Start Time</TableHead>
+                      <TableHead>Completion Time</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {jobsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center h-24">
+                          Loading...
                         </TableCell>
                       </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+                    ) : jobs.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center h-24">
+                          No jobs found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      jobs.map((job) => {
+                        const status = getStatus(job)
+                        return (
+                          <TableRow
+                            key={job.id}
+                            className="cursor-pointer hover:bg-muted/50"
+                            onClick={() =>
+                              navigate({
+                                to: `/scraping-api/scraping-jobs/${job.id}`,
+                              })
+                            }
+                          >
+                            <TableCell className="font-medium">{job.id}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{job.inputFile}</span>
+                                <a
+                                  href={job.fileLocationUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs text-muted-foreground hover:underline truncate max-w-[200px]"
+                                >
+                                  Original File
+                                </a>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getStatusColor(status) as any}>
+                                {status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {job.img} / {job.rec}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span>{job.user}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {job.userEmail}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {formatDate(job.imageStart)}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {formatDate(job.fileEnd)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                {job.fileLocationURLComplete && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    asChild
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <a
+                                      href={job.fileLocationURLComplete}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      title="Download Result"
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </a>
+                                  </Button>
+                                )}
+                                {job.logFileUrl && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    asChild
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <a
+                                      href={job.logFileUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      title="View Log"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column (Changelog) */}
+        <div className="lg:col-span-1">
+          <Changelog />
+        </div>
+      </div>
     </div>
   )
 }
