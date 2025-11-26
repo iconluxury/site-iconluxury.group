@@ -327,7 +327,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const handleDomainClick = (domain: string, entryId: number) => {
     navigate({
-      to: "/_layout/scraping-api/scraping-jobs/$jobId",
+      to: "/scraping-api/scraping-jobs/$jobId",
       params: { jobId: String(job.id) },
       search: { activeTab: "2", domain, entryId: String(entryId) },
     })

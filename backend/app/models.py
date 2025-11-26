@@ -82,6 +82,7 @@ class User(UserBase, table=True):
     hashed_password: str
     expiry_date: datetime.datetime | None = Field(default=None)  # Add this
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    tickets: list["Ticket"] = Relationship(back_populates="owner", cascade_delete=True)
 # Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: uuid.UUID
@@ -129,6 +130,47 @@ class ItemPublic(ItemBase):
 
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
+    count: int
+
+
+# Shared properties
+class TicketBase(SQLModel):
+    title: str = Field(min_length=1, max_length=255)
+    description: str = Field(min_length=1)
+    status: str = Field(default="open", max_length=50)
+
+
+# Properties to receive on ticket creation
+class TicketCreate(TicketBase):
+    pass
+
+
+# Properties to receive on ticket update
+class TicketUpdate(TicketBase):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = Field(default=None, min_length=1)
+    status: str | None = Field(default=None, max_length=50)
+
+
+# Database model, database table inferred from class name
+class Ticket(TicketBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="tickets")
+
+
+# Properties to return via API, id is always required
+class TicketPublic(TicketBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+    created_at: datetime.datetime
+
+
+class TicketsPublic(SQLModel):
+    data: list[TicketPublic]
     count: int
 
 

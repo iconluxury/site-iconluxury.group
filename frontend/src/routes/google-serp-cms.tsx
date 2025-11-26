@@ -44,7 +44,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/tools/google-images">Open Tool</Link>
+              <Link to="/tools/google-images">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -62,7 +62,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/tools/data-warehouse">Open Tool</Link>
+              <Link to="/tools/data-warehouse">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -80,7 +80,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/tools/image-links">Open Tool</Link>
+              <Link to="/tools/image-links">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -98,7 +98,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/tools/crop">Open Tool</Link>
+              <Link to="/tools/crop">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -228,7 +228,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/support-ticket">Contact Support</Link>
+              <Link to="/support-ticket">Contact Support</Link>
             </Button>
           </CardContent>
         </Card>
@@ -264,7 +264,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/_layout/scraping-api/insights">Open Report</Link>
+              <Link to="/scraping-api/insights">Open Report</Link>
             </Button>
           </CardContent>
         </Card>

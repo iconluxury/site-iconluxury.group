@@ -15,7 +15,6 @@ import {
   LuDatabase,
   LuLink,
   LuSearch,
-  LuLayoutGrid, // Add this import
 } from "react-icons/lu"
 import { useTheme } from "next-themes"
 import { Badge } from "./ui/badge"
@@ -23,7 +22,6 @@ import { Button } from "./ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "./ui/card"
@@ -141,13 +139,7 @@ export default function JobsDashboard() {
 
   return (
     <div className="p-8 space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your scraping jobs and view system status.
-          </p>
-        </div>
+      <div className="flex justify-end items-center">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -160,27 +152,6 @@ export default function JobsDashboard() {
           </Button>
         </div>
       </div>
-
-      {/* Tools Access Card */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div className="space-y-1">
-            <CardTitle className="text-xl">Google SERP CMS</CardTitle>
-            <CardDescription>
-              Access scraping tools, data warehouse, and analytics.
-              {inProgressJobs > 0 && (
-                <span className="ml-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                  {inProgressJobs} Jobs Running
-                </span>
-              )}
-            </CardDescription>
-          </div>
-          <Button onClick={() => navigate({ to: "/google-serp-cms" })}>
-            <LuLayoutGrid className="mr-2 h-4 w-4" />
-            Open Tools & Reports
-          </Button>
-        </CardHeader>
-      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Middle Content (Feed) */}
@@ -239,9 +210,6 @@ export default function JobsDashboard() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Search and collect images from Google.</p>
-                </CardContent>
             </Card>
 
             <Card 
@@ -256,9 +224,6 @@ export default function JobsDashboard() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Internal product database jobs.</p>
-                </CardContent>
             </Card>
 
             <Card 
@@ -273,9 +238,6 @@ export default function JobsDashboard() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Convert image links to excel pictures.</p>
-                </CardContent>
             </Card>
 
             <Card 
@@ -290,9 +252,6 @@ export default function JobsDashboard() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Remove whitespace from Excel pictures.</p>
-                </CardContent>
             </Card>
           </div>
 
@@ -300,9 +259,6 @@ export default function JobsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Jobs</CardTitle>
-              <CardDescription>
-                A list of your recent scraping jobs and their status.
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[600px] w-full rounded-md border">
@@ -435,13 +391,10 @@ export default function JobsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Need Help?</CardTitle>
-              <CardDescription>
-                Submit a support ticket for any issues.
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" onClick={() => navigate({ to: "/support-ticket" })}>
-                Contact Support
+                Submit Ticket
               </Button>
             </CardContent>
           </Card>
