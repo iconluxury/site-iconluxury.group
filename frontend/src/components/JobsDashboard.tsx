@@ -1,3 +1,4 @@
+import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   CheckCircle,
@@ -13,12 +14,10 @@ import { useTheme } from "next-themes"
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
-  Legend,
   Pie,
   PieChart,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts"
@@ -31,6 +30,14 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "./ui/chart"
 import { ScrollArea } from "./ui/scroll-area"
 import {
   Table,
@@ -61,6 +68,49 @@ interface JobSummary {
   img: number
   user: string
 }
+
+const JOB_TYPES: Record<number, string> = {
+  1: "Google Scrape",
+  2: "Crop Batch",
+  3: "Warehouse Batch",
+}
+
+const getJobTypeName = (id?: number) => {
+  if (!id) return "Unknown"
+  return JOB_TYPES[id] || `Type ${id}`
+}
+
+const chartConfig = {
+  "Google Scrape": {
+    label: "Google Scrape",
+    color: "hsl(var(--chart-1))",
+  },
+  "Crop Batch": {
+    label: "Crop Batch",
+    color: "hsl(var(--chart-2))",
+  },
+  "Warehouse Batch": {
+    label: "Warehouse Batch",
+    color: "hsl(var(--chart-3))",
+  },
+  "Unknown": {
+    label: "Unknown",
+    color: "hsl(var(--chart-4))",
+  },
+  Completed: {
+    label: "Completed",
+    color: "#22c55e",
+  },
+  "In Progress": {
+    label: "In Progress",
+    color: "#3b82f6",
+  },
+  Pending: {
+    label: "Pending",
+    color: "#f59e0b",
+  },
+} satisfies ChartConfig
+
 
 const getAuthToken = (): string | null => {
   return localStorage.getItem("access_token")
@@ -125,32 +175,35 @@ export default function JobsDashboard() {
 
   // Chart Data
   const statusData = [
-    { name: "Completed", value: completedJobs, color: "#22c55e" },
-    { name: "In Progress", value: inProgressJobs, color: "#3b82f6" },
-    { name: "Pending", value: pendingJobs, color: "#f59e0b" },
+    { name: "Completed", value: completedJobs },
+    { name: "In Progress", value: inProgressJobs },
+    { name: "Pending", value: pendingJobs },
   ]
 
-  // Jobs per day (mock logic or real if dates exist)
-  const jobsPerDay = jobs.reduce(
-    (acc, job) => {
+  const chartData = React.useMemo(() => {
+    const dataMap = new Map<string, any>()
+
+    jobs.forEach((job) => {
       const date = job.imageStart
         ? new Date(job.imageStart).toLocaleDateString()
         : "Unknown"
-      if (date !== "Unknown") {
-        acc[date] = (acc[date] || 0) + 1
-      }
-      return acc
-    },
-    {} as Record<string, number>,
-  )
 
-  const barChartData = Object.entries(jobsPerDay)
-    .map(([date, count]) => ({
-      date,
-      count,
-    }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(-7) // Last 7 days
+      if (date === "Unknown") return
+
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { date })
+      }
+
+      const entry = dataMap.get(date)
+      const typeName = getJobTypeName(job.fileTypeId)
+
+      entry[typeName] = (entry[typeName] || 0) + 1
+    })
+
+    return Array.from(dataMap.values())
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-7)
+  }, [jobs])
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
@@ -224,37 +277,39 @@ export default function JobsDashboard() {
             <CardTitle>Jobs Over Time</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={barChartData}>
+            <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+              <BarChart accessibilityLayer data={chartData}>
+                <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
-                  stroke="#888888"
-                  fontSize={12}
                   tickLine={false}
+                  tickMargin={10}
                   axisLine={false}
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString("en-US", {
+                      weekday: "short",
+                    })
+                  }
                 />
                 <YAxis
-                  stroke="#888888"
-                  fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  tickMargin={10}
                   tickFormatter={(value) => `${value}`}
                 />
-                <RechartsTooltip
-                  contentStyle={{
-                    backgroundColor: "var(--background)",
-                    borderColor: "var(--border)",
-                  }}
-                  itemStyle={{ color: "var(--foreground)" }}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="currentColor"
-                  radius={[4, 4, 0, 0]}
-                  className="fill-primary"
-                />
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                {Object.keys(chartConfig).map((key) => (
+                  <Bar
+                    key={key}
+                    dataKey={key}
+                    stackId="a"
+                    fill={`var(--color-${key})`}
+                    radius={[0, 0, 0, 0]}
+                  />
+                ))}
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
         <Card className="col-span-3">
@@ -262,25 +317,30 @@ export default function JobsDashboard() {
             <CardTitle>Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
+            <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
               <PieChart>
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <ChartLegend content={<ChartLegendContent />} />
                 <Pie
                   data={statusData}
-                  cx="50%"
-                  cy="50%"
+                  dataKey="value"
+                  nameKey="name"
                   innerRadius={60}
                   outerRadius={80}
                   paddingAngle={5}
-                  dataKey="value"
                 >
                   {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        chartConfig[entry.name as keyof typeof chartConfig]
+                          ?.color
+                      }
+                    />
                   ))}
                 </Pie>
-                <RechartsTooltip />
-                <Legend />
               </PieChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
