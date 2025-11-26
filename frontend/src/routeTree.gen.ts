@@ -23,7 +23,6 @@ import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
 import { Route as LayoutSupportTicketImport } from './routes/_layout/support-ticket'
 import { Route as LayoutSubmitCropImport } from './routes/_layout/submit-crop'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
-import { Route as LayoutOrdersImport } from './routes/_layout/orders'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
@@ -106,12 +105,6 @@ const LayoutSubmitCropRoute = LayoutSubmitCropImport.update({
 const LayoutSettingsRoute = LayoutSettingsImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutOrdersRoute = LayoutOrdersImport.update({
-  id: '/orders',
-  path: '/orders',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -257,13 +250,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutItemsImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/orders': {
-      id: '/_layout/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof LayoutOrdersImport
-      parentRoute: typeof LayoutImport
-    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -364,7 +350,6 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
-  LayoutOrdersRoute: typeof LayoutOrdersRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutSubmitCropRoute: typeof LayoutSubmitCropRoute
   LayoutSupportTicketRoute: typeof LayoutSupportTicketRoute
@@ -383,7 +368,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
   LayoutItemsRoute: LayoutItemsRoute,
-  LayoutOrdersRoute: LayoutOrdersRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutSubmitCropRoute: LayoutSubmitCropRoute,
   LayoutSupportTicketRoute: LayoutSupportTicketRoute,
@@ -414,7 +398,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
-  '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/submit-crop': typeof LayoutSubmitCropRoute
   '/support-ticket': typeof LayoutSupportTicketRoute
@@ -440,7 +423,6 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/items': typeof LayoutItemsRoute
-  '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/submit-crop': typeof LayoutSubmitCropRoute
   '/support-ticket': typeof LayoutSupportTicketRoute
@@ -468,7 +450,6 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
   '/_layout/items': typeof LayoutItemsRoute
-  '/_layout/orders': typeof LayoutOrdersRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/submit-crop': typeof LayoutSubmitCropRoute
   '/_layout/support-ticket': typeof LayoutSupportTicketRoute
@@ -497,7 +478,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/file-explorer'
     | '/items'
-    | '/orders'
     | '/settings'
     | '/submit-crop'
     | '/support-ticket'
@@ -522,7 +502,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/file-explorer'
     | '/items'
-    | '/orders'
     | '/settings'
     | '/submit-crop'
     | '/support-ticket'
@@ -548,7 +527,6 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/file-explorer'
     | '/_layout/items'
-    | '/_layout/orders'
     | '/_layout/settings'
     | '/_layout/submit-crop'
     | '/_layout/support-ticket'
@@ -613,7 +591,6 @@ export const routeTree = rootRoute
         "/_layout/admin",
         "/_layout/file-explorer",
         "/_layout/items",
-        "/_layout/orders",
         "/_layout/settings",
         "/_layout/submit-crop",
         "/_layout/support-ticket",
@@ -656,10 +633,6 @@ export const routeTree = rootRoute
     },
     "/_layout/items": {
       "filePath": "_layout/items.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/orders": {
-      "filePath": "_layout/orders.tsx",
       "parent": "/_layout"
     },
     "/_layout/settings": {
