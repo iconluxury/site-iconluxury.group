@@ -3,9 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import {
   CheckCircle,
   Clock,
-  Download,
   File,
-  FileText,
   Moon,
   RefreshCw,
   Sun,
@@ -18,7 +16,6 @@ import {
   LuLayoutGrid,
 } from "react-icons/lu"
 import { useTheme } from "next-themes"
-import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import {
   Card,
@@ -27,17 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
-import { ScrollArea } from "./ui/scroll-area"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table"
 import { useNavigate } from "@tanstack/react-router"
-import Changelog from "./Changelog"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -278,139 +265,7 @@ export default function JobsDashboard() {
             </Card>
           </div>
 
-          {/* Data Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Jobs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[600px] w-full rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">ID</TableHead>
-                      <TableHead>File Name</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Start Time</TableHead>
-                      <TableHead>Completion Time</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {jobsLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center h-24">
-                          Loading...
-                        </TableCell>
-                      </TableRow>
-                    ) : jobs.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center h-24">
-                          No jobs found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      jobs.map((job) => {
-                        const status = getStatus(job)
-                        return (
-                          <TableRow
-                            key={job.id}
-                            className="cursor-pointer hover:bg-muted/50"
-                            onClick={() =>
-                              navigate({
-                                to: `/scraping-api/scraping-jobs/${job.id}`,
-                              })
-                            }
-                          >
-                            <TableCell className="font-medium">{job.id}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{job.inputFile}</span>
-                                <a
-                                  href={job.fileLocationUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-xs text-muted-foreground hover:underline truncate max-w-[200px]"
-                                >
-                                  Original File
-                                </a>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={getStatusColor(status) as any}>
-                                {status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {job.img} / {job.rec}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span>{job.user}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {job.userEmail}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              {formatDate(job.imageStart)}
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              {formatDate(job.fileEnd)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                {job.fileLocationURLComplete && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    asChild
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <a
-                                      href={job.fileLocationURLComplete}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      title="Download Result"
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </a>
-                                  </Button>
-                                )}
-                                {job.logFileUrl && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    asChild
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <a
-                                      href={job.logFileUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      title="View Log"
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                    </a>
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column (Changelog) */}
-        <div className="lg:col-span-1 space-y-6">
+          {/* Need Help? */}
           <Card>
             <CardHeader>
               <CardTitle>Need Help?</CardTitle>
@@ -421,7 +276,6 @@ export default function JobsDashboard() {
               </Button>
             </CardContent>
           </Card>
-          <Changelog />
         </div>
       </div>
     </div>
