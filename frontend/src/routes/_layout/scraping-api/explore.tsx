@@ -1,22 +1,36 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Container,
-  Divider,
-  Flex,
-  HStack,
-  Input,
-  Select,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
 import PromoSERP from "../../../components/ComingSoon"
 import ApiStatusManagement from "../../../components/UserSettings/ApiStatusManagement"
+
+import { Badge } from "../../../components/ui/badge"
+import { Button } from "../../../components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card"
+import { Input } from "../../../components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../components/ui/table"
+import { Separator } from "../../../components/ui/separator"
 
 interface JobSummary {
   id: number
@@ -157,30 +171,30 @@ function Explore() {
 
   if (isSubLoading) {
     return (
-      <Container maxW="full" bg="white" color="gray.800">
-        <Text>Loading your data...</Text>
-      </Container>
+      <div className="container mx-auto p-6 bg-white text-gray-800">
+        <p>Loading your data...</p>
+      </div>
     )
   }
 
   if (subError) {
     return (
-      <Container maxW="full" bg="white" color="gray.800">
-        <Text color="red.500">
+      <div className="container mx-auto p-6 bg-white text-gray-800">
+        <p className="text-red-500">
           {subError.message === "Unauthorized: Please log in again."
             ? "Session expired. Please log in again."
             : "Error loading status. Please try again later."}
-        </Text>
+        </p>
         {subError.message.includes("Unauthorized") && (
           <Button
-            mt={4}
-            colorScheme="blue"
+            className="mt-4"
+            variant="default"
             onClick={() => navigate({ to: "/login" })}
           >
             Log In
           </Button>
         )}
-      </Container>
+      </div>
     )
   }
 
@@ -225,301 +239,141 @@ function Explore() {
   const betaBadge = getStatusBadge(betaStatus)
 
   return (
-    <Container maxW="full" bg="white" color="gray.800">
-      <Flex
-        align="center"
-        justify="space-between"
-        py={6}
-        flexWrap="wrap"
-        gap={4}
-      >
-        <Box textAlign="left" flex="1">
-          <Text fontSize="xl" fontWeight="bold" color="black">
+    <div className="container mx-auto p-6 bg-white text-gray-800">
+      <div className="flex items-center justify-between py-6 flex-wrap gap-4">
+        <div className="text-left flex-1">
+          <h1 className="text-xl font-bold text-black">
             Scraping Jobs
-          </Text>
-          <Text fontSize="sm" color="gray.600">
+          </h1>
+          <p className="text-sm text-gray-600">
             View and manage scraping jobs
-          </Text>
-        </Box>
-      </Flex>
+          </p>
+        </div>
+      </div>
 
-      <Divider my={4} borderColor="gray.200" />
+      <Separator className="my-4" />
 
       {isLocked ? (
         <PromoSERP />
       ) : isFullyDeactivated ? (
-        <Flex
-          justify="space-between"
-          align="center"
-          w="full"
-          p={4}
-          bg="red.50"
-          borderRadius="md"
-        >
-          <Text color="gray.800">Your tools have been deactivated.</Text>
+        <div className="flex justify-between items-center w-full p-4 bg-red-50 rounded-md">
+          <p className="text-gray-800">Your tools have been deactivated.</p>
           <Button
-            colorScheme="red"
+            variant="destructive"
             onClick={() => navigate({ to: "/proxies/pricing" })}
           >
             Reactivate Now
           </Button>
-        </Flex>
+        </div>
       ) : (
-        <Flex gap={6} justify="space-between" align="stretch" wrap="wrap">
-          <Box flex="1" minW={{ base: "100%", md: "65%" }}>
-            <Flex direction={{ base: "column", md: "row" }} gap={4} mb={4}>
+        <div className="flex gap-6 justify-between items-stretch flex-wrap">
+          <div className="flex-1 min-w-full md:min-w-[65%]">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
               <Input
                 placeholder="Search Jobs by Input File..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                w={{ base: "100%", md: "250px" }}
-                borderColor="green.300"
-                _focus={{
-                  borderColor: "green.500",
-                  boxShadow: "0 0 0 1px green.500",
-                }}
-                _hover={{ borderColor: "green.400" }}
-                bg="white"
-                color="gray.800"
-                _placeholder={{ color: "gray.500" }}
-                borderRadius="md"
+                className="w-full md:w-[250px] border-green-300 focus:border-green-500 focus:ring-green-500 bg-white text-gray-800 placeholder:text-gray-500"
               />
               <Select
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(
-                    e.target.value as "all" | "completed" | "pending",
-                  )
+                onValueChange={(value) =>
+                  setStatusFilter(value as "all" | "completed" | "pending")
                 }
-                w={{ base: "100%", md: "200px" }}
-                borderColor="green.300"
-                _focus={{
-                  borderColor: "green.500",
-                  boxShadow: "0 0 0 1px green.500",
-                }}
-                _hover={{ borderColor: "green.400" }}
-                bg="white"
-                color="gray.700"
-                borderRadius="md"
-                sx={{
-                  "& option": {
-                    color: "gray.700",
-                    backgroundColor: "white",
-                    _hover: { backgroundColor: "green.50" },
-                  },
-                }}
               >
-                <option value="all">All</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
+                <SelectTrigger className="w-full md:w-[200px] border-green-300 focus:border-green-500 focus:ring-green-500 bg-white text-gray-700">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
               </Select>
-            </Flex>
-            <VStack spacing={4} align="stretch">
-              {filteredJobs.map((job) => (
-                <Box
-                  key={job.id}
-                  p="4"
-                  borderWidth="1px"
-                  borderRadius="lg"
-                  borderColor="gray.200"
-                  bg="white"
-                >
-                  <Flex justify="space-between" align="center">
-                    <Box>
-                      <Text fontSize="sm" fontWeight="bold" color="gray.600">
-                        Job ID: {job.id}
-                      </Text>
-                      <Text fontWeight="medium" color="gray.800">
-                        {job.inputFile}
-                      </Text>
-                      <Text fontSize="sm" color="gray.500">
-                        {job.rec} records, {job.img} images
-                      </Text>
-                      <Text
-                        fontSize="sm"
-                        color={job.fileEnd ? "green.500" : "yellow.500"}
-                      >
-                        Status: {job.fileEnd ? "Completed" : "Pending"}
-                      </Text>
-                    </Box>
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      onClick={() =>
-                        navigate({
-                          to: "/scraping-api/scraping-jobs/$jobId",
-                          params: { jobId: job.id.toString() },
-                        })
-                      }
-                    >
-                      View Details
-                    </Button>
-                  </Flex>
-                </Box>
-              ))}
+            </div>
+            
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>File Name</TableHead>
+                        <TableHead>Records</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredJobs.map((job) => (
+                        <TableRow 
+                          key={job.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            navigate({
+                              to: "/scraping-api/scraping-jobs/$jobId",
+                              params: { jobId: job.id.toString() },
+                            })
+                          }
+                        >
+                          <TableCell className="font-medium">{job.id}</TableCell>
+                          <TableCell>{job.inputFile}</TableCell>
+                          <TableCell>{job.rec} records, {job.img} images</TableCell>
+                          <TableCell>
+                            <Badge variant={job.fileEnd ? "default" : "secondary"}>
+                              {job.fileEnd ? "Completed" : "Pending"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                navigate({
+                                  to: "/scraping-api/scraping-jobs/$jobId",
+                                  params: { jobId: job.id.toString() },
+                                })
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
               {filteredJobs.length === 0 && !isFetching && (
-                <Text fontSize="sm" color="gray.500">
+                <p className="text-sm text-gray-500">
                   No jobs match your criteria
-                </Text>
+                </p>
               )}
               {isFetching ? (
-                <Text fontSize="sm" color="gray.500">
+                <p className="text-sm text-gray-500">
                   Loading more...
-                </Text>
+                </p>
               ) : (
                 filteredJobs.length > 0 && (
-                  <Button
-                    colorScheme="green"
-                    size="sm"
-                    onClick={handleLoadMore}
-                    mt={4}
-                    alignSelf="center"
-                  >
-                    Load More
-                  </Button>
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleLoadMore}
+                    >
+                      Load More
+                    </Button>
+                  </div>
                 )
               )}
-            </VStack>
-          </Box>
-
-          {/* <Box w={{ base: "100%", md: "250px" }} p="4" borderLeft={{ md: "1px solid" }} borderColor="gray.200">
-            <VStack spacing="4" align="stretch">
-              <Text fontWeight="bold" color="black">Quick Actions</Text>
-              <Button
-                as="a"
-                href="/scraping-api/submit-form/google-serp"
-                variant="outline"
-                size="sm"
-                colorScheme="green"
-              >
-                Submit Form
-              </Button>
-              <Button
-                as="a"
-                href="https://github.com/iconluxurygroup"
-                leftIcon={<FiGithub />}
-                variant="outline"
-                size="sm"
-                colorScheme="blue"
-              >
-                GitHub
-              </Button>
-              <Divider />
-              <Text fontWeight="bold" color="black">Ray Dashboard</Text>
-              <Button
-                as="a"
-                href="https://ray-distro-image.popovtech.com"
-                target="_blank"
-                colorScheme="blue"
-                size="sm"
-                variant="outline"
-                isDisabled={devStatus.isDeactivated}
-              >
-                dev service-distro-image
-              </Button>
-              <Button
-                as="a"
-                href="https://ray-distro-image.popovtech.com"
-                target="_blank"
-                colorScheme="blue"
-                size="sm"
-                variant="outline"
-                isDisabled={prodStatus.isDeactivated}
-              >
-                prod service-distro-image
-              </Button>
-              <Divider />
-              <Text fontWeight="bold" color="black">API Reference</Text>
-              <HStack justify="space-between" align="center">
-                <Text color="gray.700">(dev service-distro-image)</Text>
-                <Badge colorScheme={devBadge.color}>{devBadge.text}</Badge>
-              </HStack>
-              <HStack spacing={2}>
-                <Button
-                  as="a"
-                  href="https://dev-image-distro.popovtech.com/redoc"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={devStatus.isDeactivated}
-                >
-                  Redoc
-                </Button>
-                <Button
-                  as="a"
-                  href="https://dev-image-distro.popovtech.com/docs"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={devStatus.isDeactivated}
-                >
-                  Openapi
-                </Button>
-              </HStack>
-              <HStack justify="space-between" align="center">
-                <Text color="gray.700">(prod service-distro-image)</Text>
-                <Badge colorScheme={prodBadge.color}>{prodBadge.text}</Badge>
-              </HStack>
-              <HStack spacing={2}>
-                <Button
-                  as="a"
-                  href="https://image-backend-cms-icon-7.popovtech.com/redoc"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={prodStatus.isDeactivated}
-                >
-                  Redoc
-                </Button>
-                <Button
-                  as="a"
-                  href="https://image-backend-cms-icon-7.popovtech.com/docs"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={prodStatus.isDeactivated}
-                >
-                  Openapi
-                </Button>
-              </HStack>
-              <HStack justify="space-between" align="center">
-                <Text color="gray.700">(beta service-distro-image)</Text>
-                <Badge colorScheme={betaBadge.color}>{betaBadge.text}</Badge>
-              </HStack>
-              <HStack spacing={2}>
-                <Button
-                  as="a"
-                  href="https://beta-image-backend-cms-icon-7.popovtech.com/redoc"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={betaStatus.isDeactivated}
-                >
-                  Redoc
-                </Button>
-                <Button
-                  as="a"
-                  href="https://beta-image-backend-cms-icon-7.popovtech.com/docs"
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  variant="outline"
-                  isDisabled={betaStatus.isDeactivated}
-                >
-                  Openapi
-                </Button>
-              </HStack>
-              <Divider />
-            </VStack>
-          </Box> */}
-        </Flex>
+            </div>
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   )
 }
 

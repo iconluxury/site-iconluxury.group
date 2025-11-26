@@ -47,6 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
+import { useNavigate } from "@tanstack/react-router"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -133,6 +134,7 @@ async function fetchJobs(): Promise<JobSummary[]> {
 }
 
 export default function JobsDashboard() {
+  const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
   const { data: jobs = [], isLoading: jobsLoading } = useQuery<JobSummary[]>({
     queryKey: ["scraperJobs"],
@@ -385,7 +387,15 @@ export default function JobsDashboard() {
                   jobs.map((job) => {
                     const status = getStatus(job)
                     return (
-                      <TableRow key={job.id}>
+                      <TableRow
+                        key={job.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() =>
+                          navigate({
+                            to: `/scraping-api/scraping-jobs/${job.id}`,
+                          })
+                        }
+                      >
                         <TableCell className="font-medium">{job.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -425,7 +435,12 @@ export default function JobsDashboard() {
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             {job.fileLocationURLComplete && (
-                              <Button variant="ghost" size="icon" asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <a
                                   href={job.fileLocationURLComplete}
                                   target="_blank"
@@ -437,7 +452,12 @@ export default function JobsDashboard() {
                               </Button>
                             )}
                             {job.logFileUrl && (
-                              <Button variant="ghost" size="icon" asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <a
                                   href={job.logFileUrl}
                                   target="_blank"

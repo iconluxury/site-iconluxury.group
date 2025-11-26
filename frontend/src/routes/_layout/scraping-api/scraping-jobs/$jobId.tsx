@@ -1,41 +1,44 @@
 import {
   Badge,
-  Box,
-  Button,
+} from "../../../../components/ui/badge"
+import { Button } from "../../../../components/ui/button"
+import {
   Card,
-  CardBody,
-  Container,
-  Divider,
-  Flex,
-  Heading,
-  Icon,
-  Image,
-  Input,
-  Link,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Progress, // Progress component import is necessary
-  Spinner,
-  Stat,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../../components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../../../components/ui/dialog"
+import { Input } from "../../../../components/ui/input"
+import { Progress } from "../../../../components/ui/progress"
+import { ScrollArea } from "../../../../components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../../components/ui/select"
+import {
   Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../../components/ui/table"
+import {
   Tabs,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/react"
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../../../components/ui/tabs"
+import { Loader2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { createFileRoute, useParams } from "@tanstack/react-router"
