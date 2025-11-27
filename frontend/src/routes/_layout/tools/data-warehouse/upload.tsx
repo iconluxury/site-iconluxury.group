@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-export const Route = createFileRoute("/_layout/tools/data-warehouse")({
+export const Route = createFileRoute("/_layout/tools/data-warehouse/upload")({
   component: DataWarehousePage,
 })
 

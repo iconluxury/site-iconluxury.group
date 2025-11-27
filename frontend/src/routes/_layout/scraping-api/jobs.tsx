@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
 import PromoSERP from "../../../components/ComingSoon"
 import ApiStatusManagement from "../../../components/Admin/ApiStatusManagement"
-import Changelog from "../../../components/Changelog"
+// import Changelog from "../../../components/Changelog"
 
 import { Badge } from "../../../components/ui/badge"
 import { Button } from "../../../components/ui/button"
@@ -493,7 +493,7 @@ function Jobs() {
             </div>
           </div>
           <div className="hidden md:block w-full md:w-[30%] min-w-[300px]">
-            <Changelog />
+            <ApiStatusManagement />
           </div>
         </div>
       )}
