@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SubmitCropImport } from './routes/submit-crop'
 import { Route as SignupImport } from './routes/signup'
 import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ReformatExcelImport } from './routes/reformat-excel'
@@ -21,7 +22,6 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
 import { Route as LayoutSupportTicketImport } from './routes/_layout/support-ticket'
-import { Route as LayoutSubmitCropImport } from './routes/_layout/submit-crop'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
@@ -31,10 +31,15 @@ import { Route as LayoutToolsDataWarehouseImport } from './routes/_layout/tools/
 import { Route as LayoutToolsCropImport } from './routes/_layout/tools/crop'
 import { Route as LayoutScrapingApiJobsImport } from './routes/_layout/scraping-api/jobs'
 import { Route as LayoutScrapingApiInsightsImport } from './routes/_layout/scraping-api/insights'
-import { Route as LayoutScrapingApiScrapingJobsIndexImport } from './routes/_layout/scraping-api/scraping-jobs/index'
 import { Route as LayoutScrapingApiScrapingJobsJobIdImport } from './routes/_layout/scraping-api/scraping-jobs/$jobId'
 
 // Create/Update Routes
+
+const SubmitCropRoute = SubmitCropImport.update({
+  id: '/submit-crop',
+  path: '/submit-crop',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const SignupRoute = SignupImport.update({
   id: '/signup',
@@ -95,12 +100,6 @@ const LayoutSupportTicketRoute = LayoutSupportTicketImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutSubmitCropRoute = LayoutSubmitCropImport.update({
-  id: '/submit-crop',
-  path: '/submit-crop',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
 const LayoutSettingsRoute = LayoutSettingsImport.update({
   id: '/settings',
   path: '/settings',
@@ -154,13 +153,6 @@ const LayoutScrapingApiInsightsRoute = LayoutScrapingApiInsightsImport.update({
   path: '/scraping-api/insights',
   getParentRoute: () => LayoutRoute,
 } as any)
-
-const LayoutScrapingApiScrapingJobsIndexRoute =
-  LayoutScrapingApiScrapingJobsIndexImport.update({
-    id: '/scraping-api/scraping-jobs/',
-    path: '/scraping-api/scraping-jobs/',
-    getParentRoute: () => LayoutRoute,
-  } as any)
 
 const LayoutScrapingApiScrapingJobsJobIdRoute =
   LayoutScrapingApiScrapingJobsJobIdImport.update({
@@ -222,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/submit-crop': {
+      id: '/submit-crop'
+      path: '/submit-crop'
+      fullPath: '/submit-crop'
+      preLoaderRoute: typeof SubmitCropImport
+      parentRoute: typeof rootRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -241,13 +240,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof LayoutSettingsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/submit-crop': {
-      id: '/_layout/submit-crop'
-      path: '/submit-crop'
-      fullPath: '/submit-crop'
-      preLoaderRoute: typeof LayoutSubmitCropImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/support-ticket': {
@@ -320,13 +312,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutScrapingApiScrapingJobsJobIdImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/scraping-api/scraping-jobs/': {
-      id: '/_layout/scraping-api/scraping-jobs/'
-      path: '/scraping-api/scraping-jobs'
-      fullPath: '/scraping-api/scraping-jobs'
-      preLoaderRoute: typeof LayoutScrapingApiScrapingJobsIndexImport
-      parentRoute: typeof LayoutImport
-    }
   }
 }
 
@@ -336,7 +321,6 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
-  LayoutSubmitCropRoute: typeof LayoutSubmitCropRoute
   LayoutSupportTicketRoute: typeof LayoutSupportTicketRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
@@ -346,14 +330,12 @@ interface LayoutRouteChildren {
   LayoutToolsGoogleImagesRoute: typeof LayoutToolsGoogleImagesRoute
   LayoutToolsImageLinksRoute: typeof LayoutToolsImageLinksRoute
   LayoutScrapingApiScrapingJobsJobIdRoute: typeof LayoutScrapingApiScrapingJobsJobIdRoute
-  LayoutScrapingApiScrapingJobsIndexRoute: typeof LayoutScrapingApiScrapingJobsIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
-  LayoutSubmitCropRoute: LayoutSubmitCropRoute,
   LayoutSupportTicketRoute: LayoutSupportTicketRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
@@ -364,8 +346,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutToolsImageLinksRoute: LayoutToolsImageLinksRoute,
   LayoutScrapingApiScrapingJobsJobIdRoute:
     LayoutScrapingApiScrapingJobsJobIdRoute,
-  LayoutScrapingApiScrapingJobsIndexRoute:
-    LayoutScrapingApiScrapingJobsIndexRoute,
 }
 
 const LayoutRouteWithChildren =
@@ -379,10 +359,10 @@ export interface FileRoutesByFullPath {
   '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/submit-crop': typeof SubmitCropRoute
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/settings': typeof LayoutSettingsRoute
-  '/submit-crop': typeof LayoutSubmitCropRoute
   '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
@@ -393,7 +373,6 @@ export interface FileRoutesByFullPath {
   '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
   '/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
-  '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -403,10 +382,10 @@ export interface FileRoutesByTo {
   '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/submit-crop': typeof SubmitCropRoute
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/settings': typeof LayoutSettingsRoute
-  '/submit-crop': typeof LayoutSubmitCropRoute
   '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
@@ -417,7 +396,6 @@ export interface FileRoutesByTo {
   '/tools/google-images': typeof LayoutToolsGoogleImagesRoute
   '/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
-  '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -429,10 +407,10 @@ export interface FileRoutesById {
   '/reformat-excel': typeof ReformatExcelRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/submit-crop': typeof SubmitCropRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
   '/_layout/settings': typeof LayoutSettingsRoute
-  '/_layout/submit-crop': typeof LayoutSubmitCropRoute
   '/_layout/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -443,7 +421,6 @@ export interface FileRoutesById {
   '/_layout/tools/google-images': typeof LayoutToolsGoogleImagesRoute
   '/_layout/tools/image-links': typeof LayoutToolsImageLinksRoute
   '/_layout/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
-  '/_layout/scraping-api/scraping-jobs/': typeof LayoutScrapingApiScrapingJobsIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -456,10 +433,10 @@ export interface FileRouteTypes {
     | '/reformat-excel'
     | '/reset-password'
     | '/signup'
+    | '/submit-crop'
     | '/admin'
     | '/file-explorer'
     | '/settings'
-    | '/submit-crop'
     | '/support-ticket'
     | '/progress/$jobId'
     | '/'
@@ -470,7 +447,6 @@ export interface FileRouteTypes {
     | '/tools/google-images'
     | '/tools/image-links'
     | '/scraping-api/scraping-jobs/$jobId'
-    | '/scraping-api/scraping-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/google-serp-cms'
@@ -479,10 +455,10 @@ export interface FileRouteTypes {
     | '/reformat-excel'
     | '/reset-password'
     | '/signup'
+    | '/submit-crop'
     | '/admin'
     | '/file-explorer'
     | '/settings'
-    | '/submit-crop'
     | '/support-ticket'
     | '/progress/$jobId'
     | '/'
@@ -493,7 +469,6 @@ export interface FileRouteTypes {
     | '/tools/google-images'
     | '/tools/image-links'
     | '/scraping-api/scraping-jobs/$jobId'
-    | '/scraping-api/scraping-jobs'
   id:
     | '__root__'
     | '/_layout'
@@ -503,10 +478,10 @@ export interface FileRouteTypes {
     | '/reformat-excel'
     | '/reset-password'
     | '/signup'
+    | '/submit-crop'
     | '/_layout/admin'
     | '/_layout/file-explorer'
     | '/_layout/settings'
-    | '/_layout/submit-crop'
     | '/_layout/support-ticket'
     | '/progress/$jobId'
     | '/_layout/'
@@ -517,7 +492,6 @@ export interface FileRouteTypes {
     | '/_layout/tools/google-images'
     | '/_layout/tools/image-links'
     | '/_layout/scraping-api/scraping-jobs/$jobId'
-    | '/_layout/scraping-api/scraping-jobs/'
   fileRoutesById: FileRoutesById
 }
 
@@ -529,6 +503,7 @@ export interface RootRouteChildren {
   ReformatExcelRoute: typeof ReformatExcelRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  SubmitCropRoute: typeof SubmitCropRoute
   ProgressJobIdRoute: typeof ProgressJobIdRoute
 }
 
@@ -540,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReformatExcelRoute: ReformatExcelRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  SubmitCropRoute: SubmitCropRoute,
   ProgressJobIdRoute: ProgressJobIdRoute,
 }
 
@@ -560,6 +536,7 @@ export const routeTree = rootRoute
         "/reformat-excel",
         "/reset-password",
         "/signup",
+        "/submit-crop",
         "/progress/$jobId"
       ]
     },
@@ -569,7 +546,6 @@ export const routeTree = rootRoute
         "/_layout/admin",
         "/_layout/file-explorer",
         "/_layout/settings",
-        "/_layout/submit-crop",
         "/_layout/support-ticket",
         "/_layout/",
         "/_layout/scraping-api/insights",
@@ -578,8 +554,7 @@ export const routeTree = rootRoute
         "/_layout/tools/data-warehouse",
         "/_layout/tools/google-images",
         "/_layout/tools/image-links",
-        "/_layout/scraping-api/scraping-jobs/$jobId",
-        "/_layout/scraping-api/scraping-jobs/"
+        "/_layout/scraping-api/scraping-jobs/$jobId"
       ]
     },
     "/google-serp-cms": {
@@ -600,6 +575,9 @@ export const routeTree = rootRoute
     "/signup": {
       "filePath": "signup.tsx"
     },
+    "/submit-crop": {
+      "filePath": "submit-crop.tsx"
+    },
     "/_layout/admin": {
       "filePath": "_layout/admin.tsx",
       "parent": "/_layout"
@@ -610,10 +588,6 @@ export const routeTree = rootRoute
     },
     "/_layout/settings": {
       "filePath": "_layout/settings.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/submit-crop": {
-      "filePath": "_layout/submit-crop.tsx",
       "parent": "/_layout"
     },
     "/_layout/support-ticket": {
@@ -653,10 +627,6 @@ export const routeTree = rootRoute
     },
     "/_layout/scraping-api/scraping-jobs/$jobId": {
       "filePath": "_layout/scraping-api/scraping-jobs/$jobId.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/scraping-api/scraping-jobs/": {
-      "filePath": "_layout/scraping-api/scraping-jobs/index.tsx",
       "parent": "/_layout"
     }
   }
