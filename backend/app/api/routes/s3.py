@@ -18,6 +18,7 @@ from app.api.deps import SessionDep
 from app.models import (
     S3Configuration, S3ConfigurationCreate, S3ConfigurationPublic, S3ConfigurationsPublic, S3ConfigurationUpdate
 )
+from app.core.d1 import d1_client
 from sqlmodel import select, func
 import uuid
 
@@ -84,11 +85,25 @@ def get_active_s3_client(session: SessionDep = None, config_id: Optional[uuid.UU
     If config_id is provided, use that config.
     Otherwise, use the global default (env vars).
     """
-    if config_id and session:
-        config = session.get(S3Configuration, config_id)
-        if not config:
-            raise HTTPException(status_code=404, detail="S3 Config not found")
-        return get_s3_client_from_config(config), config.bucket_name
+    if config_id:
+        # Try D1 first
+        try:
+            res = d1_client.query("SELECT * FROM S3Configuration WHERE id = ?", [str(config_id)])
+            if res.get("success") and res.get("result") and len(res["result"][0]["results"]) > 0:
+                row = res["result"][0]["results"][0]
+                # Ensure id is UUID
+                if isinstance(row.get("id"), str):
+                    row["id"] = uuid.UUID(row["id"])
+                config = S3Configuration(**row)
+                return get_s3_client_from_config(config), config.bucket_name
+        except Exception as e:
+            logger.error(f"Failed to fetch config from D1: {e}")
+
+        if session:
+            config = session.get(S3Configuration, config_id)
+            if not config:
+                raise HTTPException(status_code=404, detail="S3 Config not found")
+            return get_s3_client_from_config(config), config.bucket_name
     
     # Fallback to global
     if s3_client is None:
@@ -98,27 +113,62 @@ def get_active_s3_client(session: SessionDep = None, config_id: Optional[uuid.UU
 @s3_router.post("/configs", response_model=S3ConfigurationPublic)
 def create_s3_config(session: SessionDep, config_in: S3ConfigurationCreate):
     """Create a new S3 configuration."""
-    config = S3Configuration.model_validate(config_in)
-    session.add(config)
-    session.commit()
-    session.refresh(config)
-    return config
+    # Use D1
+    new_id = str(uuid.uuid4())
+    sql = """
+    INSERT INTO S3Configuration (id, name, bucket_name, endpoint_url, region_name, access_key_id, secret_access_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    params = [
+        new_id,
+        config_in.name,
+        config_in.bucket_name,
+        config_in.endpoint_url,
+        config_in.region_name,
+        config_in.access_key_id,
+        config_in.secret_access_key
+    ]
+    
+    res = d1_client.query(sql, params)
+    if not res.get("success"):
+        logger.error(f"D1 Error: {res.get('errors')}")
+        raise HTTPException(status_code=500, detail=f"Failed to create config in D1: {res.get('errors')}")
+        
+    return S3ConfigurationPublic(id=uuid.UUID(new_id), **config_in.dict())
 
 @s3_router.get("/configs", response_model=S3ConfigurationsPublic)
 def read_s3_configs(session: SessionDep, skip: int = 0, limit: int = 100):
     """List S3 configurations."""
-    count = session.exec(select(func.count()).select_from(S3Configuration)).one()
-    configs = session.exec(select(S3Configuration).offset(skip).limit(limit)).all()
+    # Use D1
+    count_res = d1_client.query("SELECT COUNT(*) as count FROM S3Configuration")
+    count = 0
+    if count_res.get("success") and count_res.get("result") and len(count_res["result"][0]["results"]) > 0:
+        count = count_res["result"][0]["results"][0]["count"]
+        
+    sql = "SELECT * FROM S3Configuration LIMIT ? OFFSET ?"
+    res = d1_client.query(sql, [limit, skip])
+    
+    configs = []
+    if res.get("success") and res.get("result") and len(res["result"][0]["results"]) > 0:
+        rows = res["result"][0]["results"]
+        for row in rows:
+            # Ensure id is UUID
+            if isinstance(row.get("id"), str):
+                row["id"] = uuid.UUID(row["id"])
+            configs.append(S3ConfigurationPublic(**row))
+            
     return S3ConfigurationsPublic(data=configs, count=count)
 
 @s3_router.delete("/configs/{config_id}")
 def delete_s3_config(session: SessionDep, config_id: uuid.UUID):
     """Delete an S3 configuration."""
-    config = session.get(S3Configuration, config_id)
-    if not config:
-        raise HTTPException(status_code=404, detail="Config not found")
-    session.delete(config)
-    session.commit()
+    # Use D1
+    sql = "DELETE FROM S3Configuration WHERE id = ?"
+    res = d1_client.query(sql, [str(config_id)])
+    
+    if not res.get("success"):
+         raise HTTPException(status_code=500, detail="Failed to delete config")
+         
     return {"ok": True}
 
 @s3_router.get("/config")

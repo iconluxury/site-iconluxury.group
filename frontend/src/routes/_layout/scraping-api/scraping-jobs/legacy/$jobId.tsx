@@ -5,30 +5,30 @@ import { Loader2 } from "lucide-react"
 import React, { useEffect, useState } from "react"
 import { FiFileText } from "react-icons/fi"
 import InfiniteScroll from "react-infinite-scroll-component"
-import { Badge } from "../../../../components/ui/badge"
-import { Button } from "../../../../components/ui/button"
+import { Badge } from "../../../../../components/ui/badge"
+import { Button } from "../../../../../components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../../../../components/ui/card"
+} from "../../../../../components/ui/card"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../../../../components/ui/dialog"
-import { Input } from "../../../../components/ui/input"
-import { Progress } from "../../../../components/ui/progress"
-import { ScrollArea } from "../../../../components/ui/scroll-area"
+} from "../../../../../components/ui/dialog"
+import { Input } from "../../../../../components/ui/input"
+import { Progress } from "../../../../../components/ui/progress"
+import { ScrollArea } from "../../../../../components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui/select"
+} from "../../../../../components/ui/select"
 import {
   Table,
   TableBody,
@@ -36,14 +36,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../../components/ui/table"
+} from "../../../../../components/ui/table"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../../../components/ui/tabs"
-import useCustomToast from "../../../../hooks/useCustomToast"
+} from "../../../../../components/ui/tabs"
+import useCustomToast from "../../../../../hooks/useCustomToast"
 
 // Interfaces
 interface JobDetails {
