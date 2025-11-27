@@ -331,7 +331,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       params: { jobId: String(job.id) },
       search: { activeTab: "2", domain, entryId: String(entryId) },
     })
-    setActiveTab(2) // Switch to "Results" tab
+    setActiveTab(2) // Switch to "File Rows" tab
   }
 
   const handleApiCall = async (
@@ -719,3 +719,810 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
   )
 }
 
+// LogsTab Component
+const LogsTab = ({ job }: { job: JobDetails }) => {
+  return (
+    <div className="p-4 bg-white">
+      <div className="flex justify-between items-center mb-4">
+        {job.logFileUrl && (
+          <Button
+            size="sm"
+            onClick={() => window.open(job.logFileUrl as string, "_blank")}
+          >
+            Download Log File
+          </Button>
+        )}
+      </div>
+      <div className="flex flex-col gap-6">
+        <Card className="shadow-md border bg-white">
+          <CardContent className="p-6">
+            <h3 className="text-md font-semibold mb-2 text-gray-800">
+              Timeline Events
+            </h3>
+            <Table>
+              <TableHeader className="bg-gray-100">
+                <TableRow>
+                  <TableHead className="text-gray-800">Event</TableHead>
+                  <TableHead className="text-gray-800">Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="text-gray-800">File Start</TableCell>
+                  <TableCell className="text-gray-800">
+                    {new Date(job.fileStart).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+                {job.fileEnd && (
+                  <TableRow>
+                    <TableCell className="text-gray-800">
+                      File Roughly
+                    </TableCell>
+                    <TableCell className="text-gray-800">
+                      {new Date(job.fileEnd).toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                )}
+                <TableRow>
+                  <TableCell className="text-gray-800">Image Start</TableCell>
+                  <TableCell className="text-gray-800">
+                    {new Date(job.imageStart).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+                {job.imageEnd && (
+                  <TableRow>
+                    <TableCell className="text-gray-800">Image End</TableCell>
+                    <TableCell className="text-gray-800">
+                      {new Date(job.imageEnd).toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card className="shadow-md border bg-white">
+          <CardContent className="p-6">
+            <h3 className="text-md font-semibold mb-2 text-gray-800">
+              Log File Preview
+            </h3>
+            <LogDisplay logUrl={job.logFileUrl} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+interface SearchRowsTabProps {
+  job: JobDetails
+  searchQuery: string
+  domain?: string
+  entryId?: string
+}
+
+// SearchRowsTab Component with Search, Pagination, and Infinite Scroll
+const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery, domain, entryId }) => {
+  const showToast = useCustomToast()
+  const [showFileDetails, setShowFileDetails] = useState(true)
+  const [showResultDetails, setShowResultDetails] = useState(false)
+  const [numImages, setNumImages] = useState(1)
+  const [hideEmptyRows, setHideEmptyRows] = useState(false)
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null
+    direction: "ascending" | "descending"
+  }>({ key: null, direction: "ascending" })
+  const [viewMode, setViewMode] = useState<"pagination" | "infinite">(
+    "infinite",
+  )
+  const [currentPage, setCurrentPage] = useState(0)
+  const [displayCount, setDisplayCount] = useState(50)
+  const itemsPerPage = 5
+
+  const query = (searchQuery || "").trim().toLowerCase()
+  
+  const filteredRecords = job.records.filter(
+    (record) => {
+      const queryMatch =
+        (record.productModel || "").toLowerCase().includes(query) ||
+        (record.productBrand || "").toLowerCase().includes(query) ||
+        (record.productColor || "").toLowerCase().includes(query) ||
+        (record.productCategory || "").toLowerCase().includes(query) ||
+        record.entryId.toString().includes(query) ||
+        record.excelRowId.toString().includes(query)
+
+      const entryIdMatch = entryId ? record.entryId.toString() === entryId : true
+      
+      const domainMatch = domain ? job.results.some(r => r.entryId === record.entryId && new URL(r.imageSource).hostname.replace(/^www\./, "").includes(domain)) : true
+
+      return queryMatch && entryIdMatch && domainMatch
+    }
+  )
+
+  useEffect(() => {
+    const maxImages = showResultDetails ? 1 : 5
+    setNumImages((prev) => (prev > maxImages ? maxImages : prev))
+  }, [showResultDetails])
+
+  const getImagesForEntry = (entryId: number, limit: number): ResultItem[] => {
+    const filteredResults = job.results.filter(
+      (r) => r.entryId === entryId && r.sortOrder > 0,
+    )
+    return [...filteredResults]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .slice(0, limit)
+  }
+
+  const getPositiveSortCountForEntry = (entryId: number): number => {
+    return job.results.filter((r) => r.entryId === entryId && r.sortOrder > 0)
+      .length
+  }
+
+  const getTotalImageCountForEntry = (entryId: number): number => {
+    return job.results.filter((r) => r.entryId === entryId).length
+  }
+
+  const shortenUrl = (url: string): string => {
+    if (!url) return ""
+    return url
+  }
+
+  const googleSearch = (model: string): string =>
+    `https://www.google.com/search?q=${encodeURIComponent(model || "")}&udm=2`
+  const googleSearchBrandModelUrl = (model: string, brand: string): string =>
+    `https://www.google.com/search?q=${encodeURIComponent(
+      `${brand || ""} ${model || ""}`,
+    )}&udm=2`
+
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    url: string,
+  ) => {
+    e.preventDefault()
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
+  const handleIncreaseImages = () => {
+    setShowResultDetails(false)
+    const maxImages = showResultDetails ? 1 : 5
+    setNumImages((prev) => Math.min(prev + 1, maxImages))
+  }
+
+  const handleDecreaseImages = () => {
+    setNumImages((prev) => Math.max(prev - 1, 1))
+  }
+
+  const handleRowIdClick = (
+    e: React.MouseEvent<HTMLElement, MouseEvent>,
+    entryId: number,
+  ) => {
+    e.preventDefault()
+    const url = `${
+      window.location.pathname
+    }?activeTab=2&search=${encodeURIComponent(entryId.toString() || "")}`
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      const newDirection =
+        prev.key === key && prev.direction === "ascending"
+          ? "descending"
+          : "ascending"
+      return { key, direction: newDirection }
+    })
+    setCurrentPage(0)
+  }
+
+  const displayedRecords = hideEmptyRows
+    ? filteredRecords.filter(
+        (record) => getPositiveSortCountForEntry(record.entryId) > 0,
+      )
+    : filteredRecords
+
+  const sortedRecords = [...displayedRecords].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let aValue: any
+    let bValue: any
+    if (sortConfig.key === "positiveSortCount") {
+      aValue = getPositiveSortCountForEntry(a.entryId)
+      bValue = getPositiveSortCountForEntry(b.entryId)
+    } else if (sortConfig.key === "totalImageCount") {
+      aValue = getTotalImageCountForEntry(a.entryId)
+      bValue = getTotalImageCountForEntry(b.entryId)
+    } else {
+      aValue = a[sortConfig.key as keyof RecordItem] || ""
+      bValue = b[sortConfig.key as keyof RecordItem] || ""
+    }
+    if (aValue < bValue) return sortConfig.direction === "ascending" ? -1 : 1
+    if (aValue > bValue) return sortConfig.direction === "ascending" ? 1 : -1
+    return 0
+  })
+
+  const pageCount = Math.ceil(sortedRecords.length / itemsPerPage)
+  const displayedRecordsPagination = sortedRecords.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage,
+  )
+  const displayedRecordsInfinite = sortedRecords.slice(0, displayCount)
+
+  const hasThumbnails = sortedRecords.some((record) => record.excelRowImageRef)
+
+  const renderTable = (records: RecordItem[]) => (
+    <Table>
+      <TableHeader className="bg-gray-100">
+        <TableRow>
+          <TableHead
+            className="w-[90px] cursor-pointer text-gray-800"
+            onClick={() => handleSort("excelRowId")}
+          >
+            Row #{" "}
+            {sortConfig.key === "excelRowId" &&
+              (sortConfig.direction === "ascending" ? "↑" : "↓")}
+          </TableHead>
+
+          {showFileDetails && (
+            <TableHead className="w-[120px] cursor-pointer">
+              Color Name{" "}
+              {sortConfig.key === "productColor" &&
+                (sortConfig.direction === "ascending" ? "↑" : "↓")}
+            </TableHead>
+          )}
+          {showFileDetails && (
+            <TableHead
+              className="w-[120px] cursor-pointer bg-gray-200 text-gray-800"
+              onClick={() => handleSort("productCategory")}
+            >
+              Category{" "}
+              {sortConfig.key === "productCategory" &&
+                (sortConfig.direction === "ascending" ? "↑" : "↓")}
+            </TableHead>
+          )}
+          {showFileDetails && hasThumbnails && (
+            <TableHead className="w-[100px] bg-gray-200 text-gray-800">
+              Excel Picture
+            </TableHead>
+          )}
+          {Array.from({ length: numImages }).map((_, index) => (
+            <React.Fragment key={`header-${index}`}>
+              <TableHead className="w-[100px] text-gray-800">
+                Picture {index + 1}
+              </TableHead>
+              {showResultDetails && (
+                <TableHead className="w-[200px] bg-gray-200 text-gray-800">
+                  Picture Detail {index + 1}
+                </TableHead>
+              )}
+            </React.Fragment>
+          ))}
+          <TableHead
+            className="w-[150px] cursor-pointer text-gray-800"
+            onClick={() => handleSort("productModel")}
+          >
+            Style #{" "}
+            {sortConfig.key === "productModel" &&
+              (sortConfig.direction === "ascending" ? "↑" : "↓")}
+          </TableHead>
+          <TableHead
+            className="w-[150px] cursor-pointer text-gray-800"
+            onClick={() => handleSort("productBrand")}
+          >
+            Brand{" "}
+            {sortConfig.key === "productBrand" &&
+              (sortConfig.direction === "ascending" ? "↑" : "↓")}
+          </TableHead>
+          <TableHead
+            className="w-[100px] cursor-pointer text-gray-800"
+            onClick={() => handleSort("totalImageCount")}
+          >
+            Total Image{" "}
+            {sortConfig.key === "totalImageCount" &&
+              (sortConfig.direction === "ascending" ? "↑" : "↓")}
+          </TableHead>
+          <TableHead
+            className="w-[100px] cursor-pointer text-gray-800"
+            onClick={() => handleSort("positiveSortCount")}
+          >
+            Positive Count{" "}
+            {sortConfig.key === "positiveSortCount" &&
+              (sortConfig.direction === "ascending" ? "↑" : "↓")}
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {records.map((record) => {
+          const imagedetails = getImagesForEntry(record.entryId, numImages)
+          const totalImageCount = getTotalImageCountForEntry(record.entryId)
+          const positiveSortCount = getPositiveSortCountForEntry(record.entryId)
+          return (
+            <TableRow
+              key={record.entryId}
+              className={`hover:bg-gray-50 ${
+                positiveSortCount === 0 && !hideEmptyRows ? "opacity-80" : ""
+              }`}
+            >
+              <TableCell className="w-[90px]">
+                <span
+                  className="cursor-pointer text-green-500 hover:underline"
+                  onClick={(e) => handleRowIdClick(e, record.entryId)}
+                >
+                  {record.excelRowId}
+                </span>
+              </TableCell>
+              {showFileDetails && (
+                <TableCell className="w-[120px] bg-gray-50">
+                  {record.productCategory || (
+                    <span className="text-xs text-gray-600">No category</span>
+                  )}
+                </TableCell>
+              )}
+              {showFileDetails && (
+                <TableCell className="w-[120px] bg-gray-50">
+                  {record.productColor || (
+                    <span className="text-xs text-gray-600">No color</span>
+                  )}
+                </TableCell>
+              )}
+              {showFileDetails && hasThumbnails && (
+                <TableCell className="w-[80px] bg-gray-50">
+                  {record.excelRowImageRef ? (
+                    <img
+                      src={record.excelRowImageRef}
+                      alt={record.productModel || `Record ID ${record.entryId}`}
+                      className="max-w-[80px] max-h-[80px] object-cover cursor-pointer"
+                      onClick={() => {
+                        if (record.excelRowImageRef)
+                          window.open(record.excelRowImageRef, "_blank")
+                      }}
+                      onError={(e) => {
+                        showToast(
+                          "Image Load Failed",
+                          `Failed to load S3 image: ${record.excelRowImageRef}`,
+                          "warning",
+                        )
+                        e.currentTarget.style.display = "none"
+                      }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-600">No picture</span>
+                  )}
+                </TableCell>
+              )}
+              {imagedetails.map((image, index) => (
+                <React.Fragment key={index}>
+                  <TableCell className="w-[80px]">
+                    <img
+                      src={image.imageUrlThumbnail}
+                      alt={image.imageDesc || "No description"}
+                      className="max-w-[80px] max-h-[80px] object-cover"
+                      onError={() =>
+                        showToast(
+                          "Image Error",
+                          `Failed to load image ${index + 1} for record ${
+                            record.entryId
+                          }`,
+                          "error",
+                        )
+                      }
+                    />
+                  </TableCell>
+                  {showResultDetails && (
+                    <TableCell className="w-[200px] bg-gray-50">
+                      <div className="break-all">
+                        <p className="text-xs">
+                          <a
+                            href={googleSearch(image.imageDesc)}
+                            onClick={(e) =>
+                              handleLinkClick(e, googleSearch(image.imageDesc))
+                            }
+                            style={{ color: "#1a73e8" }}
+                          >
+                            {image.imageDesc || "N/A"}
+                          </a>
+                        </p>
+                        <p className="text-xs text-green-500">
+                          <a
+                            href={image.imageSource}
+                            onClick={(e) =>
+                              handleLinkClick(e, image.imageSource)
+                            }
+                          >
+                            {shortenUrl(image.imageSource)}
+                          </a>
+                        </p>
+                        <p className="text-xs text-green-500">
+                          <a
+                            href={image.imageUrl}
+                            onClick={(e) => handleLinkClick(e, image.imageUrl)}
+                          >
+                            {shortenUrl(image.imageUrl)}
+                          </a>
+                        </p>
+                        {image.aiCaption && (
+                          <p className="text-xs text-gray-600">
+                            AI Caption: {image.aiCaption}
+                          </p>
+                        )}
+                        {image.aiLabel && (
+                          <p className="text-xs text-gray-600">
+                            AI Label: {image.aiLabel}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                </React.Fragment>
+              ))}
+              {Array.from({ length: numImages - imagedetails.length }).map(
+                (_, index) => (
+                  <React.Fragment key={`empty-${record.entryId}-${index}`}>
+                    <TableCell className="w-[80px]">
+                      <span className="text-xs text-gray-600">No picture</span>
+                    </TableCell>
+                    {showResultDetails && (
+                      <TableCell className="w-[200px] bg-gray-50">
+                        <span className="text-xs text-gray-600">
+                          No picture detail
+                        </span>
+                      </TableCell>
+                    )}
+                  </React.Fragment>
+                ),
+              )}
+              <TableCell className="w-[150px]">
+                {record.productModel ? (
+                  <a
+                    href={googleSearch(record.productModel)}
+                    onClick={(e) =>
+                      handleLinkClick(e, googleSearch(record.productModel))
+                    }
+                  >
+                    <span className="text-green-500">
+                      {record.productModel}
+                    </span>
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-600">No style</span>
+                )}
+              </TableCell>
+              <TableCell className="w-[150px]">
+                {record.productBrand ? (
+                  <a
+                    href={googleSearchBrandModelUrl(
+                      record.productModel,
+                      record.productBrand,
+                    )}
+                    onClick={(e) =>
+                      handleLinkClick(
+                        e,
+                        googleSearchBrandModelUrl(
+                          record.productModel,
+                          record.productBrand,
+                        ),
+                      )
+                    }
+                  >
+                    <span className="text-green-500">
+                      {record.productBrand}
+                    </span>
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-600">No brand</span>
+                )}
+              </TableCell>
+              <TableCell className="w-[100px]">
+                {totalImageCount === 0 ? (
+                  <span className="text-xs text-gray-600">0</span>
+                ) : (
+                  <span className="text-gray-800">{totalImageCount}</span>
+                )}
+              </TableCell>
+              <TableCell className="w-[100px]">
+                {positiveSortCount === 0 ? (
+                  <span className="text-xs text-gray-600">0</span>
+                ) : (
+                  <span className="text-gray-800">{positiveSortCount}</span>
+                )}
+              </TableCell>
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </Table>
+  )
+
+  return (
+    <div className="p-4 bg-white">
+      <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-5 border-b border-gray-200">
+        <h3 className="text-lg font-bold text-gray-800">
+          File Rows ({sortedRecords.length})
+        </h3>
+        <div className="flex gap-3 justify-end">
+          <Button
+            size="sm"
+            onClick={() => setShowResultDetails(!showResultDetails)}
+          >
+            {showResultDetails ? "- Picture Details" : "+ Picture Details"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowFileDetails(!showFileDetails)}
+          >
+            {showFileDetails ? "- File Details" : "+ File Details"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() =>
+              job.records.length > 0 && setHideEmptyRows(!hideEmptyRows)
+            }
+            variant={job.records.length === 0 ? "outline" : "default"}
+          >
+            {hideEmptyRows ? "Show All Rows" : "Hide Empty Rows"}
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleDecreaseImages}
+              disabled={numImages <= 1}
+            >
+              -
+            </Button>
+            <span className="text-gray-800">{numImages}</span>
+            <Button
+              size="sm"
+              onClick={handleIncreaseImages}
+              disabled={numImages >= (showResultDetails ? 1 : 5)}
+            >
+              +
+            </Button>
+          </div>
+          <Button
+            size="sm"
+            className={
+              viewMode === "pagination"
+                ? "bg-green-500"
+                : "bg-white border border-gray-200"
+            }
+            onClick={() =>
+              setViewMode(viewMode === "pagination" ? "infinite" : "pagination")
+            }
+          >
+            <FiFileText
+              className={
+                viewMode === "pagination" ? "text-white" : "text-green-500"
+              }
+            />
+          </Button>
+        </div>
+      </div>
+
+      <Card className="shadow-md border bg-white">
+        <CardContent className="p-0">
+          {viewMode === "pagination" ? (
+            <>
+              {renderTable(displayedRecordsPagination)}
+              {pageCount > 1 && (
+                <div className="flex justify-center mt-4 items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => setCurrentPage(0)}
+                    disabled={currentPage === 0}
+                  >
+                    First
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 0))
+                    }
+                    disabled={currentPage === 0}
+                  >
+                    Previous
+                  </Button>
+                  <span className="mx-2">
+                    Page {currentPage + 1} of {pageCount}
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        Math.min(prev + 1, pageCount - 1),
+                      )
+                    }
+                    disabled={currentPage === pageCount - 1}
+                  >
+                    Next
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setCurrentPage(pageCount - 1)}
+                    disabled={currentPage === pageCount - 1}
+                  >
+                    Last
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <InfiniteScroll
+              dataLength={displayCount}
+              next={() => setDisplayCount((prev) => prev + 50)}
+              hasMore={displayCount < sortedRecords.length}
+              loader={
+                <div className="p-4 text-center text-gray-600">
+                  Loading more rows...
+                </div>
+              }
+              endMessage={
+                <div className="p-4 text-center text-gray-600">
+                  No more rows to load.
+                </div>
+              }
+            >
+              {renderTable(displayedRecordsInfinite)}
+            </InfiniteScroll>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+// JobsDetailPage Component
+const JobsDetailPage = () => {
+  const { jobId } = useParams({
+    from: "/_layout/scraping-api/scraping-jobs/$jobId",
+  }) as { jobId: string }
+  const searchParams = useSearch({
+    from: "/_layout/scraping-api/scraping-jobs/$jobId",
+  }) as {
+    search?: string
+    activeTab?: string
+    domain?: string
+    entryId?: string
+  }
+  const initialTab = searchParams.activeTab
+    ? Number.parseInt(searchParams.activeTab, 10)
+    : 0
+  const initialSearch = Array.isArray(searchParams.search)
+    ? searchParams.search[0]
+    : searchParams.search || ""
+  const [activeTab, setActiveTab] = useState<number>(
+    Number.isNaN(initialTab) || initialTab < 0 || initialTab > 2
+      ? 2
+      : initialTab,
+  )
+  const [sortBy, setSortBy] = useState<"match" | "linesheet" | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [jobData, setJobData] = useState<JobDetails | null>(null)
+  const [searchQuery, setSearchQuery] = useState<string>(String(initialSearch))
+  const showToast = useCustomToast()
+
+  const fetchJobData = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const apiUrl = `https://external.iconluxury.group/api/scraping-jobs/${jobId}`
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!response.ok)
+        throw new Error(
+          `Failed to fetch job data: ${response.status} - ${response.statusText}`,
+        )
+      const data: JobDetails = await response.json()
+      setJobData(data)
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred"
+      showToast("Fetch Error", errorMessage, "error")
+      setError(errorMessage)
+      setJobData(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchJobData()
+  }, [jobId])
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6 bg-white">
+        <div className="flex justify-center items-center h-[200px]">
+          <Loader2 className="h-12 w-12 animate-spin text-green-500" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !jobData) {
+    return (
+      <div className="container mx-auto py-6 bg-white">
+        <p className="text-red-500">{error || "Job data not available"}</p>
+      </div>
+    )
+  }
+
+  const tabsConfig = [
+    {
+      title: "Overview",
+      component: () => (
+        <OverviewTab
+          job={jobData}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          fetchJobData={fetchJobData}
+          setActiveTab={setActiveTab}
+        />
+      ),
+    },
+    { title: "Logs", component: () => <LogsTab job={jobData} /> },
+    {
+      title: "File Rows",
+      component: () => (
+        <SearchRowsTab 
+          job={jobData} 
+          searchQuery={searchQuery} 
+          domain={searchParams.domain}
+          entryId={searchParams.entryId}
+        />
+      ),
+    },
+  ]
+
+  return (
+    <div className="container mx-auto p-6 bg-white">
+      <div className="flex items-center justify-between py-6 flex-wrap gap-4">
+        <div className="text-left flex-1">
+          <h1 className="text-xl font-bold text-gray-800">Job: {jobId}</h1>
+          <p className="text-sm text-gray-600">
+            Details and results for scraping job {jobData.inputFile}.
+          </p>
+        </div>
+      </div>
+      <Tabs
+        value={tabsConfig[activeTab].title}
+        onValueChange={(value) => {
+          const index = tabsConfig.findIndex((tab) => tab.title === value)
+          if (index !== -1) setActiveTab(index)
+        }}
+        className="w-full"
+      >
+        <div className="flex items-center justify-between border-b-2 border-green-200 mb-4">
+          <TabsList className="bg-transparent p-0 h-auto">
+            {tabsConfig.map((tab) => (
+              <TabsTrigger
+                key={tab.title}
+                value={tab.title}
+                className="data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-green-600 rounded-none border-b-2 border-transparent px-4 py-2 text-gray-600"
+              >
+                {tab.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-[300px] border-green-300 focus:border-green-300 text-gray-800 bg-white ml-auto"
+          />
+        </div>
+        {tabsConfig.map((tab) => (
+          <TabsContent key={tab.title} value={tab.title}>
+            {tab.component()}
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  )
+}
+
+export const Route = createFileRoute(
+  "/_layout/scraping-api/scraping-jobs/$jobId",
+)({ component: JobsDetailPage })
+
+export default JobsDetailPage
