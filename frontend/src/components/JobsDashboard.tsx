@@ -11,6 +11,7 @@ import {
   LuSearch,
 } from "react-icons/lu"
 import { Button } from "./ui/button"
+import Changelog from "./Changelog"
 import {
   Card,
   CardContent,
@@ -287,6 +288,11 @@ export default function JobsDashboard() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="space-y-6">
+          <Changelog />
         </div>
       </div>
     </div>

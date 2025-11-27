@@ -2363,6 +2363,29 @@ const JobsDetailPage = () => {
         />
       ),
     },
+    {
+      title: "Results",
+      component: () => (
+        <ResultsTab
+          job={jobData}
+          sortBy={sortBy}
+          domain={searchParams.domain}
+          entryId={searchParams.entryId}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      ),
+    },
+    {
+      title: "Records",
+      component: () => (
+        <RecordsTab
+          job={jobData}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      ),
+    },
     { title: "Logs", component: () => <LogsTab job={jobData} /> },
     {
       title: "File Rows",
@@ -2420,7 +2443,7 @@ const JobsDetailPage = () => {
 }
 
 export const Route = createFileRoute(
-  "/_layout/scraping-api/scraping-jobs/$jobId",
+  "/_layout/scraping-api/scraping-jobs/legacy/$jobId",
 )({ component: JobsDetailPage })
 
 export default JobsDetailPage
