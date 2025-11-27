@@ -35,7 +35,7 @@ const Sidebar = () => {
                 href="https://dashboard.iconluxury.group"
                 className="block mb-6"
               >
-                <span className="text-xl font-bold p-6 block text-primary">
+                <span className="text-lg font-bold p-4 block text-primary">
                   ICON LUXURY GROUP
                 </span>
               </a>
@@ -46,11 +46,11 @@ const Sidebar = () => {
       </Sheet>
 
       {/* Desktop */}
-      <div className="hidden md:flex bg-gray-100 p-3 h-full sticky top-0 sidebar">
-        <div className="flex flex-col justify-between p-4 rounded-md shadow-sm w-[250px] bg-white h-full">
+      <div className="hidden md:flex bg-muted/40 p-3 h-full sticky top-0 sidebar">
+        <div className="flex flex-col justify-between p-4 rounded-md shadow-sm w-[250px] bg-card h-full">
           <div>
             <a href="https://dashboard.iconluxury.group" className="block mb-6">
-              <span className="text-xl font-bold p-6 block text-primary">
+              <span className="text-lg font-bold p-4 block text-primary">
                 ICON LUXURY GROUP
               </span>
             </a>

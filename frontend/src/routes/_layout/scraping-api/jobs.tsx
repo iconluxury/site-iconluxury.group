@@ -340,7 +340,7 @@ function Jobs() {
     <div className="container mx-auto p-6 bg-white text-gray-800">
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
-          <h1 className="text-xl font-bold text-black">Latest Jobs</h1>
+          <h1 className="text-xl font-bold text-foreground">Latest Jobs</h1>
           <p className="text-sm text-gray-600">View and manage your recent scraping jobs</p>
         </div>
       </div>

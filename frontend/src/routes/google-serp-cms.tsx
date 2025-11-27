@@ -41,7 +41,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/tools/google-images">Open Tool</Link>
+              <Link to="/public/tools/google-images">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -59,7 +59,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/tools/data-warehouse">Open Tool</Link>
+              <Link to="/public/tools/data-warehouse">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -75,7 +75,7 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/tools/image-links">Open Tool</Link>
+              <Link to="/public/tools/image-links">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
@@ -93,19 +93,19 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/tools/crop">Open Tool</Link>
+              <Link to="/public/tools/crop">Open Tool</Link>
             </Button>
           </CardContent>
         </Card>
 
         {/* Background Remover (Locked) */}
         <Card
-          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          className="cursor-not-allowed bg-muted border-border text-muted-foreground"
           aria-disabled
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuEraser className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <LuEraser className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
               <CardTitle className="text-xl font-semibold">
                 Background remover
               </CardTitle>
@@ -123,12 +123,12 @@ function GoogleSerpCmsPage() {
 
         {/* Image Generator (Locked) */}
         <Card
-          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          className="cursor-not-allowed bg-muted border-border text-muted-foreground"
           aria-disabled
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuWand2 className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <LuWand2 className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
               <CardTitle className="text-xl font-semibold">
                 Image generator
               </CardTitle>
@@ -157,12 +157,12 @@ function GoogleSerpCmsPage() {
 
         {/* Reverse Image Search (Locked) */}
         <Card
-          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          className="cursor-not-allowed bg-muted border-border text-muted-foreground"
           aria-disabled
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuSearch className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <LuSearch className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
               <CardTitle className="text-xl font-semibold">
                 Reverse Image Search
               </CardTitle>
@@ -180,12 +180,12 @@ function GoogleSerpCmsPage() {
 
         {/* PDF Transform Tool (Locked) */}
         <Card
-          className="cursor-not-allowed bg-gray-100 border-gray-200 text-gray-500"
+          className="cursor-not-allowed bg-muted border-border text-muted-foreground"
           aria-disabled
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuFileText className="h-6 w-6 text-gray-400" strokeWidth={1.5} />
+              <LuFileText className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
               <CardTitle className="text-xl font-semibold">
                 PDF Transform
               </CardTitle>

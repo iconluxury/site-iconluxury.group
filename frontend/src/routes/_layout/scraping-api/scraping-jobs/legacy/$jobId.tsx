@@ -162,10 +162,10 @@ const LogDisplay: React.FC<LogDisplayProps> = ({ logUrl }) => {
     return <Loader2 className="h-4 w-4 animate-spin text-green-500" />
   if (error) return <p className="text-red-500">{error}</p>
   if (!logContent)
-    return <p className="text-gray-600">No log content available</p>
+    return <p className="text-muted-foreground">No log content available</p>
 
   return (
-    <ScrollArea className="h-[300px] w-full rounded-md border p-4 bg-gray-50 text-gray-800">
+    <ScrollArea className="h-[300px] w-full rounded-md border p-4 bg-muted/30 text-foreground">
       <pre className="whitespace-pre-wrap break-words m-0 text-xs">
         {logContent}
       </pre>
@@ -441,7 +441,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   ]
 
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-background">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
         <div className="flex gap-3 justify-end flex-wrap">
           <DetailsModal
@@ -474,10 +474,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
               {progressSteps.map((step, index) => (
                 <div key={index}>
                   <div className="flex justify-between items-baseline mb-1">
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-foreground">
                       {step.label}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                       {step.completed} / {progressData.totalRecords} records
                     </span>
                   </div>
@@ -492,7 +492,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Input File
             </CardTitle>
           </CardHeader>
@@ -509,7 +509,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Status
             </CardTitle>
           </CardHeader>
@@ -522,12 +522,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         {job.fileEnd && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Processing Duration
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-800">
+              <div className="text-2xl font-bold text-foreground">
                 {(
                   (new Date(job.fileEnd).getTime() -
                     new Date(job.fileStart).getTime()) /
@@ -541,12 +541,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         )}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Results
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-800">
+            <div className="text-2xl font-bold text-foreground">
               {job.results.length}
             </div>
           </CardContent>
@@ -559,16 +559,16 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {job.results.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-md font-semibold mb-2 text-gray-800">
+          <h3 className="text-md font-semibold mb-2 text-foreground">
             Top Domains by Positive Sort Orders (Top 20)
           </h3>
           <div className="rounded-md border">
             <Table>
-              <TableHeader className="bg-gray-100">
+              <TableHeader className="bg-muted">
                 <TableRow>
                   <TableHead
                     onClick={() => handleSort("domain")}
-                    className="cursor-pointer text-gray-800"
+                    className="cursor-pointer text-foreground"
                   >
                     Domain{" "}
                     {sortConfig.key === "domain" &&
@@ -576,7 +576,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                   </TableHead>
                   <TableHead
                     onClick={() => handleSort("totalResults")}
-                    className="cursor-pointer text-gray-800"
+                    className="cursor-pointer text-foreground"
                   >
                     Total Results{" "}
                     {sortConfig.key === "totalResults" &&
@@ -584,7 +584,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                   </TableHead>
                   <TableHead
                     onClick={() => handleSort("positiveSortOrderCount")}
-                    className="cursor-pointer text-gray-800"
+                    className="cursor-pointer text-foreground"
                   >
                     Positive Sort Orders Count{" "}
                     {sortConfig.key === "positiveSortOrderCount" &&
@@ -640,7 +640,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
 
   const renderValue = (key: string, value: any) => {
     if (value === null || value === undefined)
-      return <span className="text-gray-400">N/A</span>
+      return <span className="text-muted-foreground">N/A</span>
     let displayValue = value
     if (
       typeof value === "string" &&
@@ -652,7 +652,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
     if (key.toLowerCase().includes("json") && value) {
       const jsonValue = typeof value === "string" ? JSON.parse(value) : value
       return (
-        <ScrollArea className="max-h-[500px] bg-gray-50 p-3 rounded-md border border-gray-200 text-xs">
+        <ScrollArea className="max-h-[500px] bg-muted/30 p-3 rounded-md border border-border text-xs">
           <pre className="m-0 whitespace-pre-wrap text-blue-600">
             {JSON.stringify(jsonValue, null, 2)}
           </pre>
@@ -684,7 +684,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          <div className="text-md text-gray-600">No data available</div>
+          <div className="text-md text-muted-foreground">No data available</div>
         </DialogContent>
       </Dialog>
     )
@@ -704,10 +704,10 @@ const DetailsModal: React.FC<DetailsModalProps> = ({
               .filter(([key]) => key.toLowerCase() !== "id")
               .map(([key, value]) => (
                 <TableRow key={key}>
-                  <TableCell className="font-medium text-gray-600 w-1/4 align-top">
+                  <TableCell className="font-medium text-muted-foreground w-1/4 align-top">
                     {capitalizeKey(key)}
                   </TableCell>
-                  <TableCell className="text-gray-800 break-words">
+                  <TableCell className="text-foreground break-words">
                     {renderValue(key, value)}
                   </TableCell>
                 </TableRow>
@@ -834,9 +834,9 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
   }
 
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-background">
       <div className="flex justify-between items-center mb-4 gap-2">
-        <h2 className="text-lg font-bold text-gray-800">
+        <h2 className="text-lg font-bold text-foreground">
           Results ({totalResults})
         </h2>
         <div className="flex gap-2">
@@ -856,20 +856,20 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
           </Button>
         </div>
       </div>
-      <Card className="shadow-md border bg-white">
+      <Card className="shadow-md border bg-background">
         <CardContent className="p-0">
           {viewMode === "pagination" ? (
             <>
               <Table>
-                <TableHeader className="bg-gray-100">
+                <TableHeader className="bg-muted">
                   <TableRow>
                     {hasThumbnails && (
-                      <TableHead className="w-[60px] text-gray-800">
+                      <TableHead className="w-[60px] text-foreground">
                         Excel Picture
                       </TableHead>
                     )}
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("entryId")}
                     >
                       Entry ID{" "}
@@ -879,7 +879,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("fileId")}
                     >
                       File ID{" "}
@@ -889,7 +889,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("excelRowId")}
                     >
                       Excel Row ID{" "}
@@ -899,7 +899,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("productModel")}
                     >
                       Style #{" "}
@@ -909,7 +909,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("productBrand")}
                     >
                       Brand{" "}
@@ -918,7 +918,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           ? "↑"
                           : "↓")}
                     </TableHead>
-                    <TableHead className="w-[80px] text-gray-800">
+                    <TableHead className="w-[80px] text-foreground">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -934,15 +934,15 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                             className="max-w-[80px] max-h-[80px] object-cover"
                           />
                         ) : (
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-muted-foreground">
                             No image
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.resultId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.entryId || "N/A"}
                       </TableCell>
                       <TableCell className="w-[120px] break-all">
@@ -955,7 +955,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           {shortenUrl(result.imageUrl)}
                         </a>
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {result.imageDesc || "N/A"}
                       </TableCell>
                       <TableCell className="w-[120px] break-all">
@@ -968,7 +968,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           {shortenUrl(result.imageSource)}
                         </a>
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.sortOrder || "0"}
                       </TableCell>
                       <TableCell className="w-[80px]">
@@ -988,7 +988,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                     <TableRow>
                       <TableCell
                         colSpan={hasThumbnails ? 7 : 6}
-                        className="text-center text-gray-600"
+                        className="text-center text-muted-foreground"
                       >
                         No records match your search query on this page.
                       </TableCell>
@@ -1044,27 +1044,27 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedResults.length}
               loader={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   Loading more results...
                 </div>
               }
               endMessage={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   No more results to load.
                 </div>
               }
               height={600}
             >
               <Table>
-                <TableHeader className="bg-gray-100">
+                <TableHeader className="bg-muted">
                   <TableRow>
                     {hasThumbnails && (
-                      <TableHead className="w-[60px] text-gray-800">
+                      <TableHead className="w-[60px] text-foreground">
                         Excel Picture
                       </TableHead>
                     )}
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("entryId")}
                     >
                       Entry ID{" "}
@@ -1074,7 +1074,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("fileId")}
                     >
                       File ID{" "}
@@ -1084,7 +1084,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("excelRowId")}
                     >
                       Excel Row ID{" "}
@@ -1094,7 +1094,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("productModel")}
                     >
                       Style #{" "}
@@ -1104,7 +1104,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortResults("productBrand")}
                     >
                       Brand{" "}
@@ -1113,7 +1113,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           ? "↑"
                           : "↓")}
                     </TableHead>
-                    <TableHead className="w-[80px] text-gray-800">
+                    <TableHead className="w-[80px] text-foreground">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -1129,15 +1129,15 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                             className="max-w-[80px] max-h-[80px] object-cover"
                           />
                         ) : (
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-muted-foreground">
                             No image
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.resultId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.entryId || "N/A"}
                       </TableCell>
                       <TableCell className="w-[120px] break-all">
@@ -1150,7 +1150,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           {shortenUrl(result.imageUrl)}
                         </a>
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {result.imageDesc || "N/A"}
                       </TableCell>
                       <TableCell className="w-[120px] break-all">
@@ -1163,7 +1163,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
                           {shortenUrl(result.imageSource)}
                         </a>
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {result.sortOrder || "0"}
                       </TableCell>
                       <TableCell className="w-[80px]">
@@ -1272,9 +1272,9 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
   )
 
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-background">
       <div className="flex justify-between items-center mb-4 gap-2">
-        <h2 className="text-lg font-bold text-gray-800">
+        <h2 className="text-lg font-bold text-foreground">
           Records ({totalRecords})
         </h2>
         <div className="flex gap-2">
@@ -1294,20 +1294,20 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
           </Button>
         </div>
       </div>
-      <Card className="shadow-md border bg-white">
+      <Card className="shadow-md border bg-background">
         <CardContent className="p-0">
           {viewMode === "pagination" ? (
             <>
               <Table>
-                <TableHeader className="bg-gray-100">
+                <TableHeader className="bg-muted">
                   <TableRow>
                     {hasThumbnails && (
-                      <TableHead className="w-[60px] text-gray-800">
+                      <TableHead className="w-[60px] text-foreground">
                         Excel Picture
                       </TableHead>
                     )}
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("entryId")}
                     >
                       Entry ID{" "}
@@ -1317,7 +1317,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("fileId")}
                     >
                       File ID{" "}
@@ -1327,7 +1327,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("excelRowId")}
                     >
                       Excel Row ID{" "}
@@ -1337,7 +1337,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("productModel")}
                     >
                       Style #{" "}
@@ -1347,7 +1347,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("productBrand")}
                     >
                       Brand{" "}
@@ -1356,7 +1356,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           ? "↑"
                           : "↓")}
                     </TableHead>
-                    <TableHead className="w-[80px] text-gray-800">
+                    <TableHead className="w-[80px] text-foreground">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -1380,25 +1380,25 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                               }}
                             />
                           ) : (
-                            <span className="text-xs text-gray-600">
+                            <span className="text-xs text-muted-foreground">
                               No picture
                             </span>
                           )}
                         </TableCell>
                       )}
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.entryId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.fileId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.excelRowId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {record.productModel || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {record.productBrand || "N/A"}
                       </TableCell>
                       <TableCell className="w-[80px]">
@@ -1418,7 +1418,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                     <TableRow>
                       <TableCell
                         colSpan={hasThumbnails ? 7 : 6}
-                        className="text-center text-gray-600"
+                        className="text-center text-muted-foreground"
                       >
                         No records match your search query on this page.
                       </TableCell>
@@ -1474,26 +1474,26 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedRecords.length}
               loader={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   Loading more records...
                 </div>
               }
               endMessage={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   No more records to load.
                 </div>
               }
             >
               <Table>
-                <TableHeader className="bg-gray-100">
+                <TableHeader className="bg-muted">
                   <TableRow>
                     {hasThumbnails && (
-                      <TableHead className="w-[60px] text-gray-800">
+                      <TableHead className="w-[60px] text-foreground">
                         Excel Picture
                       </TableHead>
                     )}
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("entryId")}
                     >
                       Entry ID{" "}
@@ -1503,7 +1503,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("fileId")}
                     >
                       File ID{" "}
@@ -1513,7 +1513,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[80px] cursor-pointer text-gray-800"
+                      className="w-[80px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("excelRowId")}
                     >
                       Excel Row ID{" "}
@@ -1523,7 +1523,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("productModel")}
                     >
                       Style #{" "}
@@ -1533,7 +1533,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           : "↓")}
                     </TableHead>
                     <TableHead
-                      className="w-[120px] cursor-pointer text-gray-800"
+                      className="w-[120px] cursor-pointer text-foreground"
                       onClick={() => handleSortRecords("productBrand")}
                     >
                       Brand{" "}
@@ -1542,7 +1542,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                           ? "↑"
                           : "↓")}
                     </TableHead>
-                    <TableHead className="w-[80px] text-gray-800">
+                    <TableHead className="w-[80px] text-foreground">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -1575,25 +1575,25 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                               loading="lazy"
                             />
                           ) : (
-                            <span className="text-xs text-gray-600">
+                            <span className="text-xs text-muted-foreground">
                               No picture
                             </span>
                           )}
                         </TableCell>
                       )}
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.entryId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.fileId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[80px] text-gray-800">
+                      <TableCell className="w-[80px] text-foreground">
                         {record.excelRowId || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {record.productModel || "N/A"}
                       </TableCell>
-                      <TableCell className="w-[120px] text-gray-800">
+                      <TableCell className="w-[120px] text-foreground">
                         {record.productBrand || "N/A"}
                       </TableCell>
                       <TableCell className="w-[80px]">
@@ -1613,7 +1613,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
                     <TableRow>
                       <TableCell
                         colSpan={hasThumbnails ? 7 : 6}
-                        className="text-center text-gray-600"
+                        className="text-center text-muted-foreground"
                       >
                         No records match your search query on this page.
                       </TableCell>
@@ -1638,7 +1638,7 @@ const RecordsTab: React.FC<RecordsTabProps> = ({ job, searchQuery }) => {
 // LogsTab Component
 const LogsTab = ({ job }: { job: JobDetails }) => {
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-background">
       <div className="flex justify-between items-center mb-4">
         {job.logFileUrl && (
           <Button
@@ -1650,45 +1650,45 @@ const LogsTab = ({ job }: { job: JobDetails }) => {
         )}
       </div>
       <div className="flex flex-col gap-6">
-        <Card className="shadow-md border bg-white">
+        <Card className="shadow-md border bg-background">
           <CardContent className="p-6">
-            <h3 className="text-md font-semibold mb-2 text-gray-800">
+            <h3 className="text-md font-semibold mb-2 text-foreground">
               Timeline Events
             </h3>
             <Table>
-              <TableHeader className="bg-gray-100">
+              <TableHeader className="bg-muted">
                 <TableRow>
-                  <TableHead className="text-gray-800">Event</TableHead>
-                  <TableHead className="text-gray-800">Details</TableHead>
+                  <TableHead className="text-foreground">Event</TableHead>
+                  <TableHead className="text-foreground">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="text-gray-800">File Start</TableCell>
-                  <TableCell className="text-gray-800">
+                  <TableCell className="text-foreground">File Start</TableCell>
+                  <TableCell className="text-foreground">
                     {new Date(job.fileStart).toLocaleString()}
                   </TableCell>
                 </TableRow>
                 {job.fileEnd && (
                   <TableRow>
-                    <TableCell className="text-gray-800">
+                    <TableCell className="text-foreground">
                       File Roughly
                     </TableCell>
-                    <TableCell className="text-gray-800">
+                    <TableCell className="text-foreground">
                       {new Date(job.fileEnd).toLocaleString()}
                     </TableCell>
                   </TableRow>
                 )}
                 <TableRow>
-                  <TableCell className="text-gray-800">Image Start</TableCell>
-                  <TableCell className="text-gray-800">
+                  <TableCell className="text-foreground">Image Start</TableCell>
+                  <TableCell className="text-foreground">
                     {new Date(job.imageStart).toLocaleString()}
                   </TableCell>
                 </TableRow>
                 {job.imageEnd && (
                   <TableRow>
-                    <TableCell className="text-gray-800">Image End</TableCell>
-                    <TableCell className="text-gray-800">
+                    <TableCell className="text-foreground">Image End</TableCell>
+                    <TableCell className="text-foreground">
                       {new Date(job.imageEnd).toLocaleString()}
                     </TableCell>
                   </TableRow>
@@ -1697,9 +1697,9 @@ const LogsTab = ({ job }: { job: JobDetails }) => {
             </Table>
           </CardContent>
         </Card>
-        <Card className="shadow-md border bg-white">
+        <Card className="shadow-md border bg-background">
           <CardContent className="p-6">
-            <h3 className="text-md font-semibold mb-2 text-gray-800">
+            <h3 className="text-md font-semibold mb-2 text-foreground">
               Log File Preview
             </h3>
             <LogDisplay logUrl={job.logFileUrl} />
@@ -1853,10 +1853,10 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
 
   const renderTable = (records: RecordItem[]) => (
     <Table>
-      <TableHeader className="bg-gray-100">
+      <TableHeader className="bg-muted">
         <TableRow>
           <TableHead
-            className="w-[90px] cursor-pointer text-gray-800"
+            className="w-[90px] cursor-pointer text-foreground"
             onClick={() => handleSort("excelRowId")}
           >
             Row #{" "}
@@ -1873,7 +1873,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           )}
           {showFileDetails && (
             <TableHead
-              className="w-[120px] cursor-pointer bg-gray-200 text-gray-800"
+              className="w-[120px] cursor-pointer bg-gray-200 text-foreground"
               onClick={() => handleSort("productCategory")}
             >
               Category{" "}
@@ -1882,24 +1882,24 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
             </TableHead>
           )}
           {showFileDetails && hasThumbnails && (
-            <TableHead className="w-[100px] bg-gray-200 text-gray-800">
+            <TableHead className="w-[100px] bg-gray-200 text-foreground">
               Excel Picture
             </TableHead>
           )}
           {Array.from({ length: numImages }).map((_, index) => (
             <React.Fragment key={`header-${index}`}>
-              <TableHead className="w-[100px] text-gray-800">
+              <TableHead className="w-[100px] text-foreground">
                 Picture {index + 1}
               </TableHead>
               {showResultDetails && (
-                <TableHead className="w-[200px] bg-gray-200 text-gray-800">
+                <TableHead className="w-[200px] bg-gray-200 text-foreground">
                   Picture Detail {index + 1}
                 </TableHead>
               )}
             </React.Fragment>
           ))}
           <TableHead
-            className="w-[150px] cursor-pointer text-gray-800"
+            className="w-[150px] cursor-pointer text-foreground"
             onClick={() => handleSort("productModel")}
           >
             Style #{" "}
@@ -1907,7 +1907,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               (sortConfig.direction === "ascending" ? "↑" : "↓")}
           </TableHead>
           <TableHead
-            className="w-[150px] cursor-pointer text-gray-800"
+            className="w-[150px] cursor-pointer text-foreground"
             onClick={() => handleSort("productBrand")}
           >
             Brand{" "}
@@ -1915,7 +1915,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               (sortConfig.direction === "ascending" ? "↑" : "↓")}
           </TableHead>
           <TableHead
-            className="w-[100px] cursor-pointer text-gray-800"
+            className="w-[100px] cursor-pointer text-foreground"
             onClick={() => handleSort("totalImageCount")}
           >
             Total Image{" "}
@@ -1923,7 +1923,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               (sortConfig.direction === "ascending" ? "↑" : "↓")}
           </TableHead>
           <TableHead
-            className="w-[100px] cursor-pointer text-gray-800"
+            className="w-[100px] cursor-pointer text-foreground"
             onClick={() => handleSort("positiveSortCount")}
           >
             Positive Count{" "}
@@ -1940,7 +1940,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
           return (
             <TableRow
               key={record.entryId}
-              className={`hover:bg-gray-50 ${
+              className={`hover:bg-muted/30 ${
                 positiveSortCount === 0 && !hideEmptyRows ? "opacity-80" : ""
               }`}
             >
@@ -1953,21 +1953,21 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                 </span>
               </TableCell>
               {showFileDetails && (
-                <TableCell className="w-[120px] bg-gray-50">
+                <TableCell className="w-[120px] bg-muted/30">
                   {record.productCategory || (
-                    <span className="text-xs text-gray-600">No category</span>
+                    <span className="text-xs text-muted-foreground">No category</span>
                   )}
                 </TableCell>
               )}
               {showFileDetails && (
-                <TableCell className="w-[120px] bg-gray-50">
+                <TableCell className="w-[120px] bg-muted/30">
                   {record.productColor || (
-                    <span className="text-xs text-gray-600">No color</span>
+                    <span className="text-xs text-muted-foreground">No color</span>
                   )}
                 </TableCell>
               )}
               {showFileDetails && hasThumbnails && (
-                <TableCell className="w-[80px] bg-gray-50">
+                <TableCell className="w-[80px] bg-muted/30">
                   {record.excelRowImageRef ? (
                     <img
                       src={record.excelRowImageRef}
@@ -1988,7 +1988,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-xs text-gray-600">No picture</span>
+                    <span className="text-xs text-muted-foreground">No picture</span>
                   )}
                 </TableCell>
               )}
@@ -2011,7 +2011,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                     />
                   </TableCell>
                   {showResultDetails && (
-                    <TableCell className="w-[200px] bg-gray-50">
+                    <TableCell className="w-[200px] bg-muted/30">
                       <div className="break-all">
                         <p className="text-xs">
                           <a
@@ -2043,12 +2043,12 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                           </a>
                         </p>
                         {image.aiCaption && (
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-muted-foreground">
                             AI Caption: {image.aiCaption}
                           </p>
                         )}
                         {image.aiLabel && (
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-muted-foreground">
                             AI Label: {image.aiLabel}
                           </p>
                         )}
@@ -2061,11 +2061,11 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                 (_, index) => (
                   <React.Fragment key={`empty-${record.entryId}-${index}`}>
                     <TableCell className="w-[80px]">
-                      <span className="text-xs text-gray-600">No picture</span>
+                      <span className="text-xs text-muted-foreground">No picture</span>
                     </TableCell>
                     {showResultDetails && (
-                      <TableCell className="w-[200px] bg-gray-50">
-                        <span className="text-xs text-gray-600">
+                      <TableCell className="w-[200px] bg-muted/30">
+                        <span className="text-xs text-muted-foreground">
                           No picture detail
                         </span>
                       </TableCell>
@@ -2086,7 +2086,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                     </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-gray-600">No style</span>
+                  <span className="text-xs text-muted-foreground">No style</span>
                 )}
               </TableCell>
               <TableCell className="w-[150px]">
@@ -2111,21 +2111,21 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                     </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-gray-600">No brand</span>
+                  <span className="text-xs text-muted-foreground">No brand</span>
                 )}
               </TableCell>
               <TableCell className="w-[100px]">
                 {totalImageCount === 0 ? (
-                  <span className="text-xs text-gray-600">0</span>
+                  <span className="text-xs text-muted-foreground">0</span>
                 ) : (
-                  <span className="text-gray-800">{totalImageCount}</span>
+                  <span className="text-foreground">{totalImageCount}</span>
                 )}
               </TableCell>
               <TableCell className="w-[100px]">
                 {positiveSortCount === 0 ? (
-                  <span className="text-xs text-gray-600">0</span>
+                  <span className="text-xs text-muted-foreground">0</span>
                 ) : (
-                  <span className="text-gray-800">{positiveSortCount}</span>
+                  <span className="text-foreground">{positiveSortCount}</span>
                 )}
               </TableCell>
             </TableRow>
@@ -2136,9 +2136,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
   )
 
   return (
-    <div className="p-4 bg-white">
-      <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-5 border-b border-gray-200">
-        <h3 className="text-lg font-bold text-gray-800">
+    <div className="p-4 bg-background">
+      <div className="flex justify-between items-center mb-4 sticky top-0 bg-background z-10 py-5 border-b border-border">
+        <h3 className="text-lg font-bold text-foreground">
           File Rows ({sortedRecords.length})
         </h3>
         <div className="flex gap-3 justify-end">
@@ -2171,7 +2171,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
             >
               -
             </Button>
-            <span className="text-gray-800">{numImages}</span>
+            <span className="text-foreground">{numImages}</span>
             <Button
               size="sm"
               onClick={handleIncreaseImages}
@@ -2185,7 +2185,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
             className={
               viewMode === "pagination"
                 ? "bg-green-500"
-                : "bg-white border border-gray-200"
+                : "bg-background border border-border"
             }
             onClick={() =>
               setViewMode(viewMode === "pagination" ? "infinite" : "pagination")
@@ -2200,7 +2200,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
         </div>
       </div>
 
-      <Card className="shadow-md border bg-white">
+      <Card className="shadow-md border bg-background">
         <CardContent className="p-0">
           {viewMode === "pagination" ? (
             <>
@@ -2253,12 +2253,12 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               next={() => setDisplayCount((prev) => prev + 50)}
               hasMore={displayCount < sortedRecords.length}
               loader={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   Loading more rows...
                 </div>
               }
               endMessage={
-                <div className="p-4 text-center text-gray-600">
+                <div className="p-4 text-center text-muted-foreground">
                   No more rows to load.
                 </div>
               }
@@ -2334,7 +2334,7 @@ const JobsDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 bg-white">
+      <div className="container mx-auto py-6 bg-background">
         <div className="flex justify-center items-center h-[200px]">
           <Loader2 className="h-12 w-12 animate-spin text-green-500" />
         </div>
@@ -2344,7 +2344,7 @@ const JobsDetailPage = () => {
 
   if (error || !jobData) {
     return (
-      <div className="container mx-auto py-6 bg-white">
+      <div className="container mx-auto py-6 bg-background">
         <p className="text-red-500">{error || "Job data not available"}</p>
       </div>
     )
@@ -2396,11 +2396,11 @@ const JobsDetailPage = () => {
   ]
 
   return (
-    <div className="container mx-auto p-6 bg-white">
+    <div className="container mx-auto p-6 bg-background">
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
-          <h1 className="text-xl font-bold text-gray-800">Job: {jobId}</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-xl font-bold text-foreground">Job: {jobId}</h1>
+          <p className="text-sm text-muted-foreground">
             Details and results for scraping job {jobData.inputFile}.
           </p>
         </div>
@@ -2419,7 +2419,7 @@ const JobsDetailPage = () => {
               <TabsTrigger
                 key={tab.title}
                 value={tab.title}
-                className="data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-green-600 rounded-none border-b-2 border-transparent px-4 py-2 text-gray-600"
+                className="data-[state=active]:bg-background data-[state=active]:text-green-600 data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-green-600 rounded-none border-b-2 border-transparent px-4 py-2 text-muted-foreground"
               >
                 {tab.title}
               </TabsTrigger>
@@ -2429,7 +2429,7 @@ const JobsDetailPage = () => {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[300px] border-green-300 focus:border-green-300 text-gray-800 bg-white ml-auto"
+            className="w-[300px] border-green-300 focus:border-green-300 text-foreground bg-background ml-auto"
           />
         </div>
         {tabsConfig.map((tab) => (

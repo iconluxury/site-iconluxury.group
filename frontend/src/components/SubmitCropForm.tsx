@@ -181,11 +181,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const hasMultipleSheets = sheetConfigs.length > 1
 
   // Replaced useColorModeValue with Tailwind classes
-  const mappingPanelBg = "bg-white dark:bg-gray-800"
-  const mappingPanelBorder = "border-gray-200 dark:border-gray-700"
-  const sheetInactiveBg = "bg-gray-100 dark:bg-gray-700"
-  const sheetInactiveHover = "hover:bg-gray-200 dark:hover:bg-gray-600"
-  const sheetWarningHover = "hover:bg-yellow-100 dark:hover:bg-yellow-400"
+  const mappingPanelBg = "bg-card"
+  const mappingPanelBorder = "border-border"
+  const sheetInactiveBg = "bg-muted"
+  const sheetInactiveHover = "hover:bg-muted/80"
+  const sheetWarningHover = "hover:bg-yellow-100 dark:hover:bg-yellow-900"
 
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])

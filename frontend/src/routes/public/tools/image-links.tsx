@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
-import SubmitImageLinkForm from "../../../../components/SubmitImageLinkForm"
+import SubmitImageLinkForm from "@/components/SubmitImageLinkForm"
 
-export const Route = createFileRoute("/_layout/tools/image-links/upload")({
+export const Route = createFileRoute("/public/tools/image-links")({
   component: ImageLinksPage,
 })
 

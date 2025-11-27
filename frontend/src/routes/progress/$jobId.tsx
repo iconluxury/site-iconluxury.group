@@ -139,7 +139,7 @@ const JobProgressPage = () => {
     return (
       <div className="container mx-auto max-w-3xl py-10 flex flex-col items-center justify-center h-[200px]">
         <Loader2 className="h-10 w-10 animate-spin text-green-500" />
-        <p className="mt-4 text-gray-600">Loading Job Details...</p>
+        <p className="mt-4 text-muted-foreground">Loading Job Details...</p>
       </div>
     )
   }
@@ -181,17 +181,17 @@ const JobProgressPage = () => {
     : []
 
   return (
-    <div className="container mx-auto max-w-4xl py-8 bg-gray-50 min-h-screen">
+    <div className="container mx-auto max-w-4xl py-8 bg-muted/30 min-h-screen">
       <div className="space-y-8">
         {/* Job Details Card */}
-        <Card className="shadow-sm border-gray-200">
+        <Card className="shadow-sm border-border">
           <CardHeader>
             <CardTitle>Job Details</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-muted-foreground">
                   Input File
                 </span>
                 <a
@@ -204,19 +204,19 @@ const JobProgressPage = () => {
                 </a>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-muted-foreground">
                   Start Time
                 </span>
-                <span className="text-gray-800 text-lg">
+                <span className="text-foreground text-lg">
                   {new Date(jobData.fileStart).toLocaleString()}
                 </span>
               </div>
               {jobData.fileEnd && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">
+                  <span className="text-sm font-medium text-muted-foreground">
                     Duration
                   </span>
-                  <span className="text-gray-800 text-lg">
+                  <span className="text-foreground text-lg">
                     {(
                       (new Date(jobData.fileEnd).getTime() -
                         new Date(jobData.fileStart).getTime()) /
@@ -233,7 +233,7 @@ const JobProgressPage = () => {
 
         {/* Progress Bar Section - only shows when job is running */}
         {progressData && !jobData.fileEnd && (
-          <Card className="shadow-sm border-gray-200">
+          <Card className="shadow-sm border-border">
             <CardHeader>
               <CardTitle>Processing Progress</CardTitle>
             </CardHeader>
@@ -242,10 +242,10 @@ const JobProgressPage = () => {
                 {progressSteps.map((step, index) => (
                   <div key={index} className="w-full">
                     <div className="flex justify-between items-baseline mb-2">
-                      <span className="font-medium text-gray-800">
+                      <span className="font-medium text-foreground">
                         {step.label}
                       </span>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {step.completed} / {progressData.totalRecords} records
                       </span>
                     </div>
@@ -256,7 +256,7 @@ const JobProgressPage = () => {
                       // but we can style it via className or if the component supports it.
                       // Assuming standard Shadcn Progress component.
                     />
-                    <div className="text-right text-xs text-gray-500 mt-1">
+                    <div className="text-right text-xs text-muted-foreground mt-1">
                       {Math.round(step.progress)}%
                     </div>
                   </div>

@@ -1302,7 +1302,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   ])
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
@@ -2668,7 +2668,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   ])
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
@@ -3356,7 +3356,7 @@ const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({
   backLabel,
 }) => {
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
@@ -3380,7 +3380,7 @@ const ImageCropToolForm: React.FC<FormWithBackProps> = ({
   backLabel,
 }) => {
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
@@ -3428,7 +3428,7 @@ const CMSGoogleSerpForm: React.FC = () => {
     }
 
     return (
-      <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+      <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
         <div className="flex flex-col gap-6 items-stretch">
           <Button
             variant="ghost"
@@ -3495,7 +3495,7 @@ const CMSGoogleSerpForm: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-white text-black">
+    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {/* Mine Data */}
         <p className="text-lg font-bold">Mine Data</p>
