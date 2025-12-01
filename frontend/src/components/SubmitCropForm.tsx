@@ -33,6 +33,7 @@ import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
+import { useIframeEmail } from "../hooks/useIframeEmail"
 import { showDevUI } from "../utils"
 
 const SERVER_URL = "https://icon5-8005.iconluxury.today"
@@ -52,32 +53,6 @@ type SheetConfig = {
 
 const MAX_PREVIEW_ROWS = 20
 const MAX_FILE_SIZE_MB = 50
-
-const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"] as const
-const getIframeEmailParameter = (): string | null => {
-  if (typeof window === "undefined") return null
-  const params = new URLSearchParams(window.location.search)
-  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((k) => k.toLowerCase()))
-  for (const [k, v] of params.entries()) {
-    if (candidateKeys.has(k.toLowerCase())) {
-      const trimmed = v.trim()
-      if (trimmed) return trimmed
-    }
-  }
-  return null
-}
-const useIframeEmail = (): string | null => {
-  const [email, setEmail] = useState<string | null>(() =>
-    getIframeEmailParameter(),
-  )
-  useEffect(() => {
-    if (!email) {
-      const e = getIframeEmailParameter()
-      if (e) setEmail(e)
-    }
-  }, [email])
-  return email
-}
 
 const getDisplayValue = (value: any): string => {
   if (value == null) return ""
@@ -521,6 +496,14 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       )
       setActiveSheetIndex(invalidSheet.sheetIndex)
       setStep("map")
+      return
+    }
+    if (!sendToEmail) {
+      showToast(
+        "Recipient Email Required",
+        "Add an email query parameter (sendToEmail, email, or userEmail) to the iframe URL before submitting.",
+        "warning",
+      )
       return
     }
     if (sendToEmail && !isEmailValid) {

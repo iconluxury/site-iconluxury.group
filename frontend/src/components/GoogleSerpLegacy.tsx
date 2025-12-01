@@ -46,6 +46,7 @@ import * as XLSX from "xlsx"
 import SubmitCropForm from "../components/SubmitCropForm"
 import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
 import useCustomToast from "../hooks/useCustomToast"
+import { useIframeEmail } from "../hooks/useIframeEmail"
 import { cn } from "../lib/utils"
 import { showDevUI } from "../utils"
 
@@ -381,36 +382,6 @@ const determineFallbackImageColumnIndex = (
     return 0
   }
   return null
-}
-
-const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"]
-
-const getIframeEmailParameter = (): string | null => {
-  if (typeof window === "undefined") return null
-  const params = new URLSearchParams(window.location.search)
-  const candidateKeys = new Set(
-    EMAIL_QUERY_KEYS.map((key) => key.toLowerCase()),
-  )
-  for (const [rawKey, rawValue] of params.entries()) {
-    if (!candidateKeys.has(rawKey.toLowerCase())) continue
-    const value = rawValue.trim()
-    if (value) return value
-  }
-  return null
-}
-
-const useIframeEmail = (): string | null => {
-  const [iframeEmail, setIframeEmail] = useState<string | null>(() =>
-    getIframeEmailParameter(),
-  )
-
-  useEffect(() => {
-    if (iframeEmail) return
-    const email = getIframeEmailParameter()
-    if (email) setIframeEmail(email)
-  }, [iframeEmail])
-
-  return iframeEmail
 }
 
 // Google Images Form Component
@@ -1300,6 +1271,36 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
     skipDataWarehouse,
     uploadedFile,
   ])
+
+  if (!sendToEmail) {
+    return (
+      <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+        <div className="flex flex-col gap-6 items-stretch">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => {
+                setStep("upload")
+                onBack()
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {backLabel ?? "Back to tools"}
+            </Button>
+          )}
+          <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+            <AlertTriangle className="h-12 w-12 text-yellow-500" />
+            <h2 className="text-xl font-semibold">No Email Parameter Detected</h2>
+            <p className="text-muted-foreground max-w-md">
+              Please add <code className="bg-muted px-1 py-0.5 rounded">?sendToEmail=example@domain.com</code> (or email/userEmail) to the iframe URL.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
@@ -2666,6 +2667,36 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     excelData,
     dataHeadersAreValid,
   ])
+
+  if (!emailRecipient) {
+    return (
+      <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+        <div className="flex flex-col gap-6 items-stretch">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => {
+                setStep("upload")
+                onBack()
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {backLabel ?? "Back to tools"}
+            </Button>
+          )}
+          <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+            <AlertTriangle className="h-12 w-12 text-yellow-500" />
+            <h2 className="text-xl font-semibold">No Email Parameter Detected</h2>
+            <p className="text-muted-foreground max-w-md">
+              Please add <code className="bg-muted px-1 py-0.5 rounded">?sendToEmail=example@domain.com</code> (or email/userEmail) to the iframe URL.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">

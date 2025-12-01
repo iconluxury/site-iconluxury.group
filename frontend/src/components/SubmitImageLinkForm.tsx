@@ -10,6 +10,7 @@ import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
+import { useIframeEmail } from "../hooks/useIframeEmail"
 import { showDevUI } from "../utils"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
@@ -57,33 +58,6 @@ type SheetConfig = {
 // UI constants (match mapping UI style used elsewhere)
 const MAX_PREVIEW_ROWS = 20
 const MAX_FILE_SIZE_MB = 50
-
-// Email via iFrame support (same keys as other tools)
-const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"]
-const getIframeEmailParameter = (): string | null => {
-  if (typeof window === "undefined") return null
-  const params = new URLSearchParams(window.location.search)
-  const candidateKeys = new Set(EMAIL_QUERY_KEYS.map((k) => k.toLowerCase()))
-  for (const [k, v] of params.entries()) {
-    if (candidateKeys.has(k.toLowerCase())) {
-      const trimmed = v.trim()
-      if (trimmed) return trimmed
-    }
-  }
-  return null
-}
-const useIframeEmail = (): string | null => {
-  const [email, setEmail] = useState<string | null>(() =>
-    getIframeEmailParameter(),
-  )
-  useEffect(() => {
-    if (!email) {
-      const e = getIframeEmailParameter()
-      if (e) setEmail(e)
-    }
-  }, [email])
-  return email
-}
 
 // Helpers (kept consistent with Google Images form)
 const getDisplayValue = (value: any): string => {
