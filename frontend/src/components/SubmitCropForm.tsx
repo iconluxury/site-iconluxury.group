@@ -314,13 +314,15 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   )
 
   const handleColumnMap = useCallback(
-    (index: number, field: keyof ColumnMapping) => {
+    (index: number | null, field: keyof ColumnMapping) => {
       if (!activeSheet) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
         const newMapping: ColumnMapping = { ...sheet.columnMapping }
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (newMapping[key] === index) newMapping[key] = null
-        })
+        if (index !== null) {
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+            if (newMapping[key] === index) newMapping[key] = null
+          })
+        }
         newMapping[field] = index
         return { ...sheet, columnMapping: newMapping }
       })
@@ -966,10 +968,13 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                             value={
                               columnMapping[field] !== null
                                 ? String(columnMapping[field])
-                                : ""
+                                : "-1"
                             }
                             onValueChange={(val) =>
-                              handleColumnMap(Number(val), field)
+                              handleColumnMap(
+                                val === "-1" ? null : Number(val),
+                                field,
+                              )
                             }
                           >
                             <SelectTrigger
@@ -980,7 +985,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                               <SelectValue placeholder="Unmapped" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Unmapped</SelectItem>
+                              <SelectItem value="-1">Unmapped</SelectItem>
                               {excelData.headers.map((header, index) => (
                                 <SelectItem key={index} value={String(index)}>
                                   {header ||
