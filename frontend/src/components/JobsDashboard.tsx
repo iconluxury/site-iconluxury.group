@@ -10,8 +10,8 @@ import {
   LuLink,
   LuSearch,
 } from "react-icons/lu"
-import { Button } from "./ui/button"
 import Changelog from "./Changelog"
+import { Button } from "./ui/button"
 import {
   Card,
   CardContent,

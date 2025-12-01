@@ -185,11 +185,7 @@ function SupportTicketPage() {
 
             <div className="space-y-2">
               <Label htmlFor="attachment">Attachment (Optional)</Label>
-              <Input
-                id="attachment"
-                type="file"
-                {...register("attachment")}
-              />
+              <Input id="attachment" type="file" {...register("attachment")} />
             </div>
 
             <Button

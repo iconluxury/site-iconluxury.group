@@ -551,7 +551,6 @@ const determineFallbackImageColumnIndex = (
   return null
 }
 
-
 // Google Images Form Component
 const ReformatExcelForm: React.FC = () => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(

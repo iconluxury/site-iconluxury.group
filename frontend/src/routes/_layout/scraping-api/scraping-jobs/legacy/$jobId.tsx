@@ -1955,14 +1955,18 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
               {showFileDetails && (
                 <TableCell className="w-[120px] bg-muted/30">
                   {record.productCategory || (
-                    <span className="text-xs text-muted-foreground">No category</span>
+                    <span className="text-xs text-muted-foreground">
+                      No category
+                    </span>
                   )}
                 </TableCell>
               )}
               {showFileDetails && (
                 <TableCell className="w-[120px] bg-muted/30">
                   {record.productColor || (
-                    <span className="text-xs text-muted-foreground">No color</span>
+                    <span className="text-xs text-muted-foreground">
+                      No color
+                    </span>
                   )}
                 </TableCell>
               )}
@@ -1988,7 +1992,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-xs text-muted-foreground">No picture</span>
+                    <span className="text-xs text-muted-foreground">
+                      No picture
+                    </span>
                   )}
                 </TableCell>
               )}
@@ -2061,7 +2067,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                 (_, index) => (
                   <React.Fragment key={`empty-${record.entryId}-${index}`}>
                     <TableCell className="w-[80px]">
-                      <span className="text-xs text-muted-foreground">No picture</span>
+                      <span className="text-xs text-muted-foreground">
+                        No picture
+                      </span>
                     </TableCell>
                     {showResultDetails && (
                       <TableCell className="w-[200px] bg-muted/30">
@@ -2086,7 +2094,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                     </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No style</span>
+                  <span className="text-xs text-muted-foreground">
+                    No style
+                  </span>
                 )}
               </TableCell>
               <TableCell className="w-[150px]">
@@ -2111,7 +2121,9 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery }) => {
                     </span>
                   </a>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No brand</span>
+                  <span className="text-xs text-muted-foreground">
+                    No brand
+                  </span>
                 )}
               </TableCell>
               <TableCell className="w-[100px]">

@@ -1292,9 +1292,15 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
           )}
           <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
             <AlertTriangle className="h-12 w-12 text-yellow-500" />
-            <h2 className="text-xl font-semibold">No Email Parameter Detected</h2>
+            <h2 className="text-xl font-semibold">
+              No Email Parameter Detected
+            </h2>
             <p className="text-muted-foreground max-w-md">
-              Please add <code className="bg-muted px-1 py-0.5 rounded">?sendToEmail=example@domain.com</code> (or email/userEmail) to the iframe URL.
+              Please add{" "}
+              <code className="bg-muted px-1 py-0.5 rounded">
+                ?sendToEmail=example@domain.com
+              </code>{" "}
+              (or email/userEmail) to the iframe URL.
             </p>
           </div>
         </div>
@@ -2688,9 +2694,15 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           )}
           <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
             <AlertTriangle className="h-12 w-12 text-yellow-500" />
-            <h2 className="text-xl font-semibold">No Email Parameter Detected</h2>
+            <h2 className="text-xl font-semibold">
+              No Email Parameter Detected
+            </h2>
             <p className="text-muted-foreground max-w-md">
-              Please add <code className="bg-muted px-1 py-0.5 rounded">?sendToEmail=example@domain.com</code> (or email/userEmail) to the iframe URL.
+              Please add{" "}
+              <code className="bg-muted px-1 py-0.5 rounded">
+                ?sendToEmail=example@domain.com
+              </code>{" "}
+              (or email/userEmail) to the iframe URL.
             </p>
           </div>
         </div>

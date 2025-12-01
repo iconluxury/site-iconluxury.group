@@ -802,7 +802,12 @@ interface SearchRowsTabProps {
 }
 
 // SearchRowsTab Component with Search, Pagination, and Infinite Scroll
-const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery, domain, entryId }) => {
+const SearchRowsTab: React.FC<SearchRowsTabProps> = ({
+  job,
+  searchQuery,
+  domain,
+  entryId,
+}) => {
   const showToast = useCustomToast()
   const [showFileDetails, setShowFileDetails] = useState(true)
   const [showResultDetails, setShowResultDetails] = useState(false)
@@ -820,24 +825,30 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({ job, searchQuery, domain,
   const itemsPerPage = 5
 
   const query = (searchQuery || "").trim().toLowerCase()
-  
-  const filteredRecords = job.records.filter(
-    (record) => {
-      const queryMatch =
-        (record.productModel || "").toLowerCase().includes(query) ||
-        (record.productBrand || "").toLowerCase().includes(query) ||
-        (record.productColor || "").toLowerCase().includes(query) ||
-        (record.productCategory || "").toLowerCase().includes(query) ||
-        record.entryId.toString().includes(query) ||
-        record.excelRowId.toString().includes(query)
 
-      const entryIdMatch = entryId ? record.entryId.toString() === entryId : true
-      
-      const domainMatch = domain ? job.results.some(r => r.entryId === record.entryId && new URL(r.imageSource).hostname.replace(/^www\./, "").includes(domain)) : true
+  const filteredRecords = job.records.filter((record) => {
+    const queryMatch =
+      (record.productModel || "").toLowerCase().includes(query) ||
+      (record.productBrand || "").toLowerCase().includes(query) ||
+      (record.productColor || "").toLowerCase().includes(query) ||
+      (record.productCategory || "").toLowerCase().includes(query) ||
+      record.entryId.toString().includes(query) ||
+      record.excelRowId.toString().includes(query)
 
-      return queryMatch && entryIdMatch && domainMatch
-    }
-  )
+    const entryIdMatch = entryId ? record.entryId.toString() === entryId : true
+
+    const domainMatch = domain
+      ? job.results.some(
+          (r) =>
+            r.entryId === record.entryId &&
+            new URL(r.imageSource).hostname
+              .replace(/^www\./, "")
+              .includes(domain),
+        )
+      : true
+
+    return queryMatch && entryIdMatch && domainMatch
+  })
 
   useEffect(() => {
     const maxImages = showResultDetails ? 1 : 5
@@ -1464,9 +1475,9 @@ const JobsDetailPage = () => {
     {
       title: "File Rows",
       component: () => (
-        <SearchRowsTab 
-          job={jobData} 
-          searchQuery={searchQuery} 
+        <SearchRowsTab
+          job={jobData}
+          searchQuery={searchQuery}
           domain={searchParams.domain}
           entryId={searchParams.entryId}
         />

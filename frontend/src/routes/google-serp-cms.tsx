@@ -105,7 +105,10 @@ function GoogleSerpCmsPage() {
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuEraser className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+              <LuEraser
+                className="h-6 w-6 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <CardTitle className="text-xl font-semibold">
                 Background remover
               </CardTitle>
@@ -128,7 +131,10 @@ function GoogleSerpCmsPage() {
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuWand2 className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+              <LuWand2
+                className="h-6 w-6 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <CardTitle className="text-xl font-semibold">
                 Image generator
               </CardTitle>
@@ -162,7 +168,10 @@ function GoogleSerpCmsPage() {
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuSearch className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+              <LuSearch
+                className="h-6 w-6 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <CardTitle className="text-xl font-semibold">
                 Reverse Image Search
               </CardTitle>
@@ -185,7 +194,10 @@ function GoogleSerpCmsPage() {
         >
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <LuFileText className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+              <LuFileText
+                className="h-6 w-6 text-muted-foreground"
+                strokeWidth={1.5}
+              />
               <CardTitle className="text-xl font-semibold">
                 PDF Transform
               </CardTitle>

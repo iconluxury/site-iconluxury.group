@@ -47,5 +47,22 @@ export const useIframeEmail = (): string | null => {
     if (email) setIframeEmail(email)
   }, [iframeEmail])
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data
+      if (!data) return
+
+      if (typeof data === "object") {
+        const email = data.email || data.userEmail || data.sendToEmail
+        if (email && typeof email === "string") {
+          setIframeEmail(email.trim())
+        }
+      }
+    }
+
+    window.addEventListener("message", handleMessage)
+    return () => window.removeEventListener("message", handleMessage)
+  }, [])
+
   return iframeEmail
 }

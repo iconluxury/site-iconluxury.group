@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import LogsGSerp from "@/components/LogsGSerp"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LogsGSerp from "@/components/LogsGSerp"
+import { Link, createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_layout/tools/google-images/")({
   component: GoogleImagesIndex,

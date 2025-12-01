@@ -2,8 +2,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
-import PromoSERP from "../../../components/ComingSoon"
 import ApiStatusManagement from "../../../components/Admin/ApiStatusManagement"
+import PromoSERP from "../../../components/ComingSoon"
 // import Changelog from "../../../components/Changelog"
 
 import { Badge } from "../../../components/ui/badge"
@@ -341,7 +341,9 @@ function Jobs() {
       <div className="flex items-center justify-between py-6 flex-wrap gap-4">
         <div className="text-left flex-1">
           <h1 className="text-xl font-bold text-foreground">Latest Jobs</h1>
-          <p className="text-sm text-gray-600">View and manage your recent scraping jobs</p>
+          <p className="text-sm text-gray-600">
+            View and manage your recent scraping jobs
+          </p>
         </div>
       </div>
 
