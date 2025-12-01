@@ -19,12 +19,16 @@ import {
   LuSearch,
   LuWand2,
 } from "react-icons/lu"
+import { useIframeEmail } from "../hooks/useIframeEmail"
 
 export const Route = createFileRoute("/google-serp-cms")({
   component: GoogleSerpCmsPage,
 })
 
 function GoogleSerpCmsPage() {
+  const iframeEmail = useIframeEmail()
+  const searchParams = iframeEmail ? { sendToEmail: iframeEmail } : {}
+
   return (
     <div className="p-8 space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -41,7 +45,9 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/public/tools/google-images">Open Tool</Link>
+              <Link to="/public/tools/google-images" search={searchParams}>
+                Open Tool
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -59,7 +65,9 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/public/tools/data-warehouse">Open Tool</Link>
+              <Link to="/public/tools/data-warehouse" search={searchParams}>
+                Open Tool
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -75,7 +83,9 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/public/tools/image-links">Open Tool</Link>
+              <Link to="/public/tools/image-links" search={searchParams}>
+                Open Tool
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -93,7 +103,9 @@ function GoogleSerpCmsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/public/tools/crop">Open Tool</Link>
+              <Link to="/public/tools/crop" search={searchParams}>
+                Open Tool
+              </Link>
             </Button>
           </CardContent>
         </Card>
