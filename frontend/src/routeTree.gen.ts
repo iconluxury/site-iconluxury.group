@@ -16,12 +16,12 @@ import { Route as ResetPasswordImport } from './routes/reset-password'
 import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
-import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
-import { Route as CmsImport } from './routes/_layout/cms'
+import { Route as CmsImport } from './routes/cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
+import { Route as LayoutGoogleSerpCmsImport } from './routes/_layout/google-serp-cms'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 import { Route as PublicToolsImageLinksImport } from './routes/public/tools/image-links'
@@ -73,12 +73,6 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const GoogleSerpCmsRoute = GoogleSerpCmsImport.update({
-  id: '/google-serp-cms',
-  path: '/google-serp-cms',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const CmsRoute = CmsImport.update({
   id: '/cms',
   path: '/cms',
@@ -105,6 +99,12 @@ const ProgressJobIdRoute = ProgressJobIdImport.update({
 const LayoutSettingsRoute = LayoutSettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutGoogleSerpCmsRoute = LayoutGoogleSerpCmsImport.update({
+  id: '/google-serp-cms',
+  path: '/google-serp-cms',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -243,13 +243,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CmsImport
       parentRoute: typeof rootRoute
     }
-    '/google-serp-cms': {
-      id: '/google-serp-cms'
-      path: '/google-serp-cms'
-      fullPath: '/google-serp-cms'
-      preLoaderRoute: typeof GoogleSerpCmsImport
-      parentRoute: typeof rootRoute
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -297,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/file-explorer'
       fullPath: '/file-explorer'
       preLoaderRoute: typeof LayoutFileExplorerImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/google-serp-cms': {
+      id: '/_layout/google-serp-cms'
+      path: '/google-serp-cms'
+      fullPath: '/google-serp-cms'
+      preLoaderRoute: typeof LayoutGoogleSerpCmsImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/settings': {
@@ -440,6 +440,7 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
+  LayoutGoogleSerpCmsRoute: typeof LayoutGoogleSerpCmsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
@@ -459,6 +460,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
+  LayoutGoogleSerpCmsRoute: LayoutGoogleSerpCmsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
@@ -483,7 +485,6 @@ const LayoutRouteWithChildren =
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
   '/cms': typeof CmsRoute
-  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -491,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
+  '/google-serp-cms': typeof LayoutGoogleSerpCmsRoute
   '/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
@@ -514,7 +516,6 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/cms': typeof CmsRoute
-  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -522,6 +523,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
+  '/google-serp-cms': typeof LayoutGoogleSerpCmsRoute
   '/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
@@ -547,7 +549,6 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/cms': typeof CmsRoute
-  '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reformat-excel': typeof ReformatExcelRoute
@@ -555,6 +556,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
+  '/_layout/google-serp-cms': typeof LayoutGoogleSerpCmsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -581,7 +583,6 @@ export interface FileRouteTypes {
   fullPaths:
     | ''
     | '/cms'
-    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -589,6 +590,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/file-explorer'
+    | '/google-serp-cms'
     | '/settings'
     | '/progress/$jobId'
     | '/'
@@ -611,7 +613,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/cms'
-    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -619,6 +620,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/file-explorer'
+    | '/google-serp-cms'
     | '/settings'
     | '/progress/$jobId'
     | '/'
@@ -642,7 +644,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_layout'
     | '/cms'
-    | '/google-serp-cms'
     | '/login'
     | '/recover-password'
     | '/reformat-excel'
@@ -650,6 +651,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/file-explorer'
+    | '/_layout/google-serp-cms'
     | '/_layout/settings'
     | '/progress/$jobId'
     | '/_layout/'
@@ -675,7 +677,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   CmsRoute: typeof CmsRoute
-  GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ReformatExcelRoute: typeof ReformatExcelRoute
@@ -691,7 +692,6 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   CmsRoute: CmsRoute,
-  GoogleSerpCmsRoute: GoogleSerpCmsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ReformatExcelRoute: ReformatExcelRoute,
@@ -716,7 +716,6 @@ export const routeTree = rootRoute
       "children": [
         "/_layout",
         "/cms",
-        "/google-serp-cms",
         "/login",
         "/recover-password",
         "/reformat-excel",
@@ -734,6 +733,7 @@ export const routeTree = rootRoute
       "children": [
         "/_layout/admin",
         "/_layout/file-explorer",
+        "/_layout/google-serp-cms",
         "/_layout/settings",
         "/_layout/",
         "/_layout/scraping-api/insights",
@@ -752,9 +752,6 @@ export const routeTree = rootRoute
     },
     "/cms": {
       "filePath": "cms.tsx"
-    },
-    "/google-serp-cms": {
-      "filePath": "google-serp-cms.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
@@ -777,6 +774,10 @@ export const routeTree = rootRoute
     },
     "/_layout/file-explorer": {
       "filePath": "_layout/file-explorer.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/google-serp-cms": {
+      "filePath": "_layout/google-serp-cms.tsx",
       "parent": "/_layout"
     },
     "/_layout/settings": {

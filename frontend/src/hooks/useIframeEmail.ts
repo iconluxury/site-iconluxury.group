@@ -44,7 +44,13 @@ export const useIframeEmail = (): string | null => {
   useEffect(() => {
     if (iframeEmail) return
     const email = getIframeEmailParameter()
-    if (email) setIframeEmail(email)
+    if (email) {
+      setIframeEmail(email)
+    } else {
+      alert("Email parameter not found.")
+      const input = prompt("Please enter your email to continue:")
+      if (input) setIframeEmail(input.trim())
+    }
   }, [iframeEmail])
 
   useEffect(() => {
