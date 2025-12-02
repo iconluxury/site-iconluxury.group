@@ -1,14 +1,24 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { ArrowLeft } from "lucide-react"
 
 export const Route = createFileRoute("/_layout/tools/data-warehouse/")({
   component: DataWarehouseIndex,
 })
 
 function DataWarehouseIndex() {
+  const navigate = useNavigate()
   return (
     <div className="p-8 space-y-8">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate({ to: "/" })}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Dashboard
+      </Button>
       <h1 className="text-3xl font-bold">Data Warehouse Tool</h1>
       <Card>
         <CardHeader>
