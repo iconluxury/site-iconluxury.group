@@ -1,21 +1,36 @@
 import { GoogleImagesUploadForm } from "@/components/google-serp/GoogleImagesUploadForm"
 import JobsDashboard from "@/components/JobsDashboard"
-import { createFileRoute } from "@tanstack/react-router"
+import { Button } from "@/components/ui/button"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { ArrowLeft } from "lucide-react"
 
 export const Route = createFileRoute("/public/tools/google-images")({
   component: GoogleImagesPage,
 })
 
 function GoogleImagesPage() {
+  const navigate = useNavigate()
   return (
-    <JobsDashboard
-      filterTypeId={1}
-      showChangelog={false}
-      showToolsShortcuts={false}
-      showWelcome={false}
-      showMetrics={false}
-    >
-      <GoogleImagesUploadForm />
-    </JobsDashboard>
+    <div className="flex flex-col">
+      <div className="px-8 pt-8 pb-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate({ to: "/google-serp-cms" })}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Tools
+        </Button>
+      </div>
+      <JobsDashboard
+        filterTypeId={1}
+        showChangelog={false}
+        showToolsShortcuts={false}
+        showWelcome={false}
+        showMetrics={false}
+      >
+        <GoogleImagesUploadForm />
+      </JobsDashboard>
+    </div>
   )
 }
