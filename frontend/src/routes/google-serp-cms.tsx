@@ -16,7 +16,7 @@ import {
   LuSearch,
   LuWand2,
 } from "react-icons/lu"
-import { useIframeEmail } from "../../hooks/useIframeEmail"
+import { useIframeEmail } from "../hooks/useIframeEmail"
 
 export const Route = createFileRoute("/_layout/google-serp-cms")({
   component: GoogleSerpCmsPage,
