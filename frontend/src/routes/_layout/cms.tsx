@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Sun, Moon } from "lucide-react"
 import Changelog from "@/components/Changelog"
 import { LuCrop, LuDatabase, LuEraser, LuFileText, LuImage, LuLink, LuSearch, LuWand2 } from "react-icons/lu"
-import { useIframeEmail } from "../hooks/useIframeEmail"
+import { useIframeEmail } from "../../hooks/useIframeEmail"
 
 export const Route = createFileRoute("/cms")({
   component: CmsPage,
