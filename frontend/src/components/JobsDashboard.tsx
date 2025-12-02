@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle, Clock, File, Moon, RefreshCw, Sun } from "lucide-react"
+import { CheckCircle, Clock, File, Moon, RefreshCw, Sun, Download, Eye, Plus } from "lucide-react"
 import { useTheme } from "next-themes"
 import * as React from "react"
 import {
@@ -19,6 +19,15 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import { Badge } from "./ui/badge"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -72,13 +81,21 @@ async function fetchJobs(): Promise<JobSummary[]> {
   return response.json()
 }
 
-export default function JobsDashboard() {
+export default function JobsDashboard({ filterTypeId }: { filterTypeId?: number }) {
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
   const { data: jobs = [], isLoading: jobsLoading } = useQuery<JobSummary[]>({
     queryKey: ["scraperJobs"],
     queryFn: fetchJobs,
   })
+
+  const sortedJobs = React.useMemo(() => {
+    let result = [...jobs]
+    if (filterTypeId) {
+      result = result.filter((job) => job.fileTypeId === filterTypeId)
+    }
+    return result.sort((a, b) => b.id - a.id)
+  }, [jobs, filterTypeId])
 
   const getStatus = (job: JobSummary) => {
     if (job.fileEnd || job.fileLocationURLComplete) return "Completed"
@@ -273,6 +290,80 @@ export default function JobsDashboard() {
               </CardHeader>
             </Card>
           </div>
+
+          {/* Recent Jobs */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Recent Jobs</CardTitle>
+                <CardDescription>
+                  A list of your recent scraping jobs.
+                </CardDescription>
+              </div>
+              <Button onClick={() => navigate({ to: "/tools/google-images/upload" })}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Job
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedJobs.map((job) => (
+                    <TableRow key={job.id}>
+                      <TableCell className="font-medium">{job.id}</TableCell>
+                      <TableCell>{getJobTypeName(job.fileTypeId)}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(getStatus(job)) as any}>
+                          {getStatus(job)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(job.imageStart || job.fileStart)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate({ to: `/progress/${job.id}` })}
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {job.fileLocationUrl && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              asChild
+                              title="Download File"
+                            >
+                              <a href={job.fileLocationUrl} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {sortedJobs.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        No jobs found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Sidebar */}
