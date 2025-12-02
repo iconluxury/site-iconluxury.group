@@ -100,7 +100,7 @@ function GoogleImagesPage() {
         <Button variant="ghost" onClick={() => navigate({ to: ".." })} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
-        <Card>
+        <Card className="bg-white dark:bg-zinc-900">
             <CardHeader>
                 <CardTitle>Google Images Upload</CardTitle>
             </CardHeader>
