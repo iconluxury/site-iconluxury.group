@@ -19,7 +19,8 @@ function CmsPage() {
 
   return (
     <div className="p-8 space-y-8">
-      <div className="flex justify-end items-center">
+      <div className="flex justify-end items-center gap-4">
+        <Changelog />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -33,11 +34,9 @@ function CmsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Middle Content (Tools Grid) */}
-        <div className="lg:col-span-3 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Google Images Tool */}
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Google Images Tool */}
                 <Link to="/public/tools/google-images" search={searchParams} className="block h-full">
                 <Card className="hover:shadow-lg transition-shadow h-full">
                     <CardHeader>
@@ -120,12 +119,6 @@ function CmsPage() {
                     </div>
                 </CardContent>
                 </Card>
-            </div>
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="space-y-6">
-          <Changelog />
         </div>
       </div>
     </div>

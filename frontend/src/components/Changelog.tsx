@@ -1,5 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
 import { ScrollArea } from "./ui/scroll-area"
+import { History } from "lucide-react"
 
 const changes = [
   {
@@ -25,12 +34,21 @@ const changes = [
 
 export default function Changelog() {
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>Changelog</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[600px] pr-4">
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <History className="mr-2 h-4 w-4" />
+          Changelog
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Changelog</DialogTitle>
+          <DialogDescription>
+            Recent updates and improvements to the platform.
+          </DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-6">
             {changes.map((change, index) => (
               <div key={index}>
@@ -49,7 +67,7 @@ export default function Changelog() {
             ))}
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   )
 }
