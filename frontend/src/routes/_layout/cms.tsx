@@ -6,6 +6,7 @@ import { Sun, Moon } from "lucide-react"
 import Changelog from "@/components/Changelog"
 import { LuCrop, LuDatabase, LuEraser, LuFileText, LuImage, LuLink, LuSearch, LuWand2 } from "react-icons/lu"
 import { useIframeEmail } from "../../hooks/useIframeEmail"
+import useAuth from "../../hooks/useAuth"
 
 export const Route = createFileRoute("/cms")({
   component: CmsPage,
@@ -14,13 +15,13 @@ export const Route = createFileRoute("/cms")({
 function CmsPage() {
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
+  const { user } = useAuth()
   const iframeEmail = useIframeEmail()
-  const searchParams = iframeEmail ? { sendToEmail: iframeEmail } : {}
+  const searchParams = user?.email ? { sendToEmail: user.email } : (iframeEmail ? { sendToEmail: iframeEmail } : {})
 
   return (
     <div className="p-8 space-y-8">
       <div className="flex justify-end items-center gap-4">
-        <Changelog />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -119,6 +120,9 @@ function CmsPage() {
                     </div>
                 </CardContent>
                 </Card>
+            
+            {/* Changelog */}
+            <Changelog />
         </div>
       </div>
     </div>
