@@ -273,21 +273,6 @@ export default function JobsDashboard() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Need Help? */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Need Help?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button
-                className="w-full"
-                onClick={() => navigate({ to: "/support-ticket" })}
-              >
-                Submit Ticket
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Right Sidebar */}
