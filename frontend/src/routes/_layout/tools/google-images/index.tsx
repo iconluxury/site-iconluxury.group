@@ -6,5 +6,5 @@ export const Route = createFileRoute("/_layout/tools/google-images/")({
 })
 
 function GoogleImagesIndex() {
-  return <JobsDashboard filterTypeId={1} />
+  return <JobsDashboard filterTypeId={1} showWelcome={false} />
 }
