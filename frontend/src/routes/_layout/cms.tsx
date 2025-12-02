@@ -8,7 +8,7 @@ import { LuCrop, LuDatabase, LuEraser, LuFileText, LuImage, LuLink, LuSearch, Lu
 import { useIframeEmail } from "../../hooks/useIframeEmail"
 import useAuth from "../../hooks/useAuth"
 
-export const Route = createFileRoute("/cms")({
+export const Route = createFileRoute("/_layout/cms")({
   component: CmsPage,
 })
 

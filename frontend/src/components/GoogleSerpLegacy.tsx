@@ -1274,7 +1274,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
 
   if (!sendToEmail) {
     return (
-      <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+      <div className="w-full bg-background text-foreground">
         <div className="flex flex-col gap-6 items-stretch">
           {onBack && (
             <Button
@@ -1309,7 +1309,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+    <div className="w-full bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button

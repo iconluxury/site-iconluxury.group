@@ -1,4 +1,5 @@
 import { GoogleImagesForm } from "@/components/GoogleSerpLegacy"
+import JobsDashboard from "@/components/JobsDashboard"
 import { createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/public/tools/google-images")({
@@ -6,5 +7,14 @@ export const Route = createFileRoute("/public/tools/google-images")({
 })
 
 function GoogleImagesPage() {
-  return <GoogleImagesForm />
+  return (
+    <JobsDashboard
+      filterTypeId={1}
+      showChangelog={false}
+      showToolsShortcuts={false}
+      showWelcome={false}
+    >
+      <GoogleImagesForm />
+    </JobsDashboard>
+  )
 }
