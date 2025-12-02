@@ -1,4 +1,4 @@
-import { GoogleImagesForm } from "@/components/GoogleSerpLegacy"
+import { DataWarehouseForm } from "@/components/google-serp/DataWarehouseForm"
 import JobsDashboard from "@/components/JobsDashboard"
 import { createFileRoute } from "@tanstack/react-router"
 
@@ -15,7 +15,7 @@ function GoogleImagesPage() {
       showWelcome={false}
       showMetrics={false}
     >
-      <GoogleImagesForm />
+      <DataWarehouseForm mode="imagesAndMsrp" />
     </JobsDashboard>
   )
 }
