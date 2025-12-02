@@ -1,6 +1,6 @@
-import { useParams } from "@tanstack/react-router"
+import { useParams, useNavigate } from "@tanstack/react-router"
 import { createFileRoute } from "@tanstack/react-router"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowLeft } from "lucide-react"
 import React, { useState, useEffect } from "react"
 import { Badge } from "../../components/ui/badge"
 import { Button } from "../../components/ui/button"
@@ -47,6 +47,7 @@ interface ProgressData {
  */
 const JobProgressPage = () => {
   const { jobId } = useParams({ from: "/progress/$jobId" }) as { jobId: string }
+  const navigate = useNavigate()
   const [jobData, setJobData] = useState<JobDetails | null>(null)
   const [progressData, setProgressData] = useState<ProgressData | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -182,6 +183,15 @@ const JobProgressPage = () => {
 
   return (
     <div className="container mx-auto max-w-4xl py-8 bg-muted/30 min-h-screen">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-4"
+        onClick={() => navigate({ to: "/" })}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Dashboard
+      </Button>
       <div className="space-y-8">
         {/* Job Details Card */}
         <Card className="shadow-sm border-border">
