@@ -100,8 +100,8 @@ const ExcelDataTable = ({
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table>
+    <div className="rounded-md border">
+      <table className="w-full caption-bottom text-sm">
         <TableHeader>
           <TableRow>
             {excelData.headers.map((header, index) => {
@@ -192,7 +192,7 @@ const ExcelDataTable = ({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+      </table>
     </div>
   )
 }

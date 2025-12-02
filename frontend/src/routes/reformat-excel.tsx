@@ -1755,7 +1755,7 @@ const ReformatExcelForm: React.FC = () => {
               })}
             </div>
             <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
-              <Table>
+              <table className="w-full caption-bottom text-sm">
                 <TableHeader>
                   <TableRow>
                     {excelData.headers.map((header, index) => {
@@ -1828,7 +1828,7 @@ const ReformatExcelForm: React.FC = () => {
                       </TableRow>
                     ))}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </div>
         )}

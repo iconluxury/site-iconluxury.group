@@ -698,7 +698,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         />
       )}
       {fileType === "excel" && typeof previewContent !== "string" && (
-        <Box maxH="50vh" overflowY="auto">
+        <Box maxH="50vh" overflow="auto">
           <ExcelDataTable excelData={previewContent} />
         </Box>
       )}

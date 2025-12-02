@@ -1940,7 +1940,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
               </div>
             </div>
             <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
-              <Table>
+              <table className="w-full caption-bottom text-sm">
                 <TableHeader>
                   <TableRow>
                     {excelData.headers.map((header, index) => {
@@ -2017,7 +2017,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                       </TableRow>
                     ))}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </div>
         )}
@@ -3216,7 +3216,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               )}
             </div>
             <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
-              <Table>
+              <table className="w-full caption-bottom text-sm">
                 <TableHeader>
                   <TableRow>
                     {excelData.headers.map((header, index) => {
@@ -3292,7 +3292,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                       </TableRow>
                     ))}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </div>
         )}
