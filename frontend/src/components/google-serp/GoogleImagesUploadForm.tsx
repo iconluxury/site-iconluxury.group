@@ -41,6 +41,7 @@ import {
   type ColumnMapping,
   type SheetConfig,
   type ToastFunction,
+  type CellValue,
 } from "./types"
 import {
   detectHeaderRow,
