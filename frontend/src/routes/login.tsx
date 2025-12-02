@@ -175,12 +175,6 @@ function Login() {
             Sign up
           </RouterLink>
         </p>
-
-        <div className="flex justify-center items-center gap-4 mt-8">
-          <GitHubLogo />
-          <LinkedInLogo />
-          <XLogo />
-        </div>
       </div>
     </div>
   )
