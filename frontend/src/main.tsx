@@ -7,6 +7,7 @@ import ReactDOM from "react-dom/client"
 import { Toaster } from "sonner"
 import { OpenAPI } from "./client"
 import { ThemeProvider } from "./components/theme-provider"
+import { EmailProvider } from "./contexts/EmailContext"
 import { routeTree } from "./routeTree.gen"
 import "./styles/global.css"
 import theme from "./theme"
@@ -22,7 +23,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider defaultTheme="light" attribute="class">
       <ChakraProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <EmailProvider>
+            <RouterProvider router={router} />
+          </EmailProvider>
         </QueryClientProvider>
       </ChakraProvider>
       <Toaster richColors closeButton position="top-right" />

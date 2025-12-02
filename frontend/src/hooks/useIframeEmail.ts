@@ -1,74 +1,17 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { useEmailContext } from "../contexts/EmailContext"
+import { getIframeEmailParameter } from "../lib/email-utils"
 
-const EMAIL_QUERY_KEYS = ["sendToEmail", "email", "userEmail"]
-
-export const getIframeEmailParameter = (): string | null => {
-  if (typeof window === "undefined") return null
-
-  const candidateKeys = new Set(
-    EMAIL_QUERY_KEYS.map((key) => key.toLowerCase()),
-  )
-
-  const checkParams = (params: URLSearchParams) => {
-    for (const [rawKey, rawValue] of params.entries()) {
-      if (candidateKeys.has(rawKey.toLowerCase())) {
-        const value = rawValue.trim()
-        if (value) return value
-      }
-    }
-    return null
-  }
-
-  // Check search params
-  const searchResult = checkParams(new URLSearchParams(window.location.search))
-  if (searchResult) return searchResult
-
-  // Check hash params
-  const hash = window.location.hash
-  if (hash.includes("?")) {
-    const hashQueryResult = checkParams(new URLSearchParams(hash.split("?")[1]))
-    if (hashQueryResult) return hashQueryResult
-  } else if (hash.includes("=")) {
-    const hashResult = checkParams(new URLSearchParams(hash.substring(1)))
-    if (hashResult) return hashResult
-  }
-
-  return null
-}
+export { getIframeEmailParameter }
 
 export const useIframeEmail = (): string | null => {
-  const [iframeEmail, setIframeEmail] = useState<string | null>(() =>
-    getIframeEmailParameter(),
-  )
+  const { email, requestEmail } = useEmailContext()
 
   useEffect(() => {
-    if (iframeEmail) return
-    const email = getIframeEmailParameter()
-    if (email) {
-      setIframeEmail(email)
-    } else {
-      alert("Email parameter not found.")
-      const input = prompt("Please enter your email to continue:")
-      if (input) setIframeEmail(input.trim())
+    if (!email) {
+      requestEmail()
     }
-  }, [iframeEmail])
+  }, [email, requestEmail])
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const data = event.data
-      if (!data) return
-
-      if (typeof data === "object") {
-        const email = data.email || data.userEmail || data.sendToEmail
-        if (email && typeof email === "string") {
-          setIframeEmail(email.trim())
-        }
-      }
-    }
-
-    window.addEventListener("message", handleMessage)
-    return () => window.removeEventListener("message", handleMessage)
-  }, [])
-
-  return iframeEmail
+  return email
 }
