@@ -910,7 +910,7 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({
     e.preventDefault()
     const url = `${
       window.location.pathname
-    }?activeTab=2&search=${encodeURIComponent(entryId.toString() || "")}`
+    }?activeTab=3&search=${encodeURIComponent(entryId.toString() || "")}`
     window.open(url, "_blank", "noopener,noreferrer")
   }
 
@@ -1379,6 +1379,115 @@ const SearchRowsTab: React.FC<SearchRowsTabProps> = ({
     </div>
   )
 }
+
+// RowMetadataTab Component
+interface RowMetadataTabProps {
+  job: JobDetails
+  searchQuery: string
+}
+
+const RowMetadataTab: React.FC<RowMetadataTabProps> = ({
+  job,
+  searchQuery,
+}) => {
+  const query = (searchQuery || "").trim().toLowerCase()
+
+  const record = job.records.find(
+    (r) =>
+      r.entryId.toString() === query || r.excelRowId.toString() === query,
+  )
+
+  if (!query) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Please enter a Row ID or Entry ID to view metadata.
+      </div>
+    )
+  }
+
+  if (!record) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No record found for ID: {query}
+      </div>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Row Metadata</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="font-semibold">Basic Info</div>
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-gray-500">Entry ID:</span>
+              <span>{record.entryId}</span>
+              <span className="text-gray-500">Excel Row ID:</span>
+              <span>{record.excelRowId}</span>
+              <span className="text-gray-500">Product Model:</span>
+              <span>{record.productModel}</span>
+              <span className="text-gray-500">Brand:</span>
+              <span>{record.productBrand}</span>
+              <span className="text-gray-500">Color:</span>
+              <span>{record.productColor}</span>
+              <span className="text-gray-500">Category:</span>
+              <span>{record.productCategory}</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="font-semibold">Processing Info</div>
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-gray-500">File ID:</span>
+              <span>{record.fileId}</span>
+              <span className="text-gray-500">Create Time:</span>
+              <span>{record.createTime}</span>
+              <span className="text-gray-500">Complete Time:</span>
+              <span>{record.completeTime || "-"}</span>
+            </div>
+          </div>
+
+          <div className="col-span-1 md:col-span-2 space-y-2">
+            <div className="font-semibold">Steps</div>
+            <div className="grid grid-cols-1 gap-2 text-sm border rounded p-2 bg-gray-50">
+              <div>
+                <span className="font-medium">Step 1:</span>{" "}
+                {record.step1 || "-"}
+              </div>
+              <div>
+                <span className="font-medium">Step 2:</span>{" "}
+                {record.step2 || "-"}
+              </div>
+              <div>
+                <span className="font-medium">Step 3:</span>{" "}
+                {record.step3 || "-"}
+              </div>
+              <div>
+                <span className="font-medium">Step 4:</span>{" "}
+                {record.step4 || "-"}
+              </div>
+            </div>
+          </div>
+
+          {record.excelRowImageRef && (
+            <div className="col-span-1 md:col-span-2 space-y-2">
+              <div className="font-semibold">Excel Image</div>
+              <img
+                src={record.excelRowImageRef}
+                alt={`Row ${record.excelRowId}`}
+                className="max-w-md rounded border"
+              />
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 // JobsDetailPage Component
 const JobsDetailPage = () => {
   const { jobId } = useParams({
@@ -1481,6 +1590,12 @@ const JobsDetailPage = () => {
           domain={searchParams.domain}
           entryId={searchParams.entryId}
         />
+      ),
+    },
+    {
+      title: "Row Metadata",
+      component: () => (
+        <RowMetadataTab job={jobData} searchQuery={searchQuery} />
       ),
     },
   ]
