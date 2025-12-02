@@ -13,6 +13,7 @@ function GoogleImagesPage() {
       showChangelog={false}
       showToolsShortcuts={false}
       showWelcome={false}
+      showMetrics={false}
     >
       <GoogleImagesForm />
     </JobsDashboard>

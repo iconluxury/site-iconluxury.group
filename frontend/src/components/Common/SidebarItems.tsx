@@ -40,7 +40,6 @@ interface SidebarItem {
 
 const sidebarStructure: SidebarItem[] = [
   { title: "Dashboard", path: "/", icon: Home },
-  { title: "File Explorer", path: "/file-explorer", icon: Archive },
   {
     title: "Tools",
     icon: Wrench,
@@ -60,15 +59,10 @@ const sidebarStructure: SidebarItem[] = [
       },
     ],
   },
-  {
-    title: "Scraper",
-    icon: Search,
-    subItems: [
-      { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
-      { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
-    ],
-  },
   { title: "Settings", path: "/settings", icon: Settings },
+  { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
+  { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
+  { title: "File Explorer", path: "/file-explorer", icon: Archive },
   { title: "Sign out", icon: LogOut, action: () => {} },
 ]
 
@@ -102,7 +96,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
     if (["Dashboard", "Sign out"].includes(title)) {
       return true
     }
-    if (["Scraper", "Jobs", "File Explorer", "Admin"].includes(title)) {
+    if (["Jobs", "Insights", "File Explorer", "Admin"].includes(title)) {
       return currentUser?.is_superuser || false
     }
     return true
@@ -114,7 +108,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
       if (!enabled) {
         return null
       }
-      const showAdminLabel = ["File Explorer", "Admin"].includes(title)
+      const showAdminLabel = ["File Explorer", "Admin", "Jobs", "Insights"].includes(title)
       const isActive =
         path === location.pathname || (path === "/" && location.pathname === "")
       return (
