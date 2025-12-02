@@ -17,10 +17,10 @@ import { Route as ReformatExcelImport } from './routes/reformat-excel'
 import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
 import { Route as GoogleSerpCmsImport } from './routes/google-serp-cms'
+import { Route as CmsImport } from './routes/cms'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
-import { Route as LayoutSupportTicketImport } from './routes/_layout/support-ticket'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
@@ -79,6 +79,12 @@ const GoogleSerpCmsRoute = GoogleSerpCmsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CmsRoute = CmsImport.update({
+  id: '/cms',
+  path: '/cms',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LayoutRoute = LayoutImport.update({
   id: '/_layout',
   getParentRoute: () => rootRoute,
@@ -94,12 +100,6 @@ const ProgressJobIdRoute = ProgressJobIdImport.update({
   id: '/progress/$jobId',
   path: '/progress/$jobId',
   getParentRoute: () => rootRoute,
-} as any)
-
-const LayoutSupportTicketRoute = LayoutSupportTicketImport.update({
-  id: '/support-ticket',
-  path: '/support-ticket',
-  getParentRoute: () => LayoutRoute,
 } as any)
 
 const LayoutSettingsRoute = LayoutSettingsImport.update({
@@ -236,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutImport
       parentRoute: typeof rootRoute
     }
+    '/cms': {
+      id: '/cms'
+      path: '/cms'
+      fullPath: '/cms'
+      preLoaderRoute: typeof CmsImport
+      parentRoute: typeof rootRoute
+    }
     '/google-serp-cms': {
       id: '/google-serp-cms'
       path: '/google-serp-cms'
@@ -297,13 +304,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof LayoutSettingsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/support-ticket': {
-      id: '/_layout/support-ticket'
-      path: '/support-ticket'
-      fullPath: '/support-ticket'
-      preLoaderRoute: typeof LayoutSupportTicketImport
       parentRoute: typeof LayoutImport
     }
     '/progress/$jobId': {
@@ -441,7 +441,6 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
-  LayoutSupportTicketRoute: typeof LayoutSupportTicketRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
   LayoutScrapingApiJobsRoute: typeof LayoutScrapingApiJobsRoute
@@ -461,7 +460,6 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
-  LayoutSupportTicketRoute: LayoutSupportTicketRoute,
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
   LayoutScrapingApiJobsRoute: LayoutScrapingApiJobsRoute,
@@ -484,6 +482,7 @@ const LayoutRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
+  '/cms': typeof CmsRoute
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
@@ -493,7 +492,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/settings': typeof LayoutSettingsRoute
-  '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
@@ -515,6 +513,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/cms': typeof CmsRoute
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
@@ -524,7 +523,6 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
   '/settings': typeof LayoutSettingsRoute
-  '/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
@@ -548,6 +546,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
+  '/cms': typeof CmsRoute
   '/google-serp-cms': typeof GoogleSerpCmsRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
@@ -557,7 +556,6 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
   '/_layout/settings': typeof LayoutSettingsRoute
-  '/_layout/support-ticket': typeof LayoutSupportTicketRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
@@ -582,6 +580,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
+    | '/cms'
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
@@ -591,7 +590,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/file-explorer'
     | '/settings'
-    | '/support-ticket'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/insights'
@@ -612,6 +610,7 @@ export interface FileRouteTypes {
     | '/scraping-api/scraping-jobs/legacy/$jobId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/cms'
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
@@ -621,7 +620,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/file-explorer'
     | '/settings'
-    | '/support-ticket'
     | '/progress/$jobId'
     | '/'
     | '/scraping-api/insights'
@@ -643,6 +641,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layout'
+    | '/cms'
     | '/google-serp-cms'
     | '/login'
     | '/recover-password'
@@ -652,7 +651,6 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/file-explorer'
     | '/_layout/settings'
-    | '/_layout/support-ticket'
     | '/progress/$jobId'
     | '/_layout/'
     | '/_layout/scraping-api/insights'
@@ -676,6 +674,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
+  CmsRoute: typeof CmsRoute
   GoogleSerpCmsRoute: typeof GoogleSerpCmsRoute
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
@@ -691,6 +690,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
+  CmsRoute: CmsRoute,
   GoogleSerpCmsRoute: GoogleSerpCmsRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
@@ -715,6 +715,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layout",
+        "/cms",
         "/google-serp-cms",
         "/login",
         "/recover-password",
@@ -734,7 +735,6 @@ export const routeTree = rootRoute
         "/_layout/admin",
         "/_layout/file-explorer",
         "/_layout/settings",
-        "/_layout/support-ticket",
         "/_layout/",
         "/_layout/scraping-api/insights",
         "/_layout/scraping-api/jobs",
@@ -749,6 +749,9 @@ export const routeTree = rootRoute
         "/_layout/tools/image-links/",
         "/_layout/scraping-api/scraping-jobs/legacy/$jobId"
       ]
+    },
+    "/cms": {
+      "filePath": "cms.tsx"
     },
     "/google-serp-cms": {
       "filePath": "google-serp-cms.tsx"
@@ -778,10 +781,6 @@ export const routeTree = rootRoute
     },
     "/_layout/settings": {
       "filePath": "_layout/settings.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/support-ticket": {
-      "filePath": "_layout/support-ticket.tsx",
       "parent": "/_layout"
     },
     "/progress/$jobId": {

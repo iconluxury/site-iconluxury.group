@@ -69,7 +69,6 @@ const sidebarStructure: SidebarItem[] = [
     ],
   },
   { title: "Settings", path: "/settings", icon: Settings },
-  { title: "Support Ticket", path: "/support-ticket", icon: HelpCircle },
   { title: "Sign out", icon: LogOut, action: () => {} },
 ]
 

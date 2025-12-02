@@ -149,7 +149,7 @@ export default function JobsDashboard() {
               )}
             </CardDescription>
           </div>
-          <Button onClick={() => navigate({ to: "/google-serp-cms" })}>
+          <Button onClick={() => navigate({ to: "/cms" })}>
             <LuLayoutGrid className="mr-2 h-4 w-4" />
             Open Tools & Reports
           </Button>
