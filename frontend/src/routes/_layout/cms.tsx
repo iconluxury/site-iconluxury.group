@@ -39,7 +39,7 @@ function CmsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Google Images Tool */}
                 <Link to="/public/tools/google-images" search={searchParams} className="block h-full">
-                <Card className="hover:shadow-lg transition-shadow h-full">
+                <Card className="hover:shadow-lg transition-shadow h-full border-primary border-2 bg-primary/5">
                     <CardHeader>
                     <div className="flex items-center gap-2">
                         <LuImage className="h-6 w-6 text-primary" />

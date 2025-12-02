@@ -68,7 +68,7 @@ const getAuthToken = (): string | null => {
 async function fetchJobs(): Promise<JobSummary[]> {
   const token = getAuthToken()
   const response = await fetch(
-    "https://external.iconluxury.group/api/scraping-jobs?page=1&page_size=100",
+    "https://external.iconluxury.group/api/scraping-jobs?page=1&page_size=10",
     {
       method: "GET",
       headers: {
@@ -338,7 +338,11 @@ export default function JobsDashboard({
                 </TableHeader>
                 <TableBody>
                   {sortedJobs.map((job) => (
-                    <TableRow key={job.id}>
+                    <TableRow 
+                      key={job.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate({ to: `/progress/${job.id}` })}
+                    >
                       <TableCell className="font-medium">{job.id}</TableCell>
                       <TableCell>{getJobTypeName(job.fileTypeId)}</TableCell>
                       <TableCell>
@@ -348,7 +352,7 @@ export default function JobsDashboard({
                       </TableCell>
                       <TableCell>{formatDate(job.imageStart || job.fileStart)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="icon"
