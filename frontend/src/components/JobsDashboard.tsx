@@ -248,7 +248,7 @@ export default function JobsDashboard({
                 <CardHeader>
                   <div className="flex flex-row items-center gap-2">
                     <LuSearch
-                      className="h-6 w-6 text-gray-600"
+                      className="h-6 w-6 text-foreground"
                       strokeWidth={1.75}
                     />
                     <CardTitle className="text-xl font-semibold">
@@ -265,7 +265,7 @@ export default function JobsDashboard({
                 <CardHeader>
                   <div className="flex flex-row items-center gap-2">
                     <LuDatabase
-                      className="h-6 w-6 text-gray-600"
+                      className="h-6 w-6 text-foreground"
                       strokeWidth={1.75}
                     />
                     <CardTitle className="text-xl font-semibold">
@@ -282,7 +282,7 @@ export default function JobsDashboard({
                 <CardHeader>
                   <div className="flex flex-row items-center gap-2">
                     <LuLink
-                      className="h-6 w-6 text-gray-600"
+                      className="h-6 w-6 text-foreground"
                       strokeWidth={1.75}
                     />
                     <CardTitle className="text-xl font-semibold">
@@ -299,7 +299,7 @@ export default function JobsDashboard({
                 <CardHeader>
                   <div className="flex flex-row items-center gap-2">
                     <LuCrop
-                      className="h-6 w-6 text-gray-600"
+                      className="h-6 w-6 text-foreground"
                       strokeWidth={1.75}
                     />
                     <CardTitle className="text-xl font-semibold">

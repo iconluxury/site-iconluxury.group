@@ -1,8 +1,6 @@
-import {
-  DATA_WAREHOUSE_MODE_CONFIG,
-  DataWarehouseForm,
-  type DataWarehouseMode,
-} from "@/components/GoogleSerpLegacy"
+import { DataWarehouseForm } from "@/components/google-serp/DataWarehouseForm"
+import { DATA_WAREHOUSE_MODE_CONFIG } from "@/components/google-serp/constants"
+import type { DataWarehouseMode } from "@/components/google-serp/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"

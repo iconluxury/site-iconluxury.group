@@ -1,16 +1,15 @@
-import { Badge } from "@/components/ui/badge"
+import React, { useState, useMemo, useCallback, useRef } from "react"
+import * as XLSX from "xlsx"
+import {
+  ArrowLeft,
+  AlertTriangle,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -25,490 +24,119 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { createFileRoute } from "@tanstack/react-router"
-import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
-import type React from "react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import type { IconType } from "react-icons"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import { useIframeEmail } from "@/hooks/useIframeEmail"
+import useCustomToast from "@/hooks/useCustomToast"
 import {
-  LuCrop,
-  LuDatabase,
-  LuDollarSign,
-  LuEraser,
-  LuFileText,
-  LuImage,
-  LuLayers,
-  LuLink,
-  LuSearch,
-  LuWand2,
-} from "react-icons/lu"
-import * as XLSX from "xlsx"
-import SubmitCropForm from "../components/SubmitCropForm"
-import SubmitImageLinkForm from "../components/SubmitImageLinkForm"
-import useCustomToast from "../hooks/useCustomToast"
-import { useIframeEmail } from "../hooks/useIframeEmail"
-import { cn } from "../lib/utils"
-import { showDevUI } from "../utils"
-import { DataWarehouseForm } from "./google-serp/DataWarehouseForm"
+  DATA_WAREHOUSE_MODE_CONFIG,
+  MAX_FILE_SIZE_MB,
+  MAX_PREVIEW_ROWS,
+  SERVER_URL,
+} from "./constants"
+import {
+  type FormWithBackProps,
+  type DataWarehouseFormProps,
+  type DataWarehouseMappingField,
+  type ColumnType,
+  type ExcelData,
+  type CellValue,
+  type ColumnMapping,
+  type SheetConfig,
+  type ToastFunction,
+} from "./types"
+import {
+  detectHeaderRow,
+  autoMapColumns,
+  indexToColumnLetter,
+  getColumnPreview,
+  getDisplayValue,
+  getColumnMappingEntries,
+  createEmptyColumnMapping,
+  withManualBrandValue,
+  sanitizeWorksheet,
+  determineFallbackImageColumnIndex,
+  formatMappingFieldLabel,
+} from "./utils"
+import { UploadStep } from "./UploadStep"
+import { SheetSelector } from "./SheetSelector"
 
-// Shared Constants and Types
-type ColumnType = "style" | "brand" | "category" | "colorName" | "msrp"
-const SERVER_URL = "https://icon5-8005.iconluxury.today"
-
-const MAX_PREVIEW_ROWS = 20
-const MAX_FILE_SIZE_MB = 50
-
-type CellValue = string | number | boolean | null
-type ExcelData = { headers: string[]; rows: CellValue[][] }
-type ColumnMapping = Record<
-  ColumnType | "readImage" | "imageAdd",
-  number | null
->
-
-type SheetConfig = {
-  name: string
-  originalIndex: number
-  rawData: CellValue[][]
-  headerIndex: number
-  excelData: ExcelData
-  columnMapping: ColumnMapping
-  manualBrandValue: string | null
-  isSelected: boolean
-}
-type ToastFunction = (
-  title: string,
-  description: string,
-  status: "error" | "warning" | "success",
-) => void
-
-type FormWithBackProps = {
-  onBack?: () => void
-  backLabel?: string
-}
-
-export type DataWarehouseMode = "imagesAndMsrp" | "imagesOnly" | "msrpOnly"
-
-type DataWarehouseModeConfig = {
-  label: string
-  description: string
-  requiredColumns: ColumnType[]
-  optionalColumns: ColumnType[]
-  requireImageColumn: boolean
-  allowImageColumnMapping: boolean
-  icon: IconType
-}
-
-export const DATA_WAREHOUSE_MODE_CONFIG: Record<
-  DataWarehouseMode,
-  DataWarehouseModeConfig
-> = {
-  imagesAndMsrp: {
-    label: "Images + MSRP",
-    description: "Pull images and price data.",
-    requiredColumns: ["style", "msrp"],
-    optionalColumns: ["brand"],
-    requireImageColumn: false,
-    allowImageColumnMapping: true,
-    icon: LuLayers,
-  },
-  imagesOnly: {
-    label: "Images only",
-    description: "Pull images.",
-    requiredColumns: ["style"],
-    optionalColumns: [],
-    requireImageColumn: true,
-    allowImageColumnMapping: true,
-    icon: LuImage,
-  },
-  msrpOnly: {
-    label: "MSRP only",
-    description: "Pull msrp data.",
-    requiredColumns: ["style", "msrp"],
-    optionalColumns: ["brand"],
-    requireImageColumn: false,
-    allowImageColumnMapping: false,
-    icon: LuDollarSign,
-  },
-}
-
-const formatMappingFieldLabel = (field: ColumnType | "imageColumn") => {
-  if (field === "imageColumn") return "image target column"
-  if (field === "msrp") return "MSRP"
-  if (field === "style") return "style"
-  if (field === "brand") return "brand"
-  if (field === "category") return "category"
-  if (field === "colorName") return "color"
-  return field
-}
-
-const GOOGLE_IMAGES_REQUIRED_COLUMNS: ColumnType[] = ["style"]
-const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
-  "brand",
-  "category",
-  "colorName",
-  "msrp",
-]
-const GOOGLE_IMAGES_ALL_COLUMNS: ColumnType[] = [
-  ...GOOGLE_IMAGES_REQUIRED_COLUMNS,
-  ...GOOGLE_IMAGES_OPTIONAL_COLUMNS,
-]
-
-const MANUAL_BRAND_HEADER = "BRAND (Manual)"
-
-const createEmptyColumnMapping = (): ColumnMapping => ({
-  style: null,
-  brand: null,
-  category: null,
-  colorName: null,
-  msrp: null,
-  readImage: null,
-  imageAdd: null,
-})
-
-const EMPTY_EXCEL_DATA: ExcelData = { headers: [], rows: [] }
-const EMPTY_COLUMN_MAPPING: ColumnMapping = Object.freeze(
-  createEmptyColumnMapping(),
-)
-
-const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
-  style: mapping.style,
-  brand: mapping.brand,
-  category: mapping.category,
-  colorName: mapping.colorName,
-  msrp: mapping.msrp,
-  readImage: mapping.readImage,
-  imageAdd: mapping.imageAdd,
-})
-
-const withManualBrandValue = (
-  sheet: SheetConfig,
-  manualBrandValue: string | null,
-): SheetConfig => {
-  const hasManualColumn =
-    sheet.excelData.headers[sheet.excelData.headers.length - 1] ===
-    MANUAL_BRAND_HEADER
-
-  if (manualBrandValue?.trim()) {
-    const trimmed = manualBrandValue.trim()
-    if (hasManualColumn) {
-      const updatedRows = sheet.excelData.rows.map((row) => {
-        const nextRow = [...row]
-        if (nextRow.length < sheet.excelData.headers.length) {
-          nextRow.length = sheet.excelData.headers.length
-        }
-        nextRow[nextRow.length - 1] = trimmed
-        return nextRow
-      })
-      return {
-        ...sheet,
-        excelData: {
-          headers: [...sheet.excelData.headers],
-          rows: updatedRows,
-        },
-        manualBrandValue: trimmed,
-      }
-    }
-    const newHeaders = [...sheet.excelData.headers, MANUAL_BRAND_HEADER]
-    const newRows = sheet.excelData.rows.map((row) => [...row, trimmed])
-    return {
-      ...sheet,
-      excelData: { headers: newHeaders, rows: newRows },
-      manualBrandValue: trimmed,
-    }
-  }
-
-  if (!manualBrandValue && hasManualColumn) {
-    const newHeaders = sheet.excelData.headers.slice(0, -1)
-    const newRows = sheet.excelData.rows.map((row) => row.slice(0, -1))
-    const newMapping = cloneColumnMapping(sheet.columnMapping)
-    if (newMapping.brand === newHeaders.length) {
-      newMapping.brand = null
-    }
-    return {
-      ...sheet,
-      excelData: { headers: newHeaders, rows: newRows },
-      columnMapping: newMapping,
-      manualBrandValue: null,
-    }
-  }
-
-  return {
-    ...sheet,
-    manualBrandValue: manualBrandValue ? manualBrandValue.trim() : null,
-  }
-}
-
-// Shared Helper Functions
-const IMAGE_HEADER_PATTERN = /(image|photo|picture|img)/i
-
-const getDisplayValue = (value: any): string => {
-  if (value == null) return ""
-  if (value instanceof Date) return value.toLocaleString()
-  if (typeof value === "object") {
-    if (value.error) return value.error
-    if (value.result !== undefined) return getDisplayValue(value.result)
-    if (value.text) return value.text
-    if (value.link) return value.text || value.link
-    return JSON.stringify(value)
-  }
-  return String(value)
-}
-
-const indexToColumnLetter = (index: number): string => {
-  let column = ""
-  let temp = index
-  while (temp >= 0) {
-    column = String.fromCharCode((temp % 26) + 65) + column
-    temp = Math.floor(temp / 26) - 1
-  }
-  return column
-}
-
-const detectHeaderRow = (rows: CellValue[][]): number => {
-  const patterns = {
-    style:
-      /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
-    brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
-    msrp: /^(msrp|manufacturer\s*suggested\s*retail\s*price|list\s*price|suggested\s*retail)/i,
-  }
-  let bestIndex = 0
-  let maxNonEmptyCells = 0
-  for (let i = 0; i < Math.min(50, rows.length); i++) {
-    const rowValues = rows[i]
-      .map((cell) => String(cell ?? "").trim())
-      .filter((value) => value !== "") as string[]
-    const nonEmptyCount = rowValues.length
-    if (nonEmptyCount < 2) continue
-    const hasHeaderMatch = rowValues.some((value: string) =>
-      Object.values(patterns).some((pattern) => pattern.test(value)),
-    )
-    if (hasHeaderMatch || nonEmptyCount > maxNonEmptyCells) {
-      bestIndex = i
-      maxNonEmptyCells = nonEmptyCount
-      if (hasHeaderMatch) break
-    }
-  }
-  return bestIndex
-}
-
-const getColumnPreview = (
-  columnIndex: number | null,
-  rows: CellValue[][],
-): string => {
-  if (columnIndex === null || columnIndex < 0 || columnIndex >= rows[0]?.length)
-    return "No values"
-  const values = rows
-    .map((row) => getDisplayValue(row[columnIndex]))
-    .filter((value) => value.trim() !== "")
-    .slice(0, 3)
-  return values.length > 0 ? values.join(", ") : "No values"
-}
-
-const autoMapColumns = (headers: string[]): ColumnMapping => {
-  const mapping: ColumnMapping = {
-    style: null,
-    brand: null,
-    category: null,
-    colorName: null,
-    msrp: null,
-    readImage: null,
-    imageAdd: null,
-  }
-  const patterns = {
-    style:
-      /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
-    brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
-    msrp: /^(msrp|manufacturer\s*suggested\s*retail\s*price|list\s*price|suggested\s*retail)/i,
-    image: /^(image|photo|picture|img|readImage|imageAdd)/i,
-  }
-  headers.forEach((header, index) => {
-    const normalizedHeader = header.trim().toUpperCase()
-    if (!normalizedHeader) return
-    if (patterns.style.test(normalizedHeader) && mapping.style === null)
-      mapping.style = index
-    else if (patterns.brand.test(normalizedHeader) && mapping.brand === null)
-      mapping.brand = index
-    else if (patterns.msrp.test(normalizedHeader) && mapping.msrp === null)
-      mapping.msrp = index
-    else if (
-      patterns.image.test(normalizedHeader) &&
-      mapping.readImage === null &&
-      mapping.imageAdd === null
-    ) {
-      mapping.readImage = index
-      mapping.imageAdd = index
-    }
-  })
-  return mapping
-}
-
-const getColumnMappingEntries = (
-  mapping: ColumnMapping,
-): [keyof ColumnMapping, number | null][] =>
-  Object.entries(mapping) as [keyof ColumnMapping, number | null][]
-
-const SELECTED_BG_STRONG = "brand.100"
-const SELECTED_BG_SUBTLE = "brand.50"
-const MAPPED_BG = "neutral.100"
-const SELECTED_BORDER_COLOR = "brand.600"
-
-const looksLikeUrl = (value: CellValue | undefined): boolean =>
-  typeof value === "string" && /^https?:\/\//i.test(value.trim())
-
-const getFirstNonEmptyValue = (
-  rows: CellValue[][],
-  columnIndex: number,
-): CellValue | undefined => {
-  for (const row of rows) {
-    const value = row[columnIndex]
-    if (value !== undefined && value !== null && String(value).trim() !== "") {
-      return value
-    }
-  }
-  return undefined
-}
-
-const determineFallbackImageColumnIndex = (
-  headers: string[],
-  rows: CellValue[][],
-): number | null => {
-  if (headers.length === 0) return null
-  const firstHeader = headers[0]
-  if (firstHeader && IMAGE_HEADER_PATTERN.test(firstHeader)) {
-    return 0
-  }
-  if (rows.length === 0) return null
-  const sampleValue = getFirstNonEmptyValue(rows, 0)
-  if (looksLikeUrl(sampleValue)) {
-    return 0
-  }
-  return null
-}
-
-// Google Images Form Component
-export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
+export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   onBack,
   backLabel,
+  mode,
 }) => {
-  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
-    "upload",
+  const modeConfig = DATA_WAREHOUSE_MODE_CONFIG[mode]
+  const REQUIRED_COLUMNS = modeConfig.requiredColumns
+  const OPTIONAL_COLUMNS = modeConfig.optionalColumns
+  const ALL_COLUMNS = useMemo<ColumnType[]>(
+    () => [...modeConfig.requiredColumns, ...modeConfig.optionalColumns],
+    [mode],
   )
+  const allowImageColumnMapping = modeConfig.allowImageColumnMapping
+  const requireImageColumn = modeConfig.requireImageColumn
+  const isImagesOnlyMode = mode === "imagesOnly"
+  const enableImageTargetMapping = allowImageColumnMapping && isImagesOnlyMode
+  
+  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">("upload")
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
-  const [originalWorkbook, setOriginalWorkbook] =
-    useState<XLSX.WorkBook | null>(null)
+  const [originalWorkbook, setOriginalWorkbook] = useState<XLSX.WorkBook | null>(null)
   const originalFileBufferRef = useRef<ArrayBuffer | null>(null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
-  const [activeMappingField, setActiveMappingField] =
-    useState<ColumnType | "imageColumn" | null>(null)
+  
+  // These seem to be legacy single-sheet state, but we'll keep them if needed or derive them
+  // const [excelData, setExcelData] = useState<ExcelData>({ headers: [], rows: [] })
+  // const [rawData, setRawData] = useState<CellValue[][]>([])
+  // const [headerIndex, setHeaderIndex] = useState<number>(1)
+  // const [columnMapping, setColumnMapping] = useState<ColumnMapping>({ ... })
+  
+  const [activeMappingField, setActiveMappingField] = useState<DataWarehouseMappingField | "imageColumn" | null>(null)
   const [manualBrand, setManualBrand] = useState("")
+  const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
+  const [isNewDistro, setIsNewDistro] = useState(false)
+  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
-  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
-  const [mode, setMode] = useState<"imagesAndMsrp" | "imagesOnly" | "msrpOnly">("imagesAndMsrp")
+
   const iframeEmail = useIframeEmail()
-  const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
+  const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
+  const sendToEmail = emailRecipient // Alias for compatibility
+
   const showToast: ToastFunction = useCustomToast()
+  const isEmailValid = useMemo(() => {
+    if (!emailRecipient) return false
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient)
+  }, [emailRecipient])
 
-  const activeSheet = sheetConfigs[activeSheetIndex] ?? null
-  const excelData = activeSheet?.excelData ?? EMPTY_EXCEL_DATA
-  const rawData = activeSheet?.rawData ?? []
-  const headerIndex = activeSheet?.headerIndex ?? 0
-  const columnMapping = activeSheet?.columnMapping ?? EMPTY_COLUMN_MAPPING
-  const isManualBrandApplied = Boolean(activeSheet?.manualBrandValue)
-  const hasMultipleSheets = sheetConfigs.length > 1
-  const emailRecipient = sendToEmail
-  const imageColumnIndex = columnMapping.imageAdd
-  const enableImageTargetMapping = true
-
-  // Replaced useColorModeValue with Tailwind classes in render
-
-  const sanitizeWorksheet = useCallback((worksheet: XLSX.WorkSheet) => {
-    const sanitized: XLSX.WorkSheet = { ...worksheet }
-
-    const sanitizeDimensionEntries = (entries: any[] | undefined) => {
-      if (!Array.isArray(entries)) return entries
-      return entries.map((entry) => {
-        if (!entry || typeof entry !== "object") return entry
-        const { level, outlineLevel, ...rest } = entry as Record<string, any>
-        return { ...rest }
-      })
-    }
-
-    const cols = sanitized["!cols"] as any[] | undefined
-    const rows = sanitized["!rows"] as any[] | undefined
-
-    if (cols) sanitized["!cols"] = sanitizeDimensionEntries(cols) as any
-    if (rows) sanitized["!rows"] = sanitizeDimensionEntries(rows) as any
-
-    return sanitized
-  }, [])
+  // Derived state for active sheet
+  const activeSheet = sheetConfigs[activeSheetIndex]
+  const excelData = activeSheet?.excelData || { headers: [], rows: [] }
+  const rawData = activeSheet?.rawData || []
+  const headerIndex = activeSheet?.headerIndex || 0
+  const columnMapping = activeSheet?.columnMapping || createEmptyColumnMapping()
 
   const updateSheetConfig = useCallback(
-    (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
+    (index: number, updater: (config: SheetConfig) => SheetConfig) => {
       setSheetConfigs((prev) => {
-        if (!prev[index]) return prev
-        const next = [...prev]
-        const updatedSheet = transform(prev[index])
-        next[index] = updatedSheet
-        return next
+        const newConfigs = [...prev]
+        if (newConfigs[index]) {
+          newConfigs[index] = updater(newConfigs[index])
+        }
+        return newConfigs
       })
     },
     [],
   )
-
-  const handleToggleSheetSelection = useCallback(
-    (index: number) => {
-      if (index < 0 || index >= sheetConfigs.length) return
-      updateSheetConfig(index, (sheet) => ({
-        ...sheet,
-        isSelected: !sheet.isSelected,
-      }))
-    },
-    [sheetConfigs.length, updateSheetConfig],
-  )
-
-  const handleActiveSheetChange = useCallback(
-    (index: number) => {
-      if (index < 0 || index >= sheetConfigs.length) return
-      setActiveSheetIndex(index)
-      setActiveMappingField(null)
-      setManualBrand("")
-    },
-    [sheetConfigs.length],
-  )
-
-  const REQUIRED_COLUMNS: ColumnType[] = ["style"]
-  const OPTIONAL_COLUMNS: ColumnType[] = [
-    "brand",
-    "category",
-    "colorName",
-    "msrp",
-  ]
-  const ALL_COLUMNS: ColumnType[] = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
-
-  const selectedSheetCount = useMemo(
-    () => sheetConfigs.filter((sheet) => sheet.isSelected).length,
-    [sheetConfigs],
-  )
-
-  const isEmailValid = useMemo(() => {
-    const trimmed = sendToEmail
-    if (!trimmed) return false
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
-  }, [sendToEmail])
 
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = event.target.files?.[0]
       if (!selectedFile) {
         showToast("File Error", "No file selected", "error")
-        setSheetConfigs([])
-        setUploadedFile(null)
-        setOriginalWorkbook(null)
-        originalFileBufferRef.current = null
         return
       }
       if (
@@ -535,105 +163,55 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
 
       setUploadedFile(selectedFile)
       setIsLoading(true)
-      setStep("upload")
-      setActiveMappingField(null)
-      setManualBrand("")
       try {
         const data = await selectedFile.arrayBuffer()
         originalFileBufferRef.current = data
-        const workbook = XLSX.read(data, {
-          type: "array",
-          cellStyles: true,
-        })
+        const workbook = XLSX.read(data, { type: "array" })
         setOriginalWorkbook(workbook)
-        const newSheetConfigs: SheetConfig[] = []
-        const headerWarningPattern = {
-          style:
-            /^(style|product style|style\s*(#|no|number|id)|sku|item\s*(#|no|number))/i,
-          brand: /^(brand|manufacturer|make|label|designer|vendor)/i,
-        }
-
-        workbook.SheetNames.forEach((sheetName, sheetIndex) => {
+        
+        const sheets: SheetConfig[] = []
+        
+        for (let i = 0; i < workbook.SheetNames.length; i++) {
+          const sheetName = workbook.SheetNames[i]
           const worksheet = workbook.Sheets[sheetName]
-          if (!worksheet) return
           const jsonData = XLSX.utils.sheet_to_json(worksheet, {
             header: 1,
             blankrows: true,
             defval: "",
           }) as CellValue[][]
-          if (jsonData.length === 0) return
+          
+          if (jsonData.length === 0) continue
 
           const detectedHeaderIndex = detectHeaderRow(jsonData)
-          if (
-            detectedHeaderIndex < 0 ||
-            detectedHeaderIndex >= jsonData.length
-          ) {
-            showToast(
-              "File Error",
-              `Invalid header row detected in sheet "${sheetName}". Please adjust the spreadsheet and re-upload.`,
-              "error",
-            )
-            return
-          }
-
-          const headers = (jsonData[detectedHeaderIndex] as any[]).map((cell) =>
-            String(cell ?? ""),
-          )
-          if (
-            detectedHeaderIndex === 0 &&
-            !headers.some(
-              (cell) =>
-                headerWarningPattern.style.test(cell) ||
-                headerWarningPattern.brand.test(cell),
-            )
-          ) {
-            showToast(
-              "Warning",
-              `Sheet "${sheetName}" has no clear header row detected; using first row. Please verify in the Header Selection step.`,
-              "warning",
-            )
-          }
-          const rows = jsonData.slice(detectedHeaderIndex + 1) as CellValue[][]
-          newSheetConfigs.push({
+          const headers = (jsonData[detectedHeaderIndex] || []).map((cell) => String(cell ?? ""))
+          const rows = jsonData.slice(detectedHeaderIndex + 1)
+          
+          sheets.push({
             name: sheetName,
-            originalIndex: sheetIndex,
+            originalIndex: i,
+            excelData: { headers, rows },
             rawData: jsonData,
             headerIndex: detectedHeaderIndex,
-            excelData: { headers, rows },
             columnMapping: autoMapColumns(headers),
+            isSelected: i === 0, // Select first sheet by default
             manualBrandValue: null,
-            isSelected: true,
           })
-        })
-
-        if (newSheetConfigs.length === 0) {
-          throw new Error("Excel file is empty")
         }
 
-        setSheetConfigs(newSheetConfigs)
+        if (sheets.length === 0) throw new Error("Excel file is empty or invalid")
+        
+        setSheetConfigs(sheets)
         setActiveSheetIndex(0)
         setStep("preview")
-        if (newSheetConfigs.length > 1) {
-          showToast(
-            "Multiple Sheets Detected",
-            `Detected ${newSheetConfigs.length} sheets. Toggle the checkboxes to include only the sheets you need before submitting.`,
-            "success",
-          )
-        }
       } catch (error) {
         showToast(
           "File Processing Error",
           error instanceof Error ? error.message : "Unknown error",
           "error",
         )
-        setSheetConfigs([])
         setUploadedFile(null)
-        setOriginalWorkbook(null)
-        originalFileBufferRef.current = null
-        setStep("upload")
       } finally {
         setIsLoading(false)
-        event.target.value = ""
       }
     },
     [showToast],
@@ -642,37 +220,31 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
   const handleHeaderChange = useCallback(
     (newHeaderIndex: number) => {
       if (!activeSheet) return
-      if (newHeaderIndex < 0 || newHeaderIndex >= activeSheet.rawData.length)
-        return
+      if (newHeaderIndex < 0 || newHeaderIndex >= rawData.length) return
+      
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
-          String(cell ?? ""),
-        )
-        const rows = sheet.rawData.slice(newHeaderIndex + 1) as CellValue[][]
+        const headers = sheet.rawData[newHeaderIndex].map((cell) => String(cell ?? ""))
+        const rows = sheet.rawData.slice(newHeaderIndex + 1)
         return {
           ...sheet,
           headerIndex: newHeaderIndex,
           excelData: { headers, rows },
           columnMapping: autoMapColumns(headers),
-          manualBrandValue: null,
+          manualBrandValue: null, // Reset manual brand on header change
         }
       })
+      setIsManualBrandApplied(false)
       setManualBrand("")
       setActiveMappingField(null)
     },
-    [activeSheet, activeSheetIndex, updateSheetConfig],
+    [activeSheet, activeSheetIndex, rawData, updateSheetConfig],
   )
 
-  const handleColumnMap = useCallback(
-    (index: number, field: string) => {
-      if (!activeSheet) return
-      if (field && !ALL_COLUMNS.includes(field as ColumnType)) return
+  const handleDataColumnMap = useCallback(
+    (index: number, field: ColumnType) => {
+      if (field && !ALL_COLUMNS.includes(field)) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        let workingSheet = sheet
-        if (field === "brand" && sheet.manualBrandValue) {
-          workingSheet = withManualBrandValue(sheet, null)
-        }
-        const newMapping = cloneColumnMapping(workingSheet.columnMapping)
+        const newMapping = { ...sheet.columnMapping }
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
           if (
             newMapping[key] === index &&
@@ -680,88 +252,73 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
             key !== "imageAdd"
           ) {
             newMapping[key] = null
+            if (key === "brand") {
+              setManualBrand("")
+              setIsManualBrandApplied(false)
+            }
           }
         })
-        if (field && ALL_COLUMNS.includes(field as ColumnType)) {
+        if (field && ALL_COLUMNS.includes(field)) {
           newMapping[field as keyof ColumnMapping] = index
+          if (field === "brand") {
+            setManualBrand("")
+            setIsManualBrandApplied(false)
+          }
         }
-        return {
-          ...workingSheet,
-          columnMapping: newMapping,
-        }
+        return { ...sheet, columnMapping: newMapping }
       })
-      if (field === "brand") {
-        setManualBrand("")
-      }
     },
-    [ALL_COLUMNS, activeSheet, activeSheetIndex, updateSheetConfig],
+    [ALL_COLUMNS, activeSheetIndex, updateSheetConfig],
+  )
+
+  const handleImageColumnMap = useCallback(
+    (index: number | null) => {
+      updateSheetConfig(activeSheetIndex, (sheet) => ({
+        ...sheet,
+        columnMapping: {
+          ...sheet.columnMapping,
+          imageAdd: index,
+          ...(enableImageTargetMapping ? {} : { readImage: index }),
+        },
+      }))
+    },
+    [activeSheetIndex, enableImageTargetMapping, updateSheetConfig],
   )
 
   const handleColumnMapFromGrid = useCallback(
     (index: number) => {
       if (activeMappingField === null) return
-      handleColumnMap(index, activeMappingField)
+      if (activeMappingField === "imageColumn") {
+        handleImageColumnMap(index)
+      } else {
+        handleDataColumnMap(index, activeMappingField)
+      }
       setActiveMappingField(null)
     },
-    [activeMappingField, handleColumnMap],
+    [activeMappingField, handleDataColumnMap, handleImageColumnMap],
   )
 
   const handleClearMapping = useCallback(
     (index: number) => {
-      if (!activeSheet) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const shouldClearManualBrand =
-          sheet.manualBrandValue && sheet.columnMapping.brand === index
-        const workingSheet = shouldClearManualBrand
-          ? withManualBrandValue(sheet, null)
-          : sheet
-        const workingMapping = cloneColumnMapping(workingSheet.columnMapping)
-        ;(Object.keys(workingMapping) as (keyof ColumnMapping)[]).forEach(
-          (key) => {
-            if (
-              workingMapping[key] === index &&
-              key !== "readImage" &&
-              key !== "imageAdd"
-            ) {
-              workingMapping[key] = null
+        const newMapping = { ...sheet.columnMapping }
+        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+          if (
+            newMapping[key] === index &&
+            key !== "readImage" &&
+            key !== "imageAdd"
+          ) {
+            newMapping[key] = null
+            if (key === "brand") {
+              setManualBrand("")
+              setIsManualBrandApplied(false)
             }
-          },
-        )
-        return {
-          ...workingSheet,
-          columnMapping: workingMapping,
-        }
-      })
-      if (columnMapping.brand !== null && columnMapping.brand === index) {
-        setManualBrand("")
-      }
-    },
-    [activeSheet, activeSheetIndex, columnMapping.brand, updateSheetConfig],
-  )
-
-  // Image column mappers: allow mapping and clearing readImage/imageAdd explicitly
-  const handleImageColumnMap = useCallback(
-    (index: number, field: "readImage" | "imageAdd") => {
-      if (!activeSheet) return
-      updateSheetConfig(activeSheetIndex, (sheet) => {
-        const newMapping = cloneColumnMapping(sheet.columnMapping)
-        newMapping[field] = index
+          }
+        })
         return { ...sheet, columnMapping: newMapping }
       })
     },
-    [activeSheet, activeSheetIndex, updateSheetConfig],
-  )
-
-  const handleClearImageMapping = useCallback(
-    (field: "readImage" | "imageAdd") => {
-      if (!activeSheet) return
-      updateSheetConfig(activeSheetIndex, (sheet) => {
-        const newMapping = cloneColumnMapping(sheet.columnMapping)
-        newMapping[field] = null
-        return { ...sheet, columnMapping: newMapping }
-      })
-    },
-    [activeSheet, activeSheetIndex, updateSheetConfig],
+    [activeSheetIndex, updateSheetConfig],
   )
 
   const mappedDataColumns = useMemo(() => {
@@ -781,8 +338,14 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
+  
+  const imageColumnIndex = useMemo(() => {
+    return columnMapping.readImage
+  }, [columnMapping.readImage])
+  
   const selectedColumnIndex =
     activeMappingField !== null ? columnMapping[activeMappingField] : null
+  
   const headersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
     [excelData.headers],
@@ -911,101 +474,25 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
         : "Map all required columns before submitting."
     : "Sheet will be skipped during submission."
 
-  const renderSheetButtons = useCallback(
-    (size: "xs" | "sm" | "md" = "sm") => (
-      <div className="flex flex-wrap gap-2">
-        {sheetConfigs.map((sheet, index) => {
-          const isActive = index === activeSheetIndex
-          const isSelected = sheet.isSelected
-          const validation = sheetValidationResults[index]
-          const hasMissing = (validation?.missing ?? []).length > 0
-          const isComplete = Boolean(validation?.isValid)
-          const showWarning = isSelected && hasMissing
-          const sheetLabel = sheet.name || `Sheet ${index + 1}`
-          const tooltipParts: string[] = [
-            isSelected ? "Included in submission" : "Excluded from submission",
-          ]
-          if (isSelected) {
-            tooltipParts.push(
-              showWarning
-                ? `Missing required: ${(validation?.missing ?? []).join(", ")}`
-                : "Mapping ready",
-            )
-          } else if (hasMissing) {
-            tooltipParts.push(
-              `Missing required: ${(validation?.missing ?? []).join(", ")}`,
-            )
-          }
-          const tooltipLabel = tooltipParts.join(" • ")
-          const StatusIcon = !isSelected ? (
-            <X className="h-3 w-3" />
-          ) : showWarning ? (
-            <AlertTriangle className="h-3 w-3" />
-          ) : (
-            <Check className="h-3 w-3" />
-          )
+  const handleActiveSheetChange = useCallback((index: number) => {
+    setActiveSheetIndex(index)
+    setIsManualBrandApplied(false)
+    setManualBrand("")
+    setActiveMappingField(null)
+  }, [])
 
-          return (
-            <div key={sheet.name || index}>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => {
-                          handleToggleSheetSelection(index)
-                        }}
-                        aria-label={`${
-                          isSelected ? "Exclude" : "Include"
-                        } ${sheetLabel}`}
-                      />
-                      <Button
-                        size={
-                          size === "xs"
-                            ? "sm"
-                            : ((size === "md" ? "default" : size) as any)
-                        }
-                        variant={
-                          isActive
-                            ? "default"
-                            : isSelected
-                              ? "ghost"
-                              : "outline"
-                        }
-                        className={cn(
-                          "gap-2",
-                          isActive ? "font-bold" : "font-semibold",
-                          !isSelected && "opacity-70",
-                          showWarning &&
-                            !isActive &&
-                            "bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200",
-                        )}
-                        onClick={() => handleActiveSheetChange(index)}
-                      >
-                        {sheetLabel}
-                        {StatusIcon}
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tooltipLabel}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          )
-        })}
-      </div>
-    ),
-    [
-      activeSheetIndex,
-      handleActiveSheetChange,
-      handleToggleSheetSelection,
-      sheetConfigs,
-      sheetValidationResults,
-    ],
+  const handleToggleSheetSelection = useCallback(
+    (index: number) => {
+      updateSheetConfig(index, (sheet) => ({
+        ...sheet,
+        isSelected: !sheet.isSelected,
+      }))
+    },
+    [updateSheetConfig],
   )
+  
+  const selectedSheetCount = sheetConfigs.filter((s) => s.isSelected).length
+  const hasMultipleSheets = sheetConfigs.length > 1
 
   const prepareSheetUploadFile = useCallback(
     (sheet: SheetConfig, index: number, fileName: string, isolate: boolean) => {
@@ -1429,31 +916,10 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
         </div>
 
         {step === "upload" && (
-          <div className="flex flex-col gap-4 items-stretch">
-            <p className="text-lg font-bold">
-              Upload Excel File for Google Images Scrape
-            </p>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Input
-                      type="file"
-                      accept=".xlsx,.xls"
-                      onChange={handleFileChange}
-                      disabled={isLoading}
-                      className="bg-background border-input cursor-pointer file:cursor-pointer file:text-foreground file:bg-secondary hover:file:bg-secondary/80"
-                      aria-label="Upload Excel file"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Upload an Excel file (.xlsx or .xls) up to 10MB</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            {isLoading && <Loader2 className="h-8 w-8 animate-spin" />}
-          </div>
+          <UploadStep
+            onFileChange={handleFileChange}
+            isLoading={isLoading}
+          />
         )}
 
         {step === "preview" && (
@@ -1475,7 +941,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                         </p>
                       </div>
                     </div>
-                    {renderSheetButtons("xs")}
+                    <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="xs" />
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1574,7 +1040,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                           {selectedSheetCount} selected
                         </Badge>
                       </div>
-                      {renderSheetButtons("sm")}
+                      <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="sm" />
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -1649,7 +1115,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                               : ""
                           }
                           onChange={(e) =>
-                            handleColumnMap(Number(e.target.value), field)
+                            handleDataColumnMap(Number(e.target.value), field)
                           }
                           onFocus={() => setActiveMappingField(field)}
                           onClick={() => setActiveMappingField(field)}
@@ -1728,7 +1194,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                                   : ""
                               }
                               onChange={(e) =>
-                                handleColumnMap(
+                                handleDataColumnMap(
                                   Number(e.target.value),
                                   field,
                                 )
@@ -1852,14 +1318,13 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                         <TooltipTrigger asChild>
                           <select
                             value={imageColumnIndex ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              if (val === "") {
-                                handleClearImageMapping("imageAdd")
-                              } else {
-                                handleImageColumnMap(Number(val), "imageAdd")
-                              }
-                            }}
+                            onChange={(e) =>
+                              handleImageColumnMap(
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value),
+                              )
+                            }
                             onFocus={() => setActiveMappingField("imageColumn")}
                             onClick={() => setActiveMappingField("imageColumn")}
                             className="flex-1 border rounded p-1"
@@ -1892,7 +1357,7 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
                               className="h-8 w-8"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                handleClearImageMapping("imageAdd")
+                                handleImageColumnMap(null)
                               }}
                             >
                               <X className="h-4 w-4" />
@@ -2089,378 +1554,3 @@ export const GoogleImagesForm: React.FC<FormWithBackProps> = ({
     </div>
   )
 }
-
-// Data Warehouse Form Component
-type DataWarehouseFormProps = FormWithBackProps & {
-  mode: DataWarehouseMode
-}
-
-type DataWarehouseMappingField = ColumnType | "imageColumn"
-
-// Image Links To Pictures Form Component
-const ImageLinksToPicturesForm: React.FC<FormWithBackProps> = ({
-  onBack,
-  backLabel,
-}) => {
-  return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
-      <div className="flex flex-col gap-6 items-stretch">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={onBack}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {backLabel ?? "Back to tools"}
-          </Button>
-        )}
-        <SubmitImageLinkForm />
-      </div>
-    </div>
-  )
-}
-
-// Image Crop Tool Form Component
-const ImageCropToolForm: React.FC<FormWithBackProps> = ({
-  onBack,
-  backLabel,
-}) => {
-  return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
-      <div className="flex flex-col gap-6 items-stretch">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={onBack}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {backLabel ?? "Back to tools"}
-          </Button>
-        )}
-        <SubmitCropForm />
-      </div>
-    </div>
-  )
-}
-
-// Main Component
-const CMSGoogleSerpForm: React.FC = () => {
-  const [selectedType, setSelectedType] = useState<
-    "images" | "data" | "imageLinks" | "crop" | null
-  >(null)
-  const [dataWarehouseMode, setDataWarehouseMode] =
-    useState<DataWarehouseMode | null>(null)
-
-  const handleBackToTools = useCallback(() => {
-    setSelectedType(null)
-    setDataWarehouseMode(null)
-  }, [])
-
-  if (selectedType === "images") {
-    return <GoogleImagesForm onBack={handleBackToTools} />
-  }
-
-  if (selectedType === "data") {
-    if (dataWarehouseMode) {
-      return (
-        <DataWarehouseForm
-          mode={dataWarehouseMode}
-          onBack={() => setDataWarehouseMode(null)}
-          backLabel="Back to Data Warehouse options"
-        />
-      )
-    }
-
-    return (
-      <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
-        <div className="flex flex-col gap-6 items-stretch">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={handleBackToTools}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to tools
-          </Button>
-          <div className="flex flex-col items-start gap-1">
-            <p className="text-lg font-bold">Choose a Data Warehouse job</p>
-            <p className="text-sm text-muted-foreground">
-              Pick the workflow you need for this upload.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {(
-              Object.entries(DATA_WAREHOUSE_MODE_CONFIG) as [
-                DataWarehouseMode,
-                DataWarehouseModeConfig,
-              ][]
-            ).map(([modeKey, config]) => (
-              <Card
-                key={modeKey}
-                className={cn(
-                  "cursor-pointer hover:shadow-md hover:border-primary/50 transition-all",
-                  modeKey === "imagesAndMsrp"
-                    ? "border-2 border-primary/20"
-                    : "border",
-                )}
-                onClick={() => setDataWarehouseMode(modeKey)}
-              >
-                <CardHeader>
-                  <div className="flex flex-row items-center gap-2">
-                    <config.icon className="h-6 w-6 text-foreground" />
-                    <CardTitle className="text-xl font-semibold">
-                      {config.label}
-                    </CardTitle>
-                    {modeKey === "imagesAndMsrp" && (
-                      <Badge variant="default" className="ml-auto">
-                        Default
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p>{config.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (selectedType === "imageLinks") {
-    return <ImageLinksToPicturesForm onBack={handleBackToTools} />
-  }
-
-  if (selectedType === "crop") {
-    return <ImageCropToolForm onBack={handleBackToTools} />
-  }
-
-  return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
-      <div className="flex flex-col gap-6 items-stretch">
-        {/* Mine Data */}
-        <p className="text-lg font-bold">Mine Data</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card
-            className="cursor-pointer hover:shadow-md transition-all"
-            onClick={() => setSelectedType("images")}
-          >
-            <CardHeader>
-                           <div className="flex flex-row items-center gap-2">
-                <LuSearch
-                  className="h-6 w-6 text-foreground"
-                  strokeWidth={1.75}
-                />
-                <CardTitle className="text-xl font-semibold">
-                  Google Images
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Search and collect images from Google.</p>
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer hover:shadow-md transition-all"
-            onClick={() => {
-              setDataWarehouseMode(null)
-              setSelectedType("data")
-            }}
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuDatabase
-                  className="h-6 w-6 text-foreground"
-                  strokeWidth={1.75}
-                />
-                <CardTitle className="text-xl font-semibold">
-                  Data Warehouse
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Internal product database jobs (choose a mode).</p>
-            </CardContent>
-          </Card>
-          {/* Reverse Image Search (Locked) */}
-          <Card
-            className="cursor-not-allowed bg-muted border-muted text-muted-foreground"
-            aria-disabled
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuSearch className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
-                <CardTitle className="text-xl font-semibold">
-                  Reverse Image Search
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>
-                Image search using a reference photo and reverse image search.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Transform Excel */}
-        <p className="text-lg font-bold mt-2">Transform Excel</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card
-            className={cn(
-              "cursor-pointer hover:shadow-md transition-all",
-              showDevUI() && "bg-red-50 border-red-200",
-            )}
-            onClick={() => setSelectedType("imageLinks")}
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuLink className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-                <CardTitle className="text-xl font-semibold">
-                  Image URL Download
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Convert image links to excel pictures.</p>
-            </CardContent>
-          </Card>
-          <Card
-            className={cn(
-              "cursor-pointer hover:shadow-md transition-all",
-              showDevUI() && "bg-red-50 border-red-200",
-            )}
-            onClick={() => setSelectedType("crop")}
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuCrop className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-                <CardTitle className="text-xl font-semibold">
-                  Image crop
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Remove whitespace from Excel pictures.</p>
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-not-allowed bg-muted border-muted text-muted-foreground"
-            aria-disabled
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuFileText
-                  className="h-6 w-6 text-muted-foreground"
-                  strokeWidth={1.5}
-                />
-                <CardTitle className="text-xl font-semibold">
-                  PDF → Excel
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>
-                Convert PDFs (catalogs, invoices, spec sheets) into structured
-                Excel/CSV data.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Enhance Images (Gen AI) - coming soon */}
-        <p className="text-lg font-bold mt-2">Enhance Images (Gen AI)</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card
-            className="cursor-not-allowed bg-muted border-muted text-muted-foreground"
-            aria-disabled
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuEraser className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
-                <CardTitle className="text-xl font-semibold">
-                  Background remover
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Remove image backgrounds. (Nano Banana)</p>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="cursor-not-allowed bg-muted border-muted text-muted-foreground"
-            aria-disabled
-          >
-            <CardHeader>
-              <div className="flex flex-row items-center gap-2">
-                <LuWand2 className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
-                <CardTitle className="text-xl font-semibold">
-                  Image generator
-                </CardTitle>
-                {showDevUI() && (
-                  <Badge variant="destructive" className="ml-auto">
-                    DEV
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-start gap-1">
-                <p>
-                  Generate studio-style product photos from reference shots.
-                  (Nano Banana)
-                </p>
-                <p className="font-semibold">Convert:</p>
-                <p className="m-0 p-0 pl-0 whitespace-nowrap">
-                  <span className="mx-2">•</span>
-                  Lifestyle shots <span className="mx-2">•</span> Mockups/CAD
-                  <span className="mx-2">•</span> Low‑quality product photos
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Export
-// export const Route = createFileRoute("/google-serp-cms")({
-//   component: () => <CMSGoogleSerpForm />,
-// })
-
-export default CMSGoogleSerpForm
