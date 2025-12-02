@@ -719,6 +719,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
         formData.append("isIconDistro", String(isIconDistro))
         formData.append("isAiMode", String(isAiMode))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
+        formData.append("mode", mode)
 
         const response = await fetch(`${SERVER_URL}/datawarehouse`, {
           method: "POST",
