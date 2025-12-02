@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle, Clock, File, Moon, RefreshCw, Sun, Download, Eye, Plus } from "lucide-react"
-import { useTheme } from "next-themes"
+import { CheckCircle, Clock, File, RefreshCw, Download, Eye, Plus } from "lucide-react"
 import * as React from "react"
 import {
   LuCrop,
@@ -97,7 +96,6 @@ export default function JobsDashboard({
   children?: React.ReactNode
 }) {
   const navigate = useNavigate()
-  const { theme, setTheme } = useTheme()
   const { data: jobs = [], isLoading: jobsLoading } = useQuery<JobSummary[]>({
     queryKey: ["scraperJobs"],
     queryFn: fetchJobs,
@@ -152,20 +150,6 @@ export default function JobsDashboard({
 
   return (
     <div className="p-8 space-y-8">
-      <div className="flex justify-end items-center">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </div>
-      </div>
-
       {/* Tools Access Card */}
       {showWelcome && (
         <Card className="bg-primary/5 border-primary/20">

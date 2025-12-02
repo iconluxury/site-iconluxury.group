@@ -83,7 +83,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
-  const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
 
   const iframeEmail = useIframeEmail()
   const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
@@ -708,7 +707,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         formData.append("isIconDistro", String(isIconDistro))
         formData.append("isAiMode", String(isAiMode))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
-        formData.append("currency", currency)
 
         const response = await fetch(`${SERVER_URL}/submitImage`, {
           method: "POST",
@@ -743,7 +741,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
       setIsLoading(false)
     }
   }, [
-    currency,
     isAiMode,
     isEmailValid,
     isIconDistro,
@@ -1470,19 +1467,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
               
               <div className="flex flex-col gap-4 border p-4 rounded-md">
                 <p className="font-semibold">Configuration</p>
-                <div className="flex flex-row items-center gap-2">
-                  <p>Currency:</p>
-                  <select
-                    value={currency}
-                    onChange={(e) =>
-                      setCurrency(e.target.value as "USD" | "EUR")
-                    }
-                    className="w-[100px] border rounded p-1"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                  </select>
-                </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="isIconDistro" 
@@ -1495,6 +1479,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                   <Checkbox 
                     id="isAiMode" 
                     checked={isAiMode} 
+                    disabled={true}
                     onCheckedChange={(checked) => setIsAiMode(checked as boolean)} 
                   />
                   <Label htmlFor="isAiMode">AI Mode</Label>
