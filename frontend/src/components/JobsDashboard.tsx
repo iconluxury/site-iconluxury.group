@@ -86,12 +86,14 @@ export default function JobsDashboard({
   showChangelog = true,
   showToolsShortcuts = true,
   showWelcome = true,
+  showMetrics = true,
   children,
 }: {
   filterTypeId?: number
   showChangelog?: boolean
   showToolsShortcuts?: boolean
   showWelcome?: boolean
+  showMetrics?: boolean
   children?: React.ReactNode
 }) {
   const navigate = useNavigate()
@@ -191,6 +193,7 @@ export default function JobsDashboard({
         {/* Middle Content (Feed) */}
         <div className={showChangelog ? "lg:col-span-3 space-y-8" : "lg:col-span-4 space-y-8"}>
           {/* KPI Cards */}
+          {showMetrics && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -233,6 +236,7 @@ export default function JobsDashboard({
               </CardContent>
             </Card>
           </div>
+          )}
 
           {/* Tools Shortcuts */}
           {showToolsShortcuts && (
