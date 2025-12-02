@@ -720,7 +720,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
         formData.append("isAiMode", String(isAiMode))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
 
-        const response = await fetch(`${SERVER_URL}/submitImage`, {
+        const response = await fetch(`${SERVER_URL}/datawarehouse`, {
           method: "POST",
           body: formData,
         })
