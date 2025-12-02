@@ -1,4 +1,4 @@
-import { DataWarehouseForm } from "@/components/google-serp/DataWarehouseForm"
+import { GoogleImagesUploadForm } from "@/components/google-serp/GoogleImagesUploadForm"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_layout/tools/google-images/upload")({
@@ -9,8 +9,7 @@ function GoogleImagesPage() {
   const navigate = useNavigate()
   return (
     <div className="bg-background min-h-full">
-      <DataWarehouseForm
-        mode="imagesAndMsrp"
+      <GoogleImagesUploadForm
         onBack={() => navigate({ to: ".." })}
         backLabel="Back to Tools"
       />
