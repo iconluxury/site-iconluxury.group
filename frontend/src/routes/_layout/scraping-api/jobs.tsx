@@ -2,7 +2,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react"
 import { FiGithub } from "react-icons/fi"
-import ApiStatusManagement from "../../../components/Admin/ApiStatusManagement"
 import PromoSERP from "../../../components/ComingSoon"
 // import Changelog from "../../../components/Changelog"
 
@@ -495,7 +494,58 @@ function Jobs() {
             </div>
           </div>
           <div className="hidden md:block w-full md:w-[30%] min-w-[300px]">
-            <ApiStatusManagement />
+            <Card>
+              <CardHeader>
+                <CardTitle>API Status</CardTitle>
+                <CardDescription>
+                  Current status of scraping APIs
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Dev API</span>
+                  <Badge
+                    variant={
+                      devBadge.color === "green"
+                        ? "default"
+                        : devBadge.color === "yellow"
+                          ? "secondary"
+                          : "destructive"
+                    }
+                  >
+                    {devBadge.text}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Prod API</span>
+                  <Badge
+                    variant={
+                      prodBadge.color === "green"
+                        ? "default"
+                        : prodBadge.color === "yellow"
+                          ? "secondary"
+                          : "destructive"
+                    }
+                  >
+                    {prodBadge.text}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Beta API</span>
+                  <Badge
+                    variant={
+                      betaBadge.color === "green"
+                        ? "default"
+                        : betaBadge.color === "yellow"
+                          ? "secondary"
+                          : "destructive"
+                    }
+                  >
+                    {betaBadge.text}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
