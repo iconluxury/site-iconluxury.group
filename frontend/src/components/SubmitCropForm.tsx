@@ -165,7 +165,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const iframeEmail = useIframeEmail()
   const sendToEmail = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const isEmailValid = useMemo(() => {
-    if (!sendToEmail) return true
+    if (!sendToEmail) return false
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendToEmail)
   }, [sendToEmail])
   const showToast = useCustomToast()
@@ -508,10 +508,10 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       )
       return
     }
-    if (sendToEmail && !isEmailValid) {
+    if (!isEmailValid) {
       showToast(
         "Invalid Email",
-        "The email supplied via URL parameters isn't valid. Update or remove the email before submitting.",
+        "The email supplied via URL parameters isn't valid. Update the iframe URL with a valid email before submitting.",
         "warning",
       )
       return
@@ -554,9 +554,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
         formData.append("sheetIndex", String(index + 1))
-        if (sendToEmail) {
-          formData.append("sendToEmail", sendToEmail)
-        }
+        formData.append("sendToEmail", sendToEmail)
         formData.append(
           "replaceImageColumn",
           replaceImageColumn ? "true" : "false",
