@@ -47,7 +47,6 @@ export const Route = createFileRoute("/google-serp-cms")({
 function GoogleSerpCmsPage() {
   const { theme, setTheme } = useTheme()
   const iframeEmail = useIframeEmail()
-  const searchParams = iframeEmail ? { sendToEmail: iframeEmail } : {}
   const { environment } = Route.useSearch()
   const [backend, setBackend] = useState(OpenAPI.BASE)
 
@@ -62,6 +61,13 @@ function GoogleSerpCmsPage() {
   const handleBackendChange = (value: string) => {
     OpenAPI.BASE = value
     setBackend(value)
+  }
+
+  const searchParams = {
+    ...(iframeEmail ? { sendToEmail: iframeEmail } : {}),
+    ...(backend === "https://dev-external.iconluxury.today"
+      ? { environment: "dev" }
+      : {}),
   }
 
   return (
