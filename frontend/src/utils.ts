@@ -66,9 +66,9 @@ const isDevEnvironment = () => {
 }
 
 export const SERVER_URL = isDevEnvironment()
-  ? "https://icon5-8006.iconluxury.today"
-  : "https://icon5-8005.iconluxury.today"
+  ? "https://dev-external.iconluxury.today"
+  : "https://external.iconluxury.group"
 
 export const EXTERNAL_API_BASE = isDevEnvironment()
-  ? "https://icon5-8006.iconluxury.today"
+  ? "https://dev-external.iconluxury.today"
   : "https://external.iconluxury.group"

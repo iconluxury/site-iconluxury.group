@@ -44,7 +44,7 @@ import { FaWarehouse } from "react-icons/fa"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-
+import { SERVER_URL as INITIAL_SERVER_URL } from "../utils"
 // Shared Constants and Types
 type ColumnType =
   | "style"
@@ -56,7 +56,6 @@ type ColumnType =
   | "size"
   | "qty"
   | "price"
-const SERVER_URL = "https://icon5-8005.iconluxury.today"
 
 const MAX_PREVIEW_ROWS = 20
 const MAX_FILE_SIZE_MB = 200
@@ -553,6 +552,7 @@ const determineFallbackImageColumnIndex = (
 
 // Google Images Form Component
 const ReformatExcelForm: React.FC = () => {
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -1176,7 +1176,7 @@ const ReformatExcelForm: React.FC = () => {
         formData.append("sendToEmail", sendToEmail)
         formData.append("currency", currency)
 
-        const response = await fetch(`${SERVER_URL}/submitImage`, {
+        const response = await fetch(`${serverUrl}/submitImage`, {
           method: "POST",
           body: formData,
         })
@@ -1231,7 +1231,8 @@ const ReformatExcelForm: React.FC = () => {
                 className={cn(
                   "cursor-pointer",
                   step ===
-                    s.toLowerCase().replace("header selection", "preview")
+                    s.toLowerCase()
+                    .replace("header selection", "preview")
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)

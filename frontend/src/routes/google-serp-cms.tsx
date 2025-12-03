@@ -32,7 +32,6 @@ import { useIframeEmail } from "../hooks/useIframeEmail"
 
 const BACKENDS = [
   { name: "Production", url: "https://external.iconluxury.group" },
-  { name: "Production (8005)", url: "https://icon5-8005.iconluxury.today" },
   { name: "Development", url: "https://dev-external.iconluxury.today" },
 ]
 

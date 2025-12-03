@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI } from "../utils"
+import { showDevUI, SERVER_URL as INITIAL_SERVER_URL } from "../utils"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
@@ -39,9 +39,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip"
-
-// Keep server URL consistent with other tools
-const SERVER_URL = "https://icon5-8005.iconluxury.today"
 
 // Types
 type CellValue = string | number | boolean | null
@@ -156,6 +153,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeMappingField, setActiveMappingField] = useState<
     keyof ColumnMapping | null
   >(null)
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
   const activeSheet = sheetConfigs[activeSheetIndex] ?? null
   const excelData = activeSheet?.excelData ?? { headers: [], rows: [] }
   const rawData = activeSheet?.rawData ?? []
@@ -572,7 +570,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
         formData.append("sheetIndex", String(index + 1))
 
-        const response = await fetch(`${SERVER_URL}/submitImageLink`, {
+        const response = await fetch(`${serverUrl}/submitImageLink`, {
           method: "POST",
           body: formData,
         })
@@ -643,6 +641,23 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               <AlertDescription>Not for production use.</AlertDescription>
             </Alert>
           )}
+
+          {/* Backend Selector */}
+          <div className="flex justify-end mb-4">
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Backend" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Stepper */}
           <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-4">
