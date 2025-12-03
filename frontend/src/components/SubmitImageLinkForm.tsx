@@ -11,7 +11,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI } from "../utils"
+import { showDevUI, SERVER_URL as INITIAL_SERVER_URL } from "../utils"
+import { CurlDisplay } from "./CurlDisplay"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
@@ -41,7 +42,6 @@ import {
 } from "./ui/tooltip"
 
 // Keep server URL consistent with other tools
-const SERVER_URL = "https://icon5-8005.iconluxury.today"
 
 // Types
 type CellValue = string | number | boolean | null
@@ -156,6 +156,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeMappingField, setActiveMappingField] = useState<
     keyof ColumnMapping | null
   >(null)
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
   const activeSheet = sheetConfigs[activeSheetIndex] ?? null
   const excelData = activeSheet?.excelData ?? { headers: [], rows: [] }
   const rawData = activeSheet?.rawData ?? []
@@ -572,7 +573,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
         formData.append("sheetIndex", String(index + 1))
 
-        const response = await fetch(`${SERVER_URL}/submitImageLink`, {
+        const response = await fetch(`${serverUrl}/submitImageLink`, {
           method: "POST",
           body: formData,
         })
@@ -1133,6 +1134,50 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   </TableBody>
                 </Table>
               </div>
+
+              {isDev && uploadedFile && sheetConfigs.length > 0 && (
+                <div className="mt-8 space-y-6">
+                  <h3 className="text-lg font-semibold">cURL Commands (Dev Mode)</h3>
+                  {sheetConfigs.map((sheet, index) => {
+                    const mapping = sheet.columnMapping
+                    const baseName =
+                      uploadedFile.name.replace(/\.xlsx?$/i, "") || "image-links"
+                    const sheetLabel = (sheet.name || `sheet-${index + 1}`)
+                      .replace(/\s+/g, "-")
+                      .toLowerCase()
+                    const fileName = `${baseName}-${sheetLabel}.xlsx`
+
+                    return (
+                      <div key={index} className="space-y-2">
+                        <p className="text-sm font-medium">
+                          Sheet: {sheet.name || `Sheet ${index + 1}`}
+                        </p>
+                        <CurlDisplay
+                          url={`${serverUrl}/submitImageLink`}
+                          method="POST"
+                          formDataEntries={{
+                            fileUploadLink: new File([uploadedFile], fileName, {
+                              type: uploadedFile.type,
+                            }),
+                            searchColLink:
+                              mapping.style !== null
+                                ? indexToColumnLetter(mapping.style)
+                                : "",
+                            linkColumn:
+                              mapping.link !== null
+                                ? indexToColumnLetter(mapping.link)
+                                : "",
+                            header_index: String(sheet.headerIndex + 1),
+                            sendToEmail: sendToEmail,
+                            sheetIndex: String(index + 1),
+                            sheetName: sheet.name || `Sheet ${index + 1}`,
+                          }}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
