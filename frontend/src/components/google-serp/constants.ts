@@ -1,10 +1,10 @@
-import {
-  LuDollarSign,
-  LuImage,
-  LuLayers,
-} from "react-icons/lu"
+import { LuDollarSign, LuImage, LuLayers } from "react-icons/lu"
 import { SERVER_URL as SERVER_URL_BASE } from "../../utils"
-import type { DataWarehouseMode, DataWarehouseModeConfig, ColumnType } from "./types"
+import type {
+  ColumnType,
+  DataWarehouseMode,
+  DataWarehouseModeConfig,
+} from "./types"
 
 export const SERVER_URL = SERVER_URL_BASE
 

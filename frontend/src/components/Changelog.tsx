@@ -1,3 +1,4 @@
+import { History } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -6,7 +7,6 @@ import {
   CardTitle,
 } from "./ui/card"
 import { ScrollArea } from "./ui/scroll-area"
-import { History } from "lucide-react"
 
 const changes = [
   {

@@ -1,9 +1,9 @@
 import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type React from "react"
 import { useEffect, useState } from "react"
+import { EXTERNAL_API_BASE } from "../utils"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
-import { EXTERNAL_API_BASE } from "../utils"
 import {
   Table,
   TableBody,

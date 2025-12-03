@@ -1,6 +1,12 @@
-import * as XLSX from "xlsx"
+import type * as XLSX from "xlsx"
 import { IMAGE_HEADER_PATTERN, MANUAL_BRAND_HEADER } from "./constants"
-import type { CellValue, ColumnMapping, ColumnType, ExcelData, SheetConfig } from "./types"
+import type {
+  CellValue,
+  ColumnMapping,
+  ColumnType,
+  ExcelData,
+  SheetConfig,
+} from "./types"
 
 export const formatMappingFieldLabel = (field: ColumnType | "imageColumn") => {
   if (field === "imageColumn") return "image target column"

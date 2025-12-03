@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useCallback, useRef } from "react"
-import * as XLSX from "xlsx"
-import {
-  ArrowLeft,
-  AlertTriangle,
-  Check,
-  X,
-  Loader2,
-} from "lucide-react"
+import { CurlDisplay } from "@/components/CurlDisplay"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -25,68 +26,72 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { useIframeEmail } from "@/hooks/useIframeEmail"
 import useCustomToast from "@/hooks/useCustomToast"
+import { useIframeEmail } from "@/hooks/useIframeEmail"
+import { cn } from "@/lib/utils"
+import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
+import type React from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
+import * as XLSX from "xlsx"
+import { SheetSelector } from "./SheetSelector"
+import { UploadStep } from "./UploadStep"
 import {
+  SERVER_URL as INITIAL_SERVER_URL,
   MAX_FILE_SIZE_MB,
   MAX_PREVIEW_ROWS,
-  SERVER_URL as INITIAL_SERVER_URL,
 } from "./constants"
-import {
-  type FormWithBackProps,
-  type ColumnType,
-  type ColumnMapping,
-  type SheetConfig,
-  type ToastFunction,
-  type CellValue,
+import type {
+  CellValue,
+  ColumnMapping,
+  ColumnType,
+  FormWithBackProps,
+  SheetConfig,
+  ToastFunction,
 } from "./types"
 import {
-  detectHeaderRow,
   autoMapColumns,
-  indexToColumnLetter,
-  getColumnPreview,
-  getDisplayValue,
-  getColumnMappingEntries,
   createEmptyColumnMapping,
-  withManualBrandValue,
-  sanitizeWorksheet,
+  detectHeaderRow,
   determineFallbackImageColumnIndex,
   formatMappingFieldLabel,
+  getColumnMappingEntries,
+  getColumnPreview,
+  getDisplayValue,
+  indexToColumnLetter,
+  sanitizeWorksheet,
+  withManualBrandValue,
 } from "./utils"
-import { UploadStep } from "./UploadStep"
-import { SheetSelector } from "./SheetSelector"
-import { CurlDisplay } from "@/components/CurlDisplay"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   onBack,
   backLabel,
 }) => {
   const REQUIRED_COLUMNS: ColumnType[] = ["style"]
-  const OPTIONAL_COLUMNS: ColumnType[] = ["brand", "msrp", "colorName", "category"]
+  const OPTIONAL_COLUMNS: ColumnType[] = [
+    "brand",
+    "msrp",
+    "colorName",
+    "category",
+  ]
   const ALL_COLUMNS = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS]
-  
-  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">("upload")
+
+  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
+    "upload",
+  )
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
-  const [originalWorkbook, setOriginalWorkbook] = useState<XLSX.WorkBook | null>(null)
+  const [originalWorkbook, setOriginalWorkbook] =
+    useState<XLSX.WorkBook | null>(null)
   const originalFileBufferRef = useRef<ArrayBuffer | null>(null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
-  
-  const [activeMappingField, setActiveMappingField] = useState<ColumnType | "imageColumn" | null>(null)
+
+  const [activeMappingField, setActiveMappingField] = useState<
+    ColumnType | "imageColumn" | null
+  >(null)
   const [manualBrand, setManualBrand] = useState("")
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
-  
+
   // Flags
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
@@ -161,9 +166,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         originalFileBufferRef.current = data
         const workbook = XLSX.read(data, { type: "array" })
         setOriginalWorkbook(workbook)
-        
+
         const sheets: SheetConfig[] = []
-        
+
         for (let i = 0; i < workbook.SheetNames.length; i++) {
           const sheetName = workbook.SheetNames[i]
           const worksheet = workbook.Sheets[sheetName]
@@ -172,13 +177,15 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
             blankrows: true,
             defval: "",
           }) as CellValue[][]
-          
+
           if (jsonData.length === 0) continue
 
           const detectedHeaderIndex = detectHeaderRow(jsonData)
-          const headers = (jsonData[detectedHeaderIndex] || []).map((cell) => String(cell ?? ""))
+          const headers = (jsonData[detectedHeaderIndex] || []).map((cell) =>
+            String(cell ?? ""),
+          )
           const rows = jsonData.slice(detectedHeaderIndex + 1)
-          
+
           sheets.push({
             name: sheetName,
             originalIndex: i,
@@ -191,8 +198,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
           })
         }
 
-        if (sheets.length === 0) throw new Error("Excel file is empty or invalid")
-        
+        if (sheets.length === 0)
+          throw new Error("Excel file is empty or invalid")
+
         setSheetConfigs(sheets)
         setActiveSheetIndex(0)
         setStep("preview")
@@ -214,9 +222,11 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
     (newHeaderIndex: number) => {
       if (!activeSheet) return
       if (newHeaderIndex < 0 || newHeaderIndex >= rawData.length) return
-      
+
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const headers = sheet.rawData[newHeaderIndex].map((cell) => String(cell ?? ""))
+        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
+          String(cell ?? ""),
+        )
         const rows = sheet.rawData.slice(newHeaderIndex + 1)
         return {
           ...sheet,
@@ -254,9 +264,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
       }
 
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        let newHeaders = [...sheet.excelData.headers]
+        const newHeaders = [...sheet.excelData.headers]
         let newRows = sheet.excelData.rows.map((row) => [...row])
-        let newMapping = { ...sheet.columnMapping }
+        const newMapping = { ...sheet.columnMapping }
         let targetIndex = index
 
         if (index === -2) {
@@ -279,7 +289,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
           newRows = newRows.map((row) => [...row, ""])
           targetIndex = newHeaders.length - 1
         }
-
         // Clear any existing mapping that points to the target index
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
           if (
@@ -308,9 +317,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   const handleImageColumnMap = useCallback(
     (index: number | null) => {
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        let newHeaders = [...sheet.excelData.headers]
+        const newHeaders = [...sheet.excelData.headers]
         let newRows = sheet.excelData.rows.map((row) => [...row])
-        let newMapping = { ...sheet.columnMapping }
+        const newMapping = { ...sheet.columnMapping }
         let targetIndex = index
 
         if (index === -2) {
@@ -401,14 +410,16 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
-  
+
   const imageColumnIndex = useMemo(() => {
     return columnMapping.readImage
   }, [columnMapping.readImage])
-  
+
   const selectedColumnIndex =
-    activeMappingField !== null && activeMappingField !== "imageColumn" ? columnMapping[activeMappingField] : null
-  
+    activeMappingField !== null && activeMappingField !== "imageColumn"
+      ? columnMapping[activeMappingField]
+      : null
+
   const headersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
     [excelData.headers],
@@ -553,7 +564,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
     },
     [updateSheetConfig],
   )
-  
+
   const selectedSheetCount = sheetConfigs.filter((s) => s.isSelected).length
   const hasMultipleSheets = sheetConfigs.length > 1
 
@@ -775,12 +786,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
           )
         }
         if (mapping.msrp !== null) {
-          formData.append(
-            "msrpColImage",
-            indexToColumnLetter(mapping.msrp),
-          )
+          formData.append("msrpColImage", indexToColumnLetter(mapping.msrp))
         }
-        
+
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
         formData.append("sheetName", sheet.name || `Sheet ${index + 1}`)
@@ -986,10 +994,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         </div>
 
         {step === "upload" && (
-          <UploadStep
-            onFileChange={handleFileChange}
-            isLoading={isLoading}
-          />
+          <UploadStep onFileChange={handleFileChange} isLoading={isLoading} />
         )}
 
         {step === "preview" && (
@@ -1011,7 +1016,14 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                         </p>
                       </div>
                     </div>
-                    <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="xs" />
+                    <SheetSelector
+                      sheetConfigs={sheetConfigs}
+                      activeSheetIndex={activeSheetIndex}
+                      sheetValidationResults={sheetValidationResults}
+                      onActiveSheetChange={handleActiveSheetChange}
+                      onToggleSheetSelection={handleToggleSheetSelection}
+                      size="xs"
+                    />
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1110,7 +1122,14 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                           {selectedSheetCount} selected
                         </Badge>
                       </div>
-                      <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="sm" />
+                      <SheetSelector
+                        sheetConfigs={sheetConfigs}
+                        activeSheetIndex={activeSheetIndex}
+                        sheetValidationResults={sheetValidationResults}
+                        onActiveSheetChange={handleActiveSheetChange}
+                        onToggleSheetSelection={handleToggleSheetSelection}
+                        size="sm"
+                      />
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -1277,8 +1296,12 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                               aria-label={`Map ${field} column`}
                             >
                               <option value="">Unmapped</option>
-                              <option value="-2">Create New Column (Start)</option>
-                              <option value="-3">Create New Column (End)</option>
+                              <option value="-2">
+                                Create New Column (Start)
+                              </option>
+                              <option value="-3">
+                                Create New Column (End)
+                              </option>
                               {excelData.headers.map((header, index) => (
                                 <option
                                   key={index}
@@ -1374,80 +1397,79 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                     )}
                   </div>
                 )}
-              
-                  <p className="font-bold mt-4">Image Target Column</p>
-                  <div
-                    className={cn(
-                      "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
-                      activeMappingField === "imageColumn"
-                        ? "border-primary bg-primary/10"
-                        : "border-transparent",
-                    )}
-                    onClick={() => setActiveMappingField("imageColumn")}
-                  >
-                    <p className="w-[120px] font-semibold">Target Anchor:</p>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <select
-                            value={imageColumnIndex ?? ""}
-                            onChange={(e) =>
-                              handleImageColumnMap(
-                                e.target.value === ""
-                                  ? null
-                                  : Number(e.target.value),
-                              )
-                            }
-                            onFocus={() => setActiveMappingField("imageColumn")}
-                            onClick={() => setActiveMappingField("imageColumn")}
-                            className="flex-1 border rounded p-1"
-                            aria-label="Map image column"
-                          >
-                            <option value="">Unmapped</option>
-                            <option value="-2">Create New Column (Start)</option>
-                            <option value="-3">Create New Column (End)</option>
-                            {excelData.headers.map((header, index) => (
-                              <option key={index} value={index}>
-                                {header ||
-                                  `Column ${indexToColumnLetter(index)}`}
-                              </option>
-                            ))}
-                          </select>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Select the column that contains the target anchor
-                            used to place downloaded images
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {imageColumnIndex !== null && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleImageColumnMap(null)
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Clear mapping</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    <div className="w-[150px] text-sm text-muted-foreground truncate">
-                      {getColumnPreview(imageColumnIndex, excelData.rows)}
-                    </div>
-                  </div>
+
+              <p className="font-bold mt-4">Image Target Column</p>
+              <div
+                className={cn(
+                  "flex flex-row gap-2 items-center p-2 rounded-md border cursor-pointer",
+                  activeMappingField === "imageColumn"
+                    ? "border-primary bg-primary/10"
+                    : "border-transparent",
+                )}
+                onClick={() => setActiveMappingField("imageColumn")}
+              >
+                <p className="w-[120px] font-semibold">Target Anchor:</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <select
+                        value={imageColumnIndex ?? ""}
+                        onChange={(e) =>
+                          handleImageColumnMap(
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                          )
+                        }
+                        onFocus={() => setActiveMappingField("imageColumn")}
+                        onClick={() => setActiveMappingField("imageColumn")}
+                        className="flex-1 border rounded p-1"
+                        aria-label="Map image column"
+                      >
+                        <option value="">Unmapped</option>
+                        <option value="-2">Create New Column (Start)</option>
+                        <option value="-3">Create New Column (End)</option>
+                        {excelData.headers.map((header, index) => (
+                          <option key={index} value={index}>
+                            {header || `Column ${indexToColumnLetter(index)}`}
+                          </option>
+                        ))}
+                      </select>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Select the column that contains the target anchor used
+                        to place downloaded images
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {imageColumnIndex !== null && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleImageColumnMap(null)
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear mapping</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <div className="w-[150px] text-sm text-muted-foreground truncate">
+                  {getColumnPreview(imageColumnIndex, excelData.rows)}
+                </div>
+              </div>
             </div>
             <div className="overflow-auto border rounded-md p-2 w-full md:w-[60%] max-h-[70vh] mt-4 md:mt-0">
               <table className="w-full caption-bottom text-sm">
@@ -1493,8 +1515,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                       <TableRow key={rowIndex}>
                         {row.map((cell, cellIndex) => {
                           const isMissingRequired =
-                            (columnMapping.style === cellIndex) &&
-                            !cell
+                            columnMapping.style === cellIndex && !cell
                           const isSelectedColumn =
                             selectedColumnIndex === cellIndex
                           const isMappedColumn =
@@ -1551,31 +1572,37 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                   </p>
                 )}
               </div>
-              
+
               <div className="flex flex-col gap-4 border p-4 rounded-md">
                 <p className="font-semibold">Configuration</p>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="isIconDistro" 
-                    checked={isIconDistro} 
-                    onCheckedChange={(checked) => setIsIconDistro(checked as boolean)} 
+                  <Checkbox
+                    id="isIconDistro"
+                    checked={isIconDistro}
+                    onCheckedChange={(checked) =>
+                      setIsIconDistro(checked as boolean)
+                    }
                   />
                   <Label htmlFor="isIconDistro">Is Icon Distro?</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="isAiMode" 
-                    checked={isAiMode} 
+                  <Checkbox
+                    id="isAiMode"
+                    checked={isAiMode}
                     disabled={true}
-                    onCheckedChange={(checked) => setIsAiMode(checked as boolean)} 
+                    onCheckedChange={(checked) =>
+                      setIsAiMode(checked as boolean)
+                    }
                   />
                   <Label htmlFor="isAiMode">AI Mode</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="skipDataWarehouse" 
-                    checked={skipDataWarehouse} 
-                    onCheckedChange={(checked) => setSkipDataWarehouse(checked as boolean)} 
+                  <Checkbox
+                    id="skipDataWarehouse"
+                    checked={skipDataWarehouse}
+                    onCheckedChange={(checked) =>
+                      setSkipDataWarehouse(checked as boolean)
+                    }
                   />
                   <Label htmlFor="skipDataWarehouse">Skip Data Warehouse</Label>
                 </div>
@@ -1635,7 +1662,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </TableBody>
               </Table>
             </div>
-            
+
             {isDev && activeSheet && (
               <div className="mt-4">
                 <CurlDisplay
@@ -1648,7 +1675,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                           `${
                             uploadedFile.name.replace(/\.xlsx?$/i, "") ||
                             "google-images"
-                          }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                          }-${(
+                            activeSheet.name || `sheet-${activeSheetIndex + 1}`
+                          )
                             .replace(/\s+/g, "-")
                             .toLowerCase()}.xlsx`,
                           { type: uploadedFile.type },

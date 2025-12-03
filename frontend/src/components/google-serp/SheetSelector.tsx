@@ -79,11 +79,7 @@ export const SheetSelector: React.FC<SheetSelectorProps> = ({
                           : ((size === "md" ? "default" : size) as any)
                       }
                       variant={
-                        isActive
-                          ? "default"
-                          : isSelected
-                            ? "ghost"
-                            : "outline"
+                        isActive ? "default" : isSelected ? "ghost" : "outline"
                       }
                       className={cn(
                         "gap-2",

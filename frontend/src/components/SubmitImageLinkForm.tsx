@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI, SERVER_URL as INITIAL_SERVER_URL } from "../utils"
+import { SERVER_URL as INITIAL_SERVER_URL, showDevUI } from "../utils"
 import { CurlDisplay } from "./CurlDisplay"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
@@ -1137,11 +1137,14 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
               {isDev && uploadedFile && sheetConfigs.length > 0 && (
                 <div className="mt-8 space-y-6">
-                  <h3 className="text-lg font-semibold">cURL Commands (Dev Mode)</h3>
+                  <h3 className="text-lg font-semibold">
+                    cURL Commands (Dev Mode)
+                  </h3>
                   {sheetConfigs.map((sheet, index) => {
                     const mapping = sheet.columnMapping
                     const baseName =
-                      uploadedFile.name.replace(/\.xlsx?$/i, "") || "image-links"
+                      uploadedFile.name.replace(/\.xlsx?$/i, "") ||
+                      "image-links"
                     const sheetLabel = (sheet.name || `sheet-${index + 1}`)
                       .replace(/\s+/g, "-")
                       .toLowerCase()

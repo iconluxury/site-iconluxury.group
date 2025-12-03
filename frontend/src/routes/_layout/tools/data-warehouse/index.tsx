@@ -11,11 +11,7 @@ function DataWarehouseIndex() {
   const navigate = useNavigate()
   return (
     <div className="p-8 space-y-8">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate({ to: "/" })}
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/" })}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Dashboard
       </Button>

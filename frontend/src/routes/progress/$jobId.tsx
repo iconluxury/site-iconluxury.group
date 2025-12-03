@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from "@tanstack/react-router"
+import { useNavigate, useParams } from "@tanstack/react-router"
 import { createFileRoute } from "@tanstack/react-router"
-import { Loader2, ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import React, { useState, useEffect } from "react"
 import { Badge } from "../../components/ui/badge"
 import { Button } from "../../components/ui/button"

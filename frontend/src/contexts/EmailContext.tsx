@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
-import { getIframeEmailParameter } from "../lib/email-utils"
+import type React from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { EmailPromptDialog } from "../components/EmailPromptDialog"
+import { getIframeEmailParameter } from "../lib/email-utils"
 
 interface EmailContextType {
   email: string | null
@@ -11,7 +12,9 @@ interface EmailContextType {
 const EmailContext = createContext<EmailContextType | undefined>(undefined)
 
 export function EmailProvider({ children }: { children: React.ReactNode }) {
-  const [email, setEmail] = useState<string | null>(() => getIframeEmailParameter())
+  const [email, setEmail] = useState<string | null>(() =>
+    getIframeEmailParameter(),
+  )
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const handleSetEmail = (newEmail: string) => {
@@ -43,7 +46,9 @@ export function EmailProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <EmailContext.Provider value={{ email, setEmail: handleSetEmail, requestEmail }}>
+    <EmailContext.Provider
+      value={{ email, setEmail: handleSetEmail, requestEmail }}
+    >
       {children}
       <EmailPromptDialog open={isDialogOpen} onSubmit={handleSetEmail} />
     </EmailContext.Provider>

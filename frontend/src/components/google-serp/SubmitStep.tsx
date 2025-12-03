@@ -8,10 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type React from "react"
-import type {
-  DataWarehouseMode,
-  SheetConfig,
-} from "./types"
+import type { DataWarehouseMode, SheetConfig } from "./types"
 import {
   getColumnMappingEntries,
   getColumnPreview,

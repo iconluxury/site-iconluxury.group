@@ -12,16 +12,16 @@ function GoogleImagesIndex() {
   return (
     <div className="flex flex-col">
       <div className="px-8 pt-8 pb-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/" })}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>
       </div>
-      <JobsDashboard filterTypeId={1} showWelcome={false} showToolsShortcuts={false} />
+      <JobsDashboard
+        filterTypeId={1}
+        showWelcome={false}
+        showToolsShortcuts={false}
+      />
     </div>
   )
 }

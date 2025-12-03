@@ -34,7 +34,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI, SERVER_URL as INITIAL_SERVER_URL } from "../utils"
+import { SERVER_URL as INITIAL_SERVER_URL, showDevUI } from "../utils"
 import { CurlDisplay } from "./CurlDisplay"
 
 type CellValue = string | number | boolean | null
@@ -321,9 +321,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       updateSheetConfig(activeSheetIndex, (sheet) => {
         const newMapping: ColumnMapping = { ...sheet.columnMapping }
         if (index !== null) {
-          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-            if (newMapping[key] === index) newMapping[key] = null
-          })
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach(
+            (key) => {
+              if (newMapping[key] === index) newMapping[key] = null
+            },
+          )
         }
         newMapping[field] = index
         return { ...sheet, columnMapping: newMapping }
@@ -1218,15 +1220,16 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                             `${
                               uploadedFile.name.replace(/\.xlsx?$/i, "") ||
                               "google-images"
-                            }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                            }-${(
+                              activeSheet.name ||
+                              `sheet-${activeSheetIndex + 1}`
+                            )
                               .replace(/\s+/g, "-")
                               .toLowerCase()}.xlsx`,
                             { type: uploadedFile.type },
-                        )
+                          )
                         : null,
-                      searchColCrop: indexToColumnLetter(
-                        columnMapping.style!,
-                      ),
+                      searchColCrop: indexToColumnLetter(columnMapping.style!),
                       header_index: String(activeSheet.headerIndex + 1),
                       sendToEmail: sendToEmail,
                       sheetName:

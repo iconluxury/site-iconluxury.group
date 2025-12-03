@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useCallback, useRef } from "react"
-import * as XLSX from "xlsx"
-import {
-  ArrowLeft,
-  AlertTriangle,
-  Check,
-  X,
-  Loader2,
-} from "lucide-react"
+import { CurlDisplay } from "@/components/CurlDisplay"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -25,51 +26,45 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { useIframeEmail } from "@/hooks/useIframeEmail"
 import useCustomToast from "@/hooks/useCustomToast"
+import { useIframeEmail } from "@/hooks/useIframeEmail"
+import { cn } from "@/lib/utils"
+import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
+import type React from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
+import * as XLSX from "xlsx"
+import { SheetSelector } from "./SheetSelector"
+import { UploadStep } from "./UploadStep"
 import {
   DATA_WAREHOUSE_MODE_CONFIG,
+  SERVER_URL as INITIAL_SERVER_URL,
   MAX_FILE_SIZE_MB,
   MAX_PREVIEW_ROWS,
-  SERVER_URL as INITIAL_SERVER_URL,
 } from "./constants"
-import {
-  type FormWithBackProps,
-  type DataWarehouseFormProps,
-  type DataWarehouseMappingField,
-  type ColumnType,
-  type ExcelData,
-  type CellValue,
-  type ColumnMapping,
-  type SheetConfig,
-  type ToastFunction,
+import type {
+  CellValue,
+  ColumnMapping,
+  ColumnType,
+  DataWarehouseFormProps,
+  DataWarehouseMappingField,
+  ExcelData,
+  FormWithBackProps,
+  SheetConfig,
+  ToastFunction,
 } from "./types"
 import {
-  detectHeaderRow,
   autoMapColumns,
-  indexToColumnLetter,
-  getColumnPreview,
-  getDisplayValue,
-  getColumnMappingEntries,
   createEmptyColumnMapping,
-  withManualBrandValue,
-  sanitizeWorksheet,
+  detectHeaderRow,
   determineFallbackImageColumnIndex,
   formatMappingFieldLabel,
+  getColumnMappingEntries,
+  getColumnPreview,
+  getDisplayValue,
+  indexToColumnLetter,
+  sanitizeWorksheet,
+  withManualBrandValue,
 } from "./utils"
-import { UploadStep } from "./UploadStep"
-import { SheetSelector } from "./SheetSelector"
-import { CurlDisplay } from "@/components/CurlDisplay"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   onBack,
@@ -87,22 +82,27 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   const requireImageColumn = modeConfig.requireImageColumn
   const isImagesOnlyMode = mode === "imagesOnly"
   const enableImageTargetMapping = allowImageColumnMapping && isImagesOnlyMode
-  
-  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">("upload")
+
+  const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
+    "upload",
+  )
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [sheetConfigs, setSheetConfigs] = useState<SheetConfig[]>([])
-  const [originalWorkbook, setOriginalWorkbook] = useState<XLSX.WorkBook | null>(null)
+  const [originalWorkbook, setOriginalWorkbook] =
+    useState<XLSX.WorkBook | null>(null)
   const originalFileBufferRef = useRef<ArrayBuffer | null>(null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
-  
+
   // These seem to be legacy single-sheet state, but we'll keep them if needed or derive them
   // const [excelData, setExcelData] = useState<ExcelData>({ headers: [], rows: [] })
   // const [rawData, setRawData] = useState<CellValue[][]>([])
   // const [headerIndex, setHeaderIndex] = useState<number>(1)
   // const [columnMapping, setColumnMapping] = useState<ColumnMapping>({ ... })
-  
-  const [activeMappingField, setActiveMappingField] = useState<DataWarehouseMappingField | "imageColumn" | null>(null)
+
+  const [activeMappingField, setActiveMappingField] = useState<
+    DataWarehouseMappingField | "imageColumn" | null
+  >(null)
   const [manualBrand, setManualBrand] = useState("")
   const [isManualBrandApplied, setIsManualBrandApplied] = useState(false)
   const [isNewDistro, setIsNewDistro] = useState(false)
@@ -177,9 +177,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
         originalFileBufferRef.current = data
         const workbook = XLSX.read(data, { type: "array" })
         setOriginalWorkbook(workbook)
-        
+
         const sheets: SheetConfig[] = []
-        
+
         for (let i = 0; i < workbook.SheetNames.length; i++) {
           const sheetName = workbook.SheetNames[i]
           const worksheet = workbook.Sheets[sheetName]
@@ -188,13 +188,15 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             blankrows: true,
             defval: "",
           }) as CellValue[][]
-          
+
           if (jsonData.length === 0) continue
 
           const detectedHeaderIndex = detectHeaderRow(jsonData)
-          const headers = (jsonData[detectedHeaderIndex] || []).map((cell) => String(cell ?? ""))
+          const headers = (jsonData[detectedHeaderIndex] || []).map((cell) =>
+            String(cell ?? ""),
+          )
           const rows = jsonData.slice(detectedHeaderIndex + 1)
-          
+
           sheets.push({
             name: sheetName,
             originalIndex: i,
@@ -207,8 +209,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           })
         }
 
-        if (sheets.length === 0) throw new Error("Excel file is empty or invalid")
-        
+        if (sheets.length === 0)
+          throw new Error("Excel file is empty or invalid")
+
         setSheetConfigs(sheets)
         setActiveSheetIndex(0)
         setStep("preview")
@@ -230,9 +233,11 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     (newHeaderIndex: number) => {
       if (!activeSheet) return
       if (newHeaderIndex < 0 || newHeaderIndex >= rawData.length) return
-      
+
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const headers = sheet.rawData[newHeaderIndex].map((cell) => String(cell ?? ""))
+        const headers = sheet.rawData[newHeaderIndex].map((cell) =>
+          String(cell ?? ""),
+        )
         const rows = sheet.rawData.slice(newHeaderIndex + 1)
         return {
           ...sheet,
@@ -347,14 +352,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       set.add(columnMapping.imageAdd)
     return set
   }, [columnMapping.imageAdd, columnMapping.readImage, mappedDataColumns])
-  
+
   const imageColumnIndex = useMemo(() => {
     return columnMapping.readImage
   }, [columnMapping.readImage])
-  
+
   const selectedColumnIndex =
     activeMappingField !== null ? columnMapping[activeMappingField] : null
-  
+
   const headersAreValid = useMemo(
     () => excelData.headers.some((header) => String(header).trim() !== ""),
     [excelData.headers],
@@ -499,7 +504,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     },
     [updateSheetConfig],
   )
-  
+
   const selectedSheetCount = sheetConfigs.filter((s) => s.isSelected).length
   const hasMultipleSheets = sheetConfigs.length > 1
 
@@ -840,8 +845,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 key={s}
                 className={cn(
                   "cursor-pointer",
-                  step ===
-                    s.toLowerCase()
+                  step === s.toLowerCase()
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
@@ -947,10 +951,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
         </div>
 
         {step === "upload" && (
-          <UploadStep
-            onFileChange={handleFileChange}
-            isLoading={isLoading}
-          />
+          <UploadStep onFileChange={handleFileChange} isLoading={isLoading} />
         )}
 
         {step === "preview" && (
@@ -972,7 +973,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         </p>
                       </div>
                     </div>
-                    <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="xs" />
+                    <SheetSelector
+                      sheetConfigs={sheetConfigs}
+                      activeSheetIndex={activeSheetIndex}
+                      sheetValidationResults={sheetValidationResults}
+                      onActiveSheetChange={handleActiveSheetChange}
+                      onToggleSheetSelection={handleToggleSheetSelection}
+                      size="xs"
+                    />
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1071,7 +1079,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           {selectedSheetCount} selected
                         </Badge>
                       </div>
-                      <SheetSelector sheetConfigs={sheetConfigs} activeSheetIndex={activeSheetIndex} sheetValidationResults={sheetValidationResults} onActiveSheetChange={handleActiveSheetChange} onToggleSheetSelection={handleToggleSheetSelection} size="sm" />
+                      <SheetSelector
+                        sheetConfigs={sheetConfigs}
+                        activeSheetIndex={activeSheetIndex}
+                        sheetValidationResults={sheetValidationResults}
+                        onActiveSheetChange={handleActiveSheetChange}
+                        onToggleSheetSelection={handleToggleSheetSelection}
+                        size="sm"
+                      />
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -1592,7 +1607,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                           `${
                             uploadedFile.name.replace(/\.xlsx?$/i, "") ||
                             "google-images"
-                          }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                          }-${(
+                            activeSheet.name || `sheet-${activeSheetIndex + 1}`
+                          )
                             .replace(/\s+/g, "-")
                             .toLowerCase()}.xlsx`,
                           { type: uploadedFile.type },

@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Copy } from "lucide-react"
 import { useState } from "react"
 
@@ -9,7 +9,11 @@ interface CurlDisplayProps {
   formDataEntries: Record<string, string | File | null>
 }
 
-export function CurlDisplay({ url, method, formDataEntries }: CurlDisplayProps) {
+export function CurlDisplay({
+  url,
+  method,
+  formDataEntries,
+}: CurlDisplayProps) {
   const [copied, setCopied] = useState(false)
 
   const generateCurl = () => {
@@ -24,7 +28,7 @@ export function CurlDisplay({ url, method, formDataEntries }: CurlDisplayProps) 
     })
     // Remove last backslash and newline if present
     if (cmd.endsWith("\\\n")) {
-        return cmd.slice(0, -2)
+      return cmd.slice(0, -2)
     }
     return cmd
   }
@@ -40,8 +44,15 @@ export function CurlDisplay({ url, method, formDataEntries }: CurlDisplayProps) 
   return (
     <Card className="mt-4 bg-slate-950 text-slate-50 border-slate-800">
       <CardHeader className="flex flex-row items-center justify-between py-2 border-b border-slate-800">
-        <CardTitle className="text-sm font-mono text-slate-300">cURL Command (Dev Mode)</CardTitle>
-        <Button variant="ghost" size="sm" onClick={handleCopy} className="text-slate-300 hover:text-white hover:bg-slate-800">
+        <CardTitle className="text-sm font-mono text-slate-300">
+          cURL Command (Dev Mode)
+        </CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCopy}
+          className="text-slate-300 hover:text-white hover:bg-slate-800"
+        >
           <Copy className="h-4 w-4 mr-2" />
           {copied ? "Copied!" : "Copy"}
         </Button>

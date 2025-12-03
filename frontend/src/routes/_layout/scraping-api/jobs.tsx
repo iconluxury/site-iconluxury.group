@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select"
-import { EXTERNAL_API_BASE } from "../../../utils"
 import { Separator } from "../../../components/ui/separator"
 import {
   Table,
@@ -32,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table"
+import { EXTERNAL_API_BASE } from "../../../utils"
 
 export const JOB_TYPES: Record<
   number,

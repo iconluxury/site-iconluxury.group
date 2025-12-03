@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { CheckCircle, Clock, File, RefreshCw, Download, Eye, Plus } from "lucide-react"
+import {
+  CheckCircle,
+  Clock,
+  Download,
+  Eye,
+  File,
+  Plus,
+  RefreshCw,
+} from "lucide-react"
 import * as React from "react"
 import {
   LuCrop,
@@ -10,6 +18,7 @@ import {
   LuSearch,
 } from "react-icons/lu"
 import Changelog from "./Changelog"
+import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import {
   Card,
@@ -18,7 +27,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
-import { EXTERNAL_API_BASE } from "../utils"
 import {
   Table,
   TableBody,
@@ -27,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import { Badge } from "./ui/badge"
 
 // Interface matching the user"s data requirement and likely API response
 interface JobSummary {
@@ -68,7 +75,7 @@ const getAuthToken = (): string | null => {
 async function fetchJobs(): Promise<JobSummary[]> {
   const token = getAuthToken()
   const response = await fetch(
-    `${EXTERNAL_API_BASE}/api/scraping-jobs?page=1&page_size=10`,
+    "https://dev-external.iconluxury.today/api/scraping-jobs?page=1&page_size=10",
     {
       method: "GET",
       headers: {
@@ -142,7 +149,9 @@ export default function JobsDashboard({
   const inProgressJobs = sortedJobs.filter((job) =>
     ["In Progress", "Processing"].includes(getStatus(job)),
   ).length
-  const pendingJobs = sortedJobs.filter((job) => getStatus(job) === "Pending").length
+  const pendingJobs = sortedJobs.filter(
+    (job) => getStatus(job) === "Pending",
+  ).length
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
@@ -176,51 +185,59 @@ export default function JobsDashboard({
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Middle Content (Feed) */}
-        <div className={showChangelog ? "lg:col-span-3 space-y-8" : "lg:col-span-4 space-y-8"}>
+        <div
+          className={
+            showChangelog
+              ? "lg:col-span-3 space-y-8"
+              : "lg:col-span-4 space-y-8"
+          }
+        >
           {/* KPI Cards */}
           {showMetrics && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Jobs
-                </CardTitle>
-                <File className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalJobs}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{completedJobs}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  In Progress
-                </CardTitle>
-                <RefreshCw className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{inProgressJobs}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                <Clock className="h-4 w-4 text-yellow-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{pendingJobs}</div>
-              </CardContent>
-            </Card>
-          </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Jobs
+                  </CardTitle>
+                  <File className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalJobs}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Completed
+                  </CardTitle>
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{completedJobs}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    In Progress
+                  </CardTitle>
+                  <RefreshCw className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{inProgressJobs}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{pendingJobs}</div>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {/* Tools Shortcuts */}
@@ -309,7 +326,9 @@ export default function JobsDashboard({
                   A list of your recent scraping jobs.
                 </CardDescription>
               </div>
-              <Button onClick={() => navigate({ to: "/tools/google-images/upload" })}>
+              <Button
+                onClick={() => navigate({ to: "/tools/google-images/upload" })}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 New Job
               </Button>
@@ -327,7 +346,7 @@ export default function JobsDashboard({
                 </TableHeader>
                 <TableBody>
                   {sortedJobs.map((job) => (
-                    <TableRow 
+                    <TableRow
                       key={job.id}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => navigate({ to: `/progress/${job.id}` })}
@@ -339,13 +358,20 @@ export default function JobsDashboard({
                           {getStatus(job)}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(job.imageStart || job.fileStart)}</TableCell>
+                      <TableCell>
+                        {formatDate(job.imageStart || job.fileStart)}
+                      </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="flex justify-end gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => navigate({ to: `/progress/${job.id}` })}
+                            onClick={() =>
+                              navigate({ to: `/progress/${job.id}` })
+                            }
                             title="View Details"
                           >
                             <Eye className="h-4 w-4" />
@@ -357,7 +383,11 @@ export default function JobsDashboard({
                               asChild
                               title="Download File"
                             >
-                              <a href={job.fileLocationUrl} target="_blank" rel="noopener noreferrer">
+                              <a
+                                href={job.fileLocationUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 <Download className="h-4 w-4" />
                               </a>
                             </Button>
@@ -368,7 +398,10 @@ export default function JobsDashboard({
                   ))}
                   {sortedJobs.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-8 text-muted-foreground"
+                      >
                         No jobs found.
                       </TableCell>
                     </TableRow>

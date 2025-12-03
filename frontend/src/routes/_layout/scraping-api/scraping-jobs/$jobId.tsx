@@ -1394,8 +1394,7 @@ const RowMetadataTab: React.FC<RowMetadataTabProps> = ({
   const query = (searchQuery || "").trim().toLowerCase()
 
   const record = job.records.find(
-    (r) =>
-      r.entryId.toString() === query || r.excelRowId.toString() === query,
+    (r) => r.entryId.toString() === query || r.excelRowId.toString() === query,
   )
 
   if (!query) {

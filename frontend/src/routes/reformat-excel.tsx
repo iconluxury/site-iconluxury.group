@@ -1288,8 +1288,7 @@ const ReformatExcelForm: React.FC = () => {
                 className={cn(
                   "cursor-pointer",
                   step ===
-                    s.toLowerCase()
-                    .replace("header selection", "preview")
+                    s.toLowerCase().replace("header selection", "preview")
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)

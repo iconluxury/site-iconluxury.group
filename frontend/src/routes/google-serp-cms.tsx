@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -5,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -99,7 +99,11 @@ function GoogleSerpCmsPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Google Images Tool */}
-        <Link to="/public/tools/google-images" search={searchParams} className="block h-full">
+        <Link
+          to="/public/tools/google-images"
+          search={searchParams}
+          className="block h-full"
+        >
           <Card className="hover:shadow-lg transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -114,7 +118,11 @@ function GoogleSerpCmsPage() {
         </Link>
 
         {/* Data Warehouse Tool */}
-        <Link to="/public/tools/data-warehouse" search={searchParams} className="block h-full">
+        <Link
+          to="/public/tools/data-warehouse"
+          search={searchParams}
+          className="block h-full"
+        >
           <Card className="hover:shadow-lg transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -129,20 +137,30 @@ function GoogleSerpCmsPage() {
         </Link>
 
         {/* Image Links Tool */}
-        <Link to="/public/tools/image-links" search={searchParams} className="block h-full">
+        <Link
+          to="/public/tools/image-links"
+          search={searchParams}
+          className="block h-full"
+        >
           <Card className="hover:shadow-lg transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <LuLink className="h-6 w-6 text-primary" />
                 <CardTitle>Image Links</CardTitle>
               </div>
-              <CardDescription>Process and validate image links.</CardDescription>
+              <CardDescription>
+                Process and validate image links.
+              </CardDescription>
             </CardHeader>
           </Card>
         </Link>
 
         {/* Crop Tool */}
-        <Link to="/public/tools/crop" search={searchParams} className="block h-full">
+        <Link
+          to="/public/tools/crop"
+          search={searchParams}
+          className="block h-full"
+        >
           <Card className="hover:shadow-lg transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -160,7 +178,9 @@ function GoogleSerpCmsPage() {
         <Card className="bg-muted/50 border-dashed h-full">
           <CardHeader>
             <CardTitle>Coming Soon</CardTitle>
-            <CardDescription>New tools currently in development.</CardDescription>
+            <CardDescription>
+              New tools currently in development.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3 text-muted-foreground">

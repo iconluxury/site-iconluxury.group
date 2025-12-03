@@ -24,11 +24,7 @@ import {
   GOOGLE_IMAGES_REQUIRED_COLUMNS,
   MAX_PREVIEW_ROWS,
 } from "./constants"
-import type {
-  ColumnMapping,
-  ColumnType,
-  SheetConfig,
-} from "./types"
+import type { ColumnMapping, ColumnType, SheetConfig } from "./types"
 import {
   formatMappingFieldLabel,
   getColumnPreview,

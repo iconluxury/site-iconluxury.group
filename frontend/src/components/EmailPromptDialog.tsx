@@ -27,9 +27,9 @@ export function EmailPromptDialog({ open, onSubmit }: EmailPromptDialogProps) {
 
   return (
     <Dialog open={open}>
-      <DialogContent 
-        className="sm:max-w-[425px]" 
-        onPointerDownOutside={(e) => e.preventDefault()} 
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         // Prevent closing by clicking outside or escape, as it is required
       >
