@@ -34,9 +34,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI } from "../utils"
-
-const SERVER_URL = "https://icon5-8005.iconluxury.today"
+import { showDevUI, SERVER_URL } from "../utils"
 
 type CellValue = string | number | boolean | null
 type ExcelData = { headers: string[]; rows: CellValue[][] }

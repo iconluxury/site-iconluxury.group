@@ -13,6 +13,7 @@ import {
 import { Progress } from "../../components/ui/progress"
 import { Separator } from "../../components/ui/separator"
 import useCustomToast from "../../hooks/useCustomToast"
+import { EXTERNAL_API_BASE } from "../../utils"
 
 // --- INTERFACES ---
 
@@ -60,7 +61,7 @@ const JobProgressPage = () => {
       setIsLoading(true)
       setError(null)
       try {
-        const apiUrl = `https://external.iconluxury.group/api/scraping-jobs/${jobId}`
+        const apiUrl = `${EXTERNAL_API_BASE}/api/scraping-jobs/${jobId}`
         const response = await fetch(apiUrl)
         if (!response.ok) {
           throw new Error(
@@ -96,7 +97,7 @@ const JobProgressPage = () => {
     const fetchProgress = async () => {
       try {
         const response = await fetch(
-          `https://external.iconluxury.group/api/scraping-jobs/${jobId}/progress`,
+          `${EXTERNAL_API_BASE}/api/scraping-jobs/${jobId}/progress`,
         )
         if (response.ok) {
           const data: ProgressData = await response.json()
@@ -106,7 +107,7 @@ const JobProgressPage = () => {
             // If progress hits 100% on the last step, refetch the main job data
             if (data.step4Progress >= 100) {
               const jobResponse = await fetch(
-                `https://external.iconluxury.group/api/scraping-jobs/${jobId}`,
+                `${EXTERNAL_API_BASE}/api/scraping-jobs/${jobId}`,
               )
               if (jobResponse.ok) {
                 const updatedJobData: JobDetails = await jobResponse.json()

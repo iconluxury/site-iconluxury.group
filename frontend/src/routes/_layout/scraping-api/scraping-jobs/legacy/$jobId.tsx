@@ -44,6 +44,7 @@ import {
   TabsTrigger,
 } from "../../../../../components/ui/tabs"
 import useCustomToast from "../../../../../hooks/useCustomToast"
+import { EXTERNAL_API_BASE } from "../../../../../utils"
 
 // Interfaces
 interface JobDetails {
@@ -211,7 +212,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     const fetchProgress = async () => {
       try {
         const response = await fetch(
-          `https://external.iconluxury.group/api/scraping-jobs/${job.id}/progress`,
+          `${EXTERNAL_API_BASE}/api/scraping-jobs/${job.id}/progress`,
         )
         if (response.ok) {
           const data: ProgressData = await response.json()
@@ -2318,7 +2319,7 @@ const JobsDetailPage = () => {
     setIsLoading(true)
     setError(null)
     try {
-      const apiUrl = `https://external.iconluxury.group/api/scraping-jobs/${jobId}`
+      const apiUrl = `${EXTERNAL_API_BASE}/api/scraping-jobs/${jobId}`
       const response = await fetch(apiUrl, {
         method: "GET",
         headers: { "Content-Type": "application/json" },

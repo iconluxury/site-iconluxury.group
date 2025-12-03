@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card"
+import { EXTERNAL_API_BASE } from "../utils"
 import {
   Table,
   TableBody,
@@ -67,7 +68,7 @@ const getAuthToken = (): string | null => {
 async function fetchJobs(): Promise<JobSummary[]> {
   const token = getAuthToken()
   const response = await fetch(
-    "https://external.iconluxury.group/api/scraping-jobs?page=1&page_size=10",
+    `${EXTERNAL_API_BASE}/api/scraping-jobs?page=1&page_size=10`,
     {
       method: "GET",
       headers: {

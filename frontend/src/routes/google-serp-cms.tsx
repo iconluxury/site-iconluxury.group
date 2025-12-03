@@ -6,9 +6,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
 import {
   LuCrop,
   LuDatabase,
@@ -19,21 +27,59 @@ import {
   LuSearch,
   LuWand2,
 } from "react-icons/lu"
+import { OpenAPI } from "../client"
 import { useIframeEmail } from "../hooks/useIframeEmail"
+
+const BACKENDS = [
+  { name: "Production", url: "https://api.iconluxury.group" },
+  { name: "Development", url: "https://icon5-8006.iconluxury.today" },
+]
 
 export const Route = createFileRoute("/google-serp-cms")({
   component: GoogleSerpCmsPage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      environment: search.environment as string | undefined,
+    }
+  },
 })
 
 function GoogleSerpCmsPage() {
   const { theme, setTheme } = useTheme()
   const iframeEmail = useIframeEmail()
   const searchParams = iframeEmail ? { sendToEmail: iframeEmail } : {}
+  const { environment } = Route.useSearch()
+  const [backend, setBackend] = useState(OpenAPI.BASE)
+
+  useEffect(() => {
+    if (environment === "dev") {
+      const devUrl = "https://icon5-8006.iconluxury.today"
+      OpenAPI.BASE = devUrl
+      setBackend(devUrl)
+    }
+  }, [environment])
+
+  const handleBackendChange = (value: string) => {
+    OpenAPI.BASE = value
+    setBackend(value)
+  }
 
   return (
     <div className="p-8 space-y-8">
       <div className="flex justify-end items-center">
         <div className="flex items-center gap-2">
+          <Select value={backend} onValueChange={handleBackendChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Backend" />
+            </SelectTrigger>
+            <SelectContent>
+              {BACKENDS.map((b) => (
+                <SelectItem key={b.url} value={b.url}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant="outline"
             size="icon"

@@ -3,6 +3,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { EXTERNAL_API_BASE } from "../utils"
 import {
   Table,
   TableBody,
@@ -37,7 +38,7 @@ const WhitelistGSerp: React.FC = () => {
     const fetchDomains = async () => {
       try {
         const response = await fetch(
-          "https://external.iconluxury.group/api/whitelist-domains",
+          `${EXTERNAL_API_BASE}/api/whitelist-domains`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },

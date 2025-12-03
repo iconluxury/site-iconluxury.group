@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select"
+import { EXTERNAL_API_BASE } from "../../../utils"
 import { Separator } from "../../../components/ui/separator"
 import {
   Table,
@@ -172,7 +173,7 @@ async function fetchSubscriptionStatus(): Promise<SubscriptionStatus> {
 async function fetchJobs(page: number): Promise<JobSummary[]> {
   const token = getAuthToken()
   const response = await fetch(
-    `https://external.iconluxury.group/api/scraping-jobs?page=${page}&page_size=10`,
+    `${EXTERNAL_API_BASE}/api/scraping-jobs?page=${page}&page_size=10`,
     {
       method: "GET",
       headers: {

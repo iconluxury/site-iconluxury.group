@@ -3,9 +3,10 @@ import {
   LuImage,
   LuLayers,
 } from "react-icons/lu"
+import { SERVER_URL as SERVER_URL_BASE } from "../../utils"
 import type { DataWarehouseMode, DataWarehouseModeConfig, ColumnType } from "./types"
 
-export const SERVER_URL = "https://icon5-8005.iconluxury.today"
+export const SERVER_URL = SERVER_URL_BASE
 
 export const MAX_PREVIEW_ROWS = 20
 export const MAX_FILE_SIZE_MB = 50

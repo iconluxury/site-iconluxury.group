@@ -52,39 +52,23 @@ export const handleError = (err: ApiError, showToast: any) => {
   showToast("Error", errorMessage, "error")
 }
 
-const DEV_FLAG_TRUE_VALUES = new Set(["true", "1", "yes", "on"])
-
-const parseDevFlag = (value: string | boolean | null | undefined): boolean => {
-  if (typeof value === "boolean") return value
-  if (typeof value === "string") {
-    return DEV_FLAG_TRUE_VALUES.has(value.trim().toLowerCase())
-  }
-  return false
+export const showDevUI = () => {
+  return (
+    typeof window !== "undefined" &&
+    window.location.hostname.includes("localhost")
+  )
 }
 
-const getRuntimeDevFlag = (): string | null => {
-  if (typeof window === "undefined") return null
-
+const isDevEnvironment = () => {
+  if (typeof window === "undefined") return false
   const params = new URLSearchParams(window.location.search)
-  const fromQuery = params.get("showDevUI")
-  if (fromQuery) return fromQuery
-
-  try {
-    return window.localStorage.getItem("showDevUI")
-  } catch (error) {
-    console.warn("Unable to read showDevUI flag from localStorage", error)
-    return null
-  }
+  return params.get("environment") === "dev"
 }
 
-// UI helper: decide when to show developer banners/tags in any environment
-// - Shows in Vite dev server automatically (import.meta.env.DEV)
-// - Can be forced on in production builds by setting VITE_SHOW_DEV_UI or
-//   by providing ?showDevUI=true in the URL / localStorage
-export const showDevUI = (): boolean => {
-  if (import.meta.env.DEV) return true
+export const SERVER_URL = isDevEnvironment()
+  ? "https://icon5-8006.iconluxury.today"
+  : "https://icon5-8005.iconluxury.today"
 
-  if (parseDevFlag(import.meta.env.VITE_SHOW_DEV_UI)) return true
-
-  return parseDevFlag(getRuntimeDevFlag())
-}
+export const EXTERNAL_API_BASE = isDevEnvironment()
+  ? "https://icon5-8006.iconluxury.today"
+  : "https://external.iconluxury.group"
