@@ -31,8 +31,9 @@ import { OpenAPI } from "../client"
 import { useIframeEmail } from "../hooks/useIframeEmail"
 
 const BACKENDS = [
-  { name: "Production", url: "https://api.iconluxury.group" },
-  { name: "Development", url: "https://icon5-8006.iconluxury.today" },
+  { name: "Production", url: "https://external.iconluxury.group" },
+  { name: "Production (8005)", url: "https://icon5-8005.iconluxury.today" },
+  { name: "Development", url: "https://dev-external.iconluxury.today" },
 ]
 
 export const Route = createFileRoute("/google-serp-cms")({
@@ -53,7 +54,7 @@ function GoogleSerpCmsPage() {
 
   useEffect(() => {
     if (environment === "dev") {
-      const devUrl = "https://icon5-8006.iconluxury.today"
+      const devUrl = "https://dev-external.iconluxury.today"
       OpenAPI.BASE = devUrl
       setBackend(devUrl)
     }
