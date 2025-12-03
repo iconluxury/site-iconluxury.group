@@ -6,13 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -30,11 +23,6 @@ import {
 import { OpenAPI } from "../client"
 import { useIframeEmail } from "../hooks/useIframeEmail"
 
-const BACKENDS = [
-  { name: "Production", url: "https://external.iconluxury.group" },
-  { name: "Development", url: "https://dev-external.iconluxury.today" },
-]
-
 export const Route = createFileRoute("/google-serp-cms")({
   component: GoogleSerpCmsPage,
   validateSearch: (search: Record<string, unknown>) => {
@@ -48,44 +36,28 @@ function GoogleSerpCmsPage() {
   const { theme, setTheme } = useTheme()
   const iframeEmail = useIframeEmail()
   const { environment } = Route.useSearch()
-  const [backend, setBackend] = useState(OpenAPI.BASE)
 
   useEffect(() => {
     if (environment === "dev") {
       const devUrl = "https://dev-external.iconluxury.today"
       OpenAPI.BASE = devUrl
-      setBackend(devUrl)
     }
   }, [environment])
 
-  const handleBackendChange = (value: string) => {
-    OpenAPI.BASE = value
-    setBackend(value)
-  }
-
   const searchParams = {
     ...(iframeEmail ? { sendToEmail: iframeEmail } : {}),
-    ...(backend === "https://dev-external.iconluxury.today"
-      ? { environment: "dev" }
-      : {}),
+    ...(environment === "dev" ? { environment: "dev" } : {}),
   }
 
   return (
     <div className="p-8 space-y-8">
       <div className="flex justify-end items-center">
         <div className="flex items-center gap-2">
-          <Select value={backend} onValueChange={handleBackendChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select Backend" />
-            </SelectTrigger>
-            <SelectContent>
-              {BACKENDS.map((b) => (
-                <SelectItem key={b.url} value={b.url}>
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {environment === "dev" && (
+            <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
+              <span className="font-bold text-sm">DEV ENVIRONMENT</span>
+            </Card>
+          )}
           <Button
             variant="outline"
             size="icon"
