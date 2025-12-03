@@ -34,7 +34,7 @@ import {
   DATA_WAREHOUSE_MODE_CONFIG,
   MAX_FILE_SIZE_MB,
   MAX_PREVIEW_ROWS,
-  SERVER_URL,
+  SERVER_URL as INITIAL_SERVER_URL,
 } from "./constants"
 import {
   type FormWithBackProps,
@@ -62,6 +62,14 @@ import {
 } from "./utils"
 import { UploadStep } from "./UploadStep"
 import { SheetSelector } from "./SheetSelector"
+import { CurlDisplay } from "@/components/CurlDisplay"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   onBack,
@@ -723,7 +731,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
         formData.append("isMsrpOnly", String(mode === "msrpOnly"))
         formData.append("mode", mode)
 
-        const response = await fetch(`${SERVER_URL}/datawarehouse`, {
+        const response = await fetch(`${serverUrl}/datawarehouse`, {
           method: "POST",
           body: formData,
         })
@@ -768,6 +776,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     skipDataWarehouse,
     uploadedFile,
   ])
+
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
 
   if (!sendToEmail) {
     return (
@@ -830,7 +841,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 className={cn(
                   "cursor-pointer",
                   step ===
-                    s.toLowerCase().replace("header selection", "preview")
+                    s.toLowerCase()
                     ? "font-bold text-primary"
                     : "text-muted-foreground",
                   i < ["upload", "preview", "map", "submit"].indexOf(step)
@@ -917,6 +928,22 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               )}
             </div>
           )}
+        </div>
+
+        <div className="flex justify-end">
+          <Select value={serverUrl} onValueChange={setServerUrl}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Backend" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="https://external.iconluxury.group">
+                Production
+              </SelectItem>
+              <SelectItem value="https://dev-external.iconluxury.today">
+                Development
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {step === "upload" && (
@@ -1552,6 +1579,49 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </TableBody>
               </Table>
             </div>
+
+            {isDev && activeSheet && (
+              <div className="mt-4">
+                <CurlDisplay
+                  url={`${serverUrl}/datawarehouse`}
+                  method="POST"
+                  formDataEntries={{
+                    fileUploadImage: uploadedFile
+                      ? new File(
+                          [uploadedFile],
+                          `${
+                            uploadedFile.name.replace(/\.xlsx?$/i, "") ||
+                            "google-images"
+                          }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                            .replace(/\s+/g, "-")
+                            .toLowerCase()}.xlsx`,
+                          { type: uploadedFile.type },
+                        )
+                      : null,
+                    searchColImage: indexToColumnLetter(
+                      activeSheet.columnMapping.style!,
+                    ),
+                    brandColImage: activeSheet.manualBrandValue
+                      ? "MANUAL"
+                      : activeSheet.columnMapping.brand !== null
+                        ? indexToColumnLetter(activeSheet.columnMapping.brand)
+                        : null,
+                    manualBrand: activeSheet.manualBrandValue || null,
+                    imageColumnImage:
+                      activeSheet.columnMapping.readImage !== null ||
+                      activeSheet.columnMapping.imageAdd !== null
+                        ? indexToColumnLetter(
+                            (activeSheet.columnMapping.readImage ??
+                              activeSheet.columnMapping.imageAdd)!,
+                          )
+                        : "",
+                    header_index: String(activeSheet.headerIndex + 1),
+                    sendToEmail: sendToEmail,
+                    isNewDistro: String(isNewDistro),
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

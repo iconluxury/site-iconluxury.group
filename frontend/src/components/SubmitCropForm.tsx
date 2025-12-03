@@ -34,7 +34,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import useCustomToast from "../hooks/useCustomToast"
 import { useIframeEmail } from "../hooks/useIframeEmail"
-import { showDevUI, SERVER_URL } from "../utils"
+import { showDevUI, SERVER_URL as INITIAL_SERVER_URL } from "../utils"
+import { CurlDisplay } from "./CurlDisplay"
 
 type CellValue = string | number | boolean | null
 type ExcelData = { headers: string[]; rows: CellValue[][] }
@@ -132,6 +133,9 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
 }
 
 const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
+
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -558,7 +562,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           replaceImageColumn ? "true" : "false",
         )
 
-        const response = await fetch(`${SERVER_URL}/submitCrop`, {
+        const response = await fetch(`${serverUrl}/submitCrop`, {
           method: "POST",
           body: formData,
         })
@@ -599,8 +603,6 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     uploadedFile,
   ])
 
-  const isDev = showDevUI()
-
   return (
     <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
@@ -633,6 +635,23 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
             </Alert>
           )}
+
+          {/* Backend Selector */}
+          <div className="flex justify-end">
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Backend" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Stepper */}
           <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center">
@@ -1186,6 +1205,37 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   mapping required.
                 </p>
               </div>
+
+              {isDev && activeSheet && (
+                <div className="mt-4">
+                  <CurlDisplay
+                    url={`${serverUrl}/submitCrop`}
+                    method="POST"
+                    formDataEntries={{
+                      fileUploadCrop: uploadedFile
+                        ? new File(
+                            [uploadedFile],
+                            `${
+                              uploadedFile.name.replace(/\.xlsx?$/i, "") ||
+                              "google-images"
+                            }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                              .replace(/\s+/g, "-")
+                              .toLowerCase()}.xlsx`,
+                            { type: uploadedFile.type },
+                        )
+                        : null,
+                      searchColCrop: indexToColumnLetter(
+                        columnMapping.style!,
+                      ),
+                      header_index: String(activeSheet.headerIndex + 1),
+                      sendToEmail: sendToEmail,
+                      sheetName:
+                        activeSheet.name || `Sheet ${activeSheetIndex + 1}`,
+                      sheetIndex: String(activeSheetIndex + 1),
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

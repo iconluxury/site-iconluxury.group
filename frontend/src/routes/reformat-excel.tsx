@@ -1,3 +1,4 @@
+import { CurlDisplay } from "@/components/CurlDisplay"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -256,7 +257,6 @@ const SubmitStep: React.FC<{
   sendToEmail: string
   isEmailValid: boolean
   submittingSheetIndex: number | null
-  ALL_COLUMNS: (ColumnType | "readImage")[]
   currency: "USD" | "EUR"
   onCurrencyChange: (value: "USD" | "EUR") => void
   sheetValidationResults: {
@@ -264,6 +264,8 @@ const SubmitStep: React.FC<{
     missing: ColumnType[]
     isValid: boolean
   }[]
+  serverUrl: string
+  uploadedFile: File | null
 }> = ({
   sheetConfigs,
   onSubmit,
@@ -271,11 +273,14 @@ const SubmitStep: React.FC<{
   sendToEmail,
   isEmailValid,
   submittingSheetIndex,
-  ALL_COLUMNS,
   currency,
   onCurrencyChange,
   sheetValidationResults,
+  serverUrl,
+  uploadedFile,
 }) => {
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
+
   return (
     <div className="container mx-auto py-5">
       <div className="flex flex-col gap-6">
@@ -360,12 +365,6 @@ const SubmitStep: React.FC<{
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <MappedColumnSummary
-                            sheetConfig={sheet}
-                            ALL_COLUMNS={ALL_COLUMNS}
-                          />
-                        </TableCell>
-                        <TableCell>
                           <Button
                             onClick={() => onSubmit(index)}
                             disabled={
@@ -379,6 +378,64 @@ const SubmitStep: React.FC<{
                             )}
                             Submit
                           </Button>
+                          {isDev && isReady && (
+                            <div className="mt-2 max-w-[400px]">
+                              <CurlDisplay
+                                url={`${serverUrl}/submitImage`}
+                                method="POST"
+                                formDataEntries={{
+                                  fileUploadImage: uploadedFile
+                                    ? new File(
+                                        [uploadedFile],
+                                        `${
+                                          uploadedFile.name.replace(
+                                            /\.xlsx?$/i,
+                                            "",
+                                          ) || "google-images"
+                                        }-${(sheet.name || `sheet-${index + 1}`)
+                                          .replace(/\s+/g, "-")
+                                          .toLowerCase()}.xlsx`,
+                                        { type: uploadedFile.type },
+                                      )
+                                    : null,
+                                  searchColImage: indexToColumnLetter(
+                                    sheet.columnMapping.style!,
+                                  ),
+                                  brandColImage: sheet.manualValues.brand
+                                    ? "MANUAL"
+                                    : sheet.columnMapping.brand !== null
+                                      ? indexToColumnLetter(
+                                          sheet.columnMapping.brand,
+                                        )
+                                      : null,
+                                  manualBrand: sheet.manualValues.brand || null,
+                                  imageColumnImage:
+                                    sheet.columnMapping.readImage !== null ||
+                                    sheet.columnMapping.imageAdd !== null
+                                      ? indexToColumnLetter(
+                                          (sheet.columnMapping.readImage ??
+                                            sheet.columnMapping.imageAdd)!,
+                                        )
+                                      : "",
+                                  ColorColImage:
+                                    sheet.columnMapping.color !== null
+                                      ? indexToColumnLetter(
+                                          sheet.columnMapping.color,
+                                        )
+                                      : null,
+                                  CategoryColImage:
+                                    sheet.columnMapping.category !== null
+                                      ? indexToColumnLetter(
+                                          sheet.columnMapping.category,
+                                        )
+                                      : null,
+                                  header_index: String(sheet.headerIndex + 1),
+                                  sendToEmail: sendToEmail,
+                                  currency: currency,
+                                }}
+                              />
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     )
@@ -1841,10 +1898,11 @@ const ReformatExcelForm: React.FC = () => {
             sendToEmail={sendToEmail}
             isEmailValid={isEmailValid}
             submittingSheetIndex={submittingSheetIndex}
-            ALL_COLUMNS={[...ALL_COLUMNS, "readImage"]}
             currency={currency}
             onCurrencyChange={setCurrency}
             sheetValidationResults={sheetValidationResults}
+            serverUrl={serverUrl}
+            uploadedFile={uploadedFile}
           />
         )}
       </div>

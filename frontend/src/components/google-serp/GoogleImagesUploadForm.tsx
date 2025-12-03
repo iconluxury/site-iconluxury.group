@@ -33,7 +33,7 @@ import useCustomToast from "@/hooks/useCustomToast"
 import {
   MAX_FILE_SIZE_MB,
   MAX_PREVIEW_ROWS,
-  SERVER_URL,
+  SERVER_URL as INITIAL_SERVER_URL,
 } from "./constants"
 import {
   type FormWithBackProps,
@@ -58,6 +58,14 @@ import {
 } from "./utils"
 import { UploadStep } from "./UploadStep"
 import { SheetSelector } from "./SheetSelector"
+import { CurlDisplay } from "@/components/CurlDisplay"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   onBack,
@@ -83,6 +91,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
   const [skipDataWarehouse, setSkipDataWarehouse] = useState(false)
+
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
 
   const iframeEmail = useIframeEmail()
   const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
@@ -778,7 +789,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         formData.append("isAiMode", String(isAiMode))
         formData.append("skipDataWarehouse", String(skipDataWarehouse))
 
-        const response = await fetch(`${SERVER_URL}/submitImage`, {
+        const response = await fetch(`${serverUrl}/submitImage`, {
           method: "POST",
           body: formData,
         })
@@ -1624,6 +1635,51 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </TableBody>
               </Table>
             </div>
+            
+            {isDev && activeSheet && (
+              <div className="mt-4">
+                <CurlDisplay
+                  url={`${serverUrl}/submitImage`}
+                  method="POST"
+                  formDataEntries={{
+                    fileUploadImage: uploadedFile
+                      ? new File(
+                          [uploadedFile],
+                          `${
+                            uploadedFile.name.replace(/\.xlsx?$/i, "") ||
+                            "google-images"
+                          }-${(activeSheet.name || `sheet-${activeSheetIndex + 1}`)
+                            .replace(/\s+/g, "-")
+                            .toLowerCase()}.xlsx`,
+                          { type: uploadedFile.type },
+                        )
+                      : null,
+                    searchColImage: indexToColumnLetter(
+                      activeSheet.columnMapping.style!,
+                    ),
+                    brandColImage: activeSheet.manualBrandValue
+                      ? "MANUAL"
+                      : activeSheet.columnMapping.brand !== null
+                        ? indexToColumnLetter(activeSheet.columnMapping.brand)
+                        : null,
+                    manualBrand: activeSheet.manualBrandValue || null,
+                    imageColumnImage:
+                      activeSheet.columnMapping.readImage !== null ||
+                      activeSheet.columnMapping.imageAdd !== null
+                        ? indexToColumnLetter(
+                            (activeSheet.columnMapping.readImage ??
+                              activeSheet.columnMapping.imageAdd)!,
+                          )
+                        : "",
+                    header_index: String(activeSheet.headerIndex + 1),
+                    sendToEmail: sendToEmail,
+                    isIconDistro: String(isIconDistro),
+                    isAiMode: String(isAiMode),
+                    skipDataWarehouse: String(skipDataWarehouse),
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
