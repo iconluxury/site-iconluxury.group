@@ -225,44 +225,114 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   const handleDataColumnMap = useCallback(
     (index: number, field: ColumnType) => {
       if (field && !ALL_COLUMNS.includes(field)) return
+
+      let shouldClearManualBrand = false
+      if (field === "brand") {
+        shouldClearManualBrand = true
+      }
+      if (activeSheet) {
+        const currentMapping = activeSheet.columnMapping
+        if (index >= 0 && currentMapping.brand === index) {
+          shouldClearManualBrand = true
+        }
+      }
+
+      if (shouldClearManualBrand) {
+        setManualBrand("")
+        setIsManualBrandApplied(false)
+      }
+
       updateSheetConfig(activeSheetIndex, (sheet) => {
-        const newMapping = { ...sheet.columnMapping }
+        let newHeaders = [...sheet.excelData.headers]
+        let newRows = sheet.excelData.rows.map((row) => [...row])
+        let newMapping = { ...sheet.columnMapping }
+        let targetIndex = index
+
+        if (index === -2) {
+          // Create New Column (Start)
+          newHeaders.unshift("New Column")
+          newRows = newRows.map((row) => ["", ...row])
+          targetIndex = 0
+
+          // Shift existing mappings
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach(
+            (key) => {
+              if (newMapping[key] !== null) {
+                newMapping[key] = (newMapping[key] as number) + 1
+              }
+            },
+          )
+        } else if (index === -3) {
+          // Create New Column (End)
+          newHeaders.push("New Column")
+          newRows = newRows.map((row) => [...row, ""])
+          targetIndex = newHeaders.length - 1
+        }
+
+        // Clear any existing mapping that points to the target index
         ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
           if (
-            newMapping[key] === index &&
+            newMapping[key] === targetIndex &&
             key !== "readImage" &&
             key !== "imageAdd"
           ) {
             newMapping[key] = null
-            if (key === "brand") {
-              setManualBrand("")
-              setIsManualBrandApplied(false)
-            }
           }
         })
+
         if (field && ALL_COLUMNS.includes(field)) {
-          newMapping[field as keyof ColumnMapping] = index
-          if (field === "brand") {
-            setManualBrand("")
-            setIsManualBrandApplied(false)
-          }
+          newMapping[field as keyof ColumnMapping] = targetIndex
         }
-        return { ...sheet, columnMapping: newMapping }
+
+        return {
+          ...sheet,
+          excelData: { headers: newHeaders, rows: newRows },
+          columnMapping: newMapping,
+        }
       })
     },
-    [ALL_COLUMNS, activeSheetIndex, updateSheetConfig],
+    [ALL_COLUMNS, activeSheetIndex, updateSheetConfig, activeSheet],
   )
 
   const handleImageColumnMap = useCallback(
     (index: number | null) => {
-      updateSheetConfig(activeSheetIndex, (sheet) => ({
-        ...sheet,
-        columnMapping: {
-          ...sheet.columnMapping,
-          imageAdd: index,
-          readImage: index,
-        },
-      }))
+      updateSheetConfig(activeSheetIndex, (sheet) => {
+        let newHeaders = [...sheet.excelData.headers]
+        let newRows = sheet.excelData.rows.map((row) => [...row])
+        let newMapping = { ...sheet.columnMapping }
+        let targetIndex = index
+
+        if (index === -2) {
+          // Create New Column (Start)
+          newHeaders.unshift("New Column")
+          newRows = newRows.map((row) => ["", ...row])
+          targetIndex = 0
+
+          // Shift existing mappings
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach(
+            (key) => {
+              if (newMapping[key] !== null) {
+                newMapping[key] = (newMapping[key] as number) + 1
+              }
+            },
+          )
+        } else if (index === -3) {
+          // Create New Column (End)
+          newHeaders.push("New Column")
+          newRows = newRows.map((row) => [...row, ""])
+          targetIndex = newHeaders.length - 1
+        }
+
+        return {
+          ...sheet,
+          excelData: { headers: newHeaders, rows: newRows },
+          columnMapping: {
+            ...newMapping,
+            imageAdd: targetIndex,
+            readImage: targetIndex,
+          },
+        }
+      })
     },
     [activeSheetIndex, updateSheetConfig],
   )
@@ -1112,6 +1182,8 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                           aria-label={`Map ${field} column`}
                         >
                           <option value="">Unmapped</option>
+                          <option value="-2">Create New Column (Start)</option>
+                          <option value="-3">Create New Column (End)</option>
                           {excelData.headers.map((header, index) => (
                             <option
                               key={index}
@@ -1194,6 +1266,8 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                               aria-label={`Map ${field} column`}
                             >
                               <option value="">Unmapped</option>
+                              <option value="-2">Create New Column (Start)</option>
+                              <option value="-3">Create New Column (End)</option>
                               {excelData.headers.map((header, index) => (
                                 <option
                                   key={index}
@@ -1319,6 +1393,8 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                             aria-label="Map image column"
                           >
                             <option value="">Unmapped</option>
+                            <option value="-2">Create New Column (Start)</option>
+                            <option value="-3">Create New Column (End)</option>
                             {excelData.headers.map((header, index) => (
                               <option key={index} value={index}>
                                 {header ||
