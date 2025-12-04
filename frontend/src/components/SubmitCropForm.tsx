@@ -608,21 +608,39 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   return (
     <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <div className="flex items-center gap-4">
-          {onBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setStep("upload")
-                onBack()
-              }}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to tools
-            </Button>
-          )}
-          <h1 className="text-2xl font-bold">Crop Tool</h1>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStep("upload")
+                  onBack()
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to tools
+              </Button>
+            )}
+            <h1 className="text-2xl font-bold">Crop Tool</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label>Server</Label>
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Server" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div
@@ -641,28 +659,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             ) : (
               <div />
             )}
-
-            <div className="flex items-center gap-2">
-              <Label>Server</Label>
-              <Select value={serverUrl} onValueChange={setServerUrl}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select Server" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="https://external.iconluxury.group">
-                    Production
-                  </SelectItem>
-                  <SelectItem value="https://dev-external.iconluxury.today">
-                    Development
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           {/* Stepper */}
           <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center">
-            <div className="flex gap-4">
+            <div className="flex-1 flex justify-center gap-4">
               {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
                 <p
                   key={s}

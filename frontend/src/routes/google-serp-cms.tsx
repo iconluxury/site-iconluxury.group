@@ -52,7 +52,14 @@ function GoogleSerpCmsPage() {
   return (
     <div className="bg-[#FFFFFF] min-h-screen">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {environment === "dev" && (
+            <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
+              <span className="font-bold text-sm">DEV ENVIRONMENT</span>
+            </Card>
+          )}
+        </div>
+        <div className="flex gap-2 items-center">
           <a
             href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
             target="_blank"
@@ -73,13 +80,6 @@ function GoogleSerpCmsPage() {
               Search Warehouse
             </Button>
           </a>
-        </div>
-        <div className="flex items-center gap-2">
-          {environment === "dev" && (
-            <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
-              <span className="font-bold text-sm">DEV ENVIRONMENT</span>
-            </Card>
-          )}
           <Button
             variant="outline"
             size="icon"
