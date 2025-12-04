@@ -881,8 +881,8 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
 
   return (
     <div className="w-full bg-background text-foreground min-h-screen">
-      <div className="flex flex-col gap-6 items-stretch">
-        <div className="grid grid-cols-3 items-center mb-4">
+      <div className="flex flex-col gap-2 items-stretch">
+        <div className="grid grid-cols-3 items-center mb-2">
             <div className="flex items-center justify-start">
               {onBack && (
                 <Button
@@ -937,7 +937,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
             )}
           </div>
 
-        <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center mb-4 gap-4">
+        <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center mb-2 gap-4">
           <div className="flex-1 flex justify-center gap-4">
             {["Upload", "Header Row Selection", "Map", "Submit"].map((s, i) => (
               <p
@@ -1091,7 +1091,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </CardContent>
               </Card>
             )}
-            <Card className="bg-muted/50 border-dashed mb-4">
+            <Card className="bg-muted/50 border-dashed mb-2">
               <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <p className="font-semibold">Header Row Selection</p>
@@ -1159,7 +1159,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         )}
 
         {step === "map" && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             <Card className="bg-muted/50 border-dashed">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-1">
