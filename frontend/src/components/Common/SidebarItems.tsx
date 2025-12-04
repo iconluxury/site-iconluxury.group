@@ -49,6 +49,13 @@ const sidebarStructure: SidebarItem[] = [
         title: "Data Warehouse",
         path: "/tools/data-warehouse",
         icon: Database,
+        subItems: [
+          {
+            title: "Jobs History",
+            path: "https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp",
+            icon: FileText,
+          },
+        ],
       },
       { title: "Image Links", path: "/tools/image-links", icon: LinkIcon },
       { title: "Crop Tool", path: "/tools/crop", icon: Crop },

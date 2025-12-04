@@ -616,22 +616,24 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
 
   return (
-    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
+    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground min-h-screen">
       <div className="space-y-6">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => {
-              setStep("upload")
-              onBack()
-            }}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to tools
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStep("upload")
+                onBack()
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to tools
+            </Button>
+          )}
+          <h1 className="text-2xl font-bold">Image Links</h1>
+        </div>
 
         <div
           className={`rounded-md p-4 ${

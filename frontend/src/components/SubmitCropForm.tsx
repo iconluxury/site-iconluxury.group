@@ -606,22 +606,24 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   ])
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground">
+    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        {onBack && (
-          <Button
-            className="self-start"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setStep("upload")
-              onBack()
-            }}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to tools
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStep("upload")
+                onBack()
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to tools
+            </Button>
+          )}
+          <h1 className="text-2xl font-bold">Crop Tool</h1>
+        </div>
 
         <div
           className={cn(
