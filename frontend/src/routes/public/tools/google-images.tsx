@@ -11,8 +11,8 @@ export const Route = createFileRoute("/public/tools/google-images")({
 function GoogleImagesPage() {
   const navigate = useNavigate()
   return (
-    <div className="flex flex-col bg-[#FFFFFF] min-h-screen">
-      <div className="px-8 pt-8 pb-0">
+    <div className="flex flex-col bg-background min-h-screen text-foreground">
+      <div className="pt-4 pb-0">
         <Button
           variant="ghost"
           size="sm"

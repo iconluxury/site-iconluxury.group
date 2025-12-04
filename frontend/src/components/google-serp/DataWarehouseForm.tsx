@@ -823,7 +823,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="w-full p-4 bg-[#FFFFFF] text-foreground">
+    <div className="w-full p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">

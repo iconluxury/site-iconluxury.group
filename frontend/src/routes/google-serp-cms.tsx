@@ -50,7 +50,7 @@ function GoogleSerpCmsPage() {
   }
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen">
+    <div className="bg-background min-h-screen text-foreground p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Button
@@ -91,7 +91,7 @@ function GoogleSerpCmsPage() {
           </a>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Google Images Tool */}
         <Link
           to="/public/tools/google-images"
@@ -196,6 +196,33 @@ function GoogleSerpCmsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <footer className="mt-auto py-6 border-t">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex gap-4">
+            <a
+              href="https://dashboard.iconluxury.group/google-serp-cms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              Want to access legacy upload?
+            </a>
+            <span>|</span>
+            <a
+              href="https://dashboard.iconluxury.group/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              Scraper Admin
+            </a>
+          </div>
+          <div>
+            &copy; {new Date().getFullYear()} Icon Luxury Group. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

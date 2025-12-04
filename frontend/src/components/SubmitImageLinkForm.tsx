@@ -617,7 +617,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
 
   return (
-    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground min-h-screen">
+    <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
