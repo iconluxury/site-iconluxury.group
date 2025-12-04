@@ -1583,7 +1583,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                       setIsIconDistro(checked as boolean)
                     }
                   />
-                  <Label htmlFor="isIconDistro">Is Icon Distro?</Label>
+                  <Label htmlFor="isIconDistro">Output as New Distro</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
