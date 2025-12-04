@@ -822,7 +822,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="w-full bg-[#FFFFFF] text-foreground">
+    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
@@ -838,126 +838,142 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             {backLabel ?? "Back to tools"}
           </Button>
         )}
-        <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center">
-          <div className="flex flex-row gap-4">
-            {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
-              <p
-                key={s}
-                className={cn(
-                  "cursor-pointer",
-                  step === s.toLowerCase()
-                    ? "font-bold text-primary"
-                    : "text-muted-foreground",
-                  i < ["upload", "preview", "map", "submit"].indexOf(step)
-                    ? "cursor-pointer"
-                    : "cursor-default",
-                )}
-                onClick={() => {
-                  if (i < ["upload", "preview", "map", "submit"].indexOf(step))
-                    setStep(
-                      s
-                        .toLowerCase()
-                        .replace("header selection", "preview") as typeof step,
-                    )
-                }}
-              >
-                {i + 1}. {s}
-              </p>
-            ))}
-          </div>
-          {step !== "upload" && (
-            <div className="flex flex-row gap-2">
-              {step !== "preview" && (
-                <Button
-                  onClick={() =>
-                    setStep(
-                      ["upload", "preview", "map", "submit"][
-                        ["upload", "preview", "map", "submit"].indexOf(step) - 1
-                      ] as typeof step,
-                    )
-                  }
-                  variant="outline"
-                  size="sm"
-                >
-                  Back
-                </Button>
-              )}
-              {step === "preview" && (
-                <Button
-                  onClick={() => setStep("upload")}
-                  variant="outline"
-                  size="sm"
-                >
-                  Back
-                </Button>
-              )}
-              {step !== "submit" && (
-                <Button
-                  onClick={() =>
-                    setStep(
-                      ["preview", "map", "submit"][
-                        ["upload", "preview", "map"].indexOf(step)
-                      ] as typeof step,
-                    )
-                  }
-                  size="sm"
-                  disabled={step === "map" && !validateForm.isValid}
-                >
-                  Next:{" "}
-                  {
-                    ["Header Selection", "Map", "Submit"][
-                      ["upload", "preview", "map"].indexOf(step)
-                    ]
-                  }
-                </Button>
-              )}
-              {step === "submit" && (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={
-                    isLoading ||
-                    !validateForm.isValid ||
-                    !sendToEmail ||
-                    !isEmailValid ||
-                    selectedSheetCount === 0 ||
-                    hasInvalidSelectedSheet
-                  }
-                  size="sm"
-                >
-                  {isLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Submit
-                </Button>
-              )}
+        <div
+          className={`rounded-md p-4 ${
+            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
+          }`}
+        >
+          <div className="flex justify-between items-center mb-4">
+            {isDev ? (
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  Not for production use
+                </span>
+              </div>
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center gap-2">
+              <Label>Server</Label>
+              <Select value={serverUrl} onValueChange={setServerUrl}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="https://external.iconluxury.group">
+                    Production
+                  </SelectItem>
+                  <SelectItem value="https://dev-external.iconluxury.today">
+                    Development
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </div>
-
-        <div className="flex justify-end items-center gap-2">
-          <Label>Server</Label>
-          <Select value={serverUrl} onValueChange={setServerUrl}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select Server" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="https://external.iconluxury.group">
-                Production
-              </SelectItem>
-              <SelectItem value="https://dev-external.iconluxury.today">
-                Development
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {isDev && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <AlertTriangle className="h-4 w-4 text-red-500 inline-block mr-2" />
-            <span className="text-red-700 font-medium">Developer Mode</span>
-            <p className="text-red-600 text-sm mt-1">Not for production use.</p>
           </div>
-        )}
+
+          <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center mb-4">
+            <div className="flex flex-row gap-4">
+              {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
+                <p
+                  key={s}
+                  className={cn(
+                    "cursor-pointer",
+                    step === s.toLowerCase()
+                      ? "font-bold text-primary"
+                      : "text-muted-foreground",
+                    i < ["upload", "preview", "map", "submit"].indexOf(step)
+                      ? "cursor-pointer"
+                      : "cursor-default",
+                  )}
+                  onClick={() => {
+                    if (
+                      i < ["upload", "preview", "map", "submit"].indexOf(step)
+                    )
+                      setStep(
+                        s
+                          .toLowerCase()
+                          .replace(
+                            "header selection",
+                            "preview",
+                          ) as typeof step,
+                      )
+                  }}
+                >
+                  {i + 1}. {s}
+                </p>
+              ))}
+            </div>
+            {step !== "upload" && (
+              <div className="flex flex-row gap-2">
+                {step !== "preview" && (
+                  <Button
+                    onClick={() =>
+                      setStep(
+                        ["upload", "preview", "map", "submit"][
+                          ["upload", "preview", "map", "submit"].indexOf(step) -
+                            1
+                        ] as typeof step,
+                      )
+                    }
+                    variant="outline"
+                    size="sm"
+                  >
+                    Back
+                  </Button>
+                )}
+                {step === "preview" && (
+                  <Button
+                    onClick={() => setStep("upload")}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Back
+                  </Button>
+                )}
+                {step !== "submit" && (
+                  <Button
+                    onClick={() =>
+                      setStep(
+                        ["preview", "map", "submit"][
+                          ["upload", "preview", "map"].indexOf(step)
+                        ] as typeof step,
+                      )
+                    }
+                    size="sm"
+                    disabled={step === "map" && !validateForm.isValid}
+                  >
+                    Next:{" "}
+                    {
+                      ["Header Selection", "Map", "Submit"][
+                        ["upload", "preview", "map"].indexOf(step)
+                      ]
+                    }
+                  </Button>
+                )}
+                {step === "submit" && (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={
+                      isLoading ||
+                      !validateForm.isValid ||
+                      !sendToEmail ||
+                      !isEmailValid ||
+                      selectedSheetCount === 0 ||
+                      hasInvalidSelectedSheet
+                    }
+                    size="sm"
+                  >
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Submit
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
 
         {step === "upload" && (
           <UploadStep
@@ -1654,6 +1670,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   )

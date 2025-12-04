@@ -51,45 +51,26 @@ function GoogleSerpCmsPage() {
 
   return (
     <div className="p-8 space-y-8 bg-[#FFFFFF] min-h-screen">
-      <div className="flex justify-end items-center">
+      <div className="flex justify-between items-center">
+        <a
+          href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Button variant="outline" className="gap-2">
+            <LuFileText className="h-4 w-4" />
+            Jobs History
+          </Button>
+        </a>
         <div className="flex items-center gap-2">
           {environment === "dev" && (
             <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
               <span className="font-bold text-sm">DEV ENVIRONMENT</span>
             </Card>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Report Page */}
-        <a
-          href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block h-full"
-        >
-          <Card className="hover:shadow-lg transition-shadow h-full">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <LuFileText className="h-6 w-6 text-primary" />
-                <CardTitle>Reports</CardTitle>
-              </div>
-              <CardDescription>
-                View all uploads and populated data.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </a>
-
         {/* Google Images Tool */}
         <Link
           to="/public/tools/google-images"
@@ -193,6 +174,17 @@ function GoogleSerpCmsPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+      <div className="flex justify-center mt-auto pt-8 pb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </div>
     </div>
   )

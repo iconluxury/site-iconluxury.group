@@ -1281,33 +1281,42 @@ const ReformatExcelForm: React.FC = () => {
   return (
     <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6">
-        {/* Backend Selector */}
-        <div className="flex justify-end items-center gap-2">
-          <Label>Server</Label>
-          <Select value={serverUrl} onValueChange={setServerUrl}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select Server" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="https://external.iconluxury.group">
-                Production
-              </SelectItem>
-              <SelectItem value="https://dev-external.iconluxury.today">
-                Development
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <div
+          className={`rounded-md p-4 ${
+            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
+          }`}
+        >
+          <div className="flex justify-between items-center mb-4">
+            {isDev ? (
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  Not for production use
+                </span>
+              </div>
+            ) : (
+              <div />
+            )}
 
-        {isDev && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <AlertTriangle className="h-4 w-4 text-red-500 inline-block mr-2" />
-            <span className="text-red-700 font-medium">Developer Mode</span>
-            <p className="text-red-600 text-sm mt-1">Not for production use.</p>
+            <div className="flex items-center gap-2">
+              <Label>Server</Label>
+              <Select value={serverUrl} onValueChange={setServerUrl}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="https://external.iconluxury.group">
+                    Production
+                  </SelectItem>
+                  <SelectItem value="https://dev-external.iconluxury.today">
+                    Development
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        )}
 
-        <div className="flex justify-between bg-muted/50 p-2 rounded-md items-center">
+          <div className="flex justify-between bg-muted/50 p-2 rounded-md items-center mb-4">
           <div className="flex gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
               <p
@@ -1931,6 +1940,7 @@ const ReformatExcelForm: React.FC = () => {
             uploadedFile={uploadedFile}
           />
         )}
+        </div>
       </div>
     </div>
   )

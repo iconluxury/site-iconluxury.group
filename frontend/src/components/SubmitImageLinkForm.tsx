@@ -638,30 +638,34 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
           }`}
         >
-          {isDev && (
-            <Alert variant="destructive" className="mb-3">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Developer Mode</AlertTitle>
-              <AlertDescription>Not for production use.</AlertDescription>
-            </Alert>
-          )}
+          <div className="flex justify-between items-center mb-4">
+            {isDev ? (
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  Not for production use
+                </span>
+              </div>
+            ) : (
+              <div />
+            )}
 
-          {/* Backend Selector */}
-          <div className="flex justify-end mb-4 items-center gap-2">
-            <Label>Server</Label>
-            <Select value={serverUrl} onValueChange={setServerUrl}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select Server" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="https://external.iconluxury.group">
-                  Production
-                </SelectItem>
-                <SelectItem value="https://dev-external.iconluxury.today">
-                  Development
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Label>Server</Label>
+              <Select value={serverUrl} onValueChange={setServerUrl}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="https://external.iconluxury.group">
+                    Production
+                  </SelectItem>
+                  <SelectItem value="https://dev-external.iconluxury.today">
+                    Development
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Stepper */}
