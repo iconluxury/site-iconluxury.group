@@ -159,7 +159,7 @@ export default function JobsDashboard({
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 bg-[#FFFFFF] text-foreground">
       {/* Tools Access Card */}
       {showWelcome && (
         <Card className="bg-primary/5 border-primary/20">

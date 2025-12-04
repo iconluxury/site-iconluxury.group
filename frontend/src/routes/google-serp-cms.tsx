@@ -70,6 +70,26 @@ function GoogleSerpCmsPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Report Page */}
+        <a
+          href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block h-full"
+        >
+          <Card className="hover:shadow-lg transition-shadow h-full">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <LuFileText className="h-6 w-6 text-primary" />
+                <CardTitle>Reports</CardTitle>
+              </div>
+              <CardDescription>
+                View all uploads and populated data.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </a>
+
         {/* Google Images Tool */}
         <Link
           to="/public/tools/google-images"
