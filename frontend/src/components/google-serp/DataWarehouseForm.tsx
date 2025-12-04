@@ -934,10 +934,11 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
+          <Label>Server</Label>
           <Select value={serverUrl} onValueChange={setServerUrl}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select Backend" />
+              <SelectValue placeholder="Select Server" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="https://external.iconluxury.group">

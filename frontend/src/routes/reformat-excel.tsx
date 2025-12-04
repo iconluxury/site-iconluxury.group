@@ -1282,10 +1282,11 @@ const ReformatExcelForm: React.FC = () => {
     <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6">
         {/* Backend Selector */}
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
+          <Label>Server</Label>
           <Select value={serverUrl} onValueChange={setServerUrl}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select Backend" />
+              <SelectValue placeholder="Select Server" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="https://external.iconluxury.group">
