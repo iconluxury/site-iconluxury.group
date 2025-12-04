@@ -639,6 +639,13 @@ const ReformatExcelForm: React.FC = () => {
   const isManualBrandApplied = Boolean(manualValues.brand)
   const hasMultipleSheets = sheetConfigs.length > 1
 
+  const isEmailValid = useMemo(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(sendToEmail)
+  }, [sendToEmail])
+
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
+
   const updateSheetConfig = useCallback(
     (index: number, transform: (sheet: SheetConfig) => SheetConfig) => {
       setSheetConfigs((prev) => {
@@ -696,12 +703,6 @@ const ReformatExcelForm: React.FC = () => {
     "price",
     "msrp",
   ]
-
-  const isEmailValid = useMemo(() => {
-    const trimmed = sendToEmail
-    if (!trimmed) return false
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
-  }, [sendToEmail])
 
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1280,6 +1281,23 @@ const ReformatExcelForm: React.FC = () => {
   return (
     <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6">
+        {/* Backend Selector */}
+        <div className="flex justify-end">
+          <Select value={serverUrl} onValueChange={setServerUrl}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Backend" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="https://external.iconluxury.group">
+                Production
+              </SelectItem>
+              <SelectItem value="https://dev-external.iconluxury.today">
+                Development
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex justify-between bg-muted/50 p-2 rounded-md items-center">
           <div className="flex gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
@@ -1360,7 +1378,7 @@ const ReformatExcelForm: React.FC = () => {
 
         {step === "upload" && (
           <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-bold">Upload Excel File</h2>
+            <h2 className="text-lg font-bold">Reformat Excel File</h2>
             <div>
               <TooltipProvider>
                 <Tooltip>

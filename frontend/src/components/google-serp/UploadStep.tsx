@@ -11,16 +11,18 @@ import type React from "react"
 interface UploadStepProps {
   isLoading: boolean
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  title?: string
 }
 
 export const UploadStep: React.FC<UploadStepProps> = ({
   isLoading,
   onFileChange,
+  title = "Upload Excel File for Google Images Scrape",
 }) => {
   return (
     <div className="flex flex-col gap-4 items-stretch">
       <p className="text-lg font-bold">
-        Upload Excel File for Google Images Scrape
+        {title}
       </p>
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <TooltipProvider>

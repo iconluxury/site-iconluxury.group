@@ -896,6 +896,24 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
             {backLabel ?? "Back to tools"}
           </Button>
         )}
+
+        {/* Backend Selector */}
+        <div className="flex justify-end">
+          <Select value={serverUrl} onValueChange={setServerUrl}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Backend" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="https://external.iconluxury.group">
+                Production
+              </SelectItem>
+              <SelectItem value="https://dev-external.iconluxury.today">
+                Development
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center">
           <div className="flex flex-row gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
