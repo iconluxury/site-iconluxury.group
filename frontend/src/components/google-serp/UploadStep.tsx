@@ -18,7 +18,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
   onFileChange,
 }) => {
   return (
-    <div className="flex flex-col gap-4 items-stretch mt-6">
+    <div className="flex flex-col gap-4 items-stretch">
       {/* Title removed as per new UX */}
       <div
         className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer"

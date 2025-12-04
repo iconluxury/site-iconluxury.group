@@ -806,7 +806,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               {backLabel ?? "Back to tools"}
             </Button>
           )}
-          <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="flex flex-col items-center justify-center text-center space-y-4">
             <AlertTriangle className="h-12 w-12 text-yellow-500" />
             <h2 className="text-xl font-semibold">
               No Email Parameter Detected
@@ -825,7 +825,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="w-full bg-background text-foreground">
+    <div className="w-full bg-background text-foreground overflow-y-auto">
       <div className="flex flex-col gap-2 items-stretch">
         <div className="grid grid-cols-3 items-center mb-2">
             <div className="flex items-center justify-start">
@@ -989,11 +989,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           </div>
 
         {step === "upload" && (
-          <UploadStep
-            onFileChange={handleFileChange}
-            isLoading={isLoading}
-
-          />
+          <Card className="bg-card">
+            <CardContent className="p-6">
+              <UploadStep
+                onFileChange={handleFileChange}
+                isLoading={isLoading}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {step === "preview" && (
@@ -1049,7 +1052,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </CardContent>
               </Card>
             )}
-            <Card className="bg-muted/50 border-dashed mb-2">
+            <Card className="bg-muted/50 border-dashed">
               <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <p className="font-semibold">Header Row Selection</p>

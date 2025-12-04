@@ -861,7 +861,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
               {backLabel ?? "Back to tools"}
             </Button>
           )}
-          <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="flex flex-col items-center justify-center text-center space-y-4">
             <AlertTriangle className="h-12 w-12 text-yellow-500" />
             <h2 className="text-xl font-semibold">
               No Email Parameter Detected
