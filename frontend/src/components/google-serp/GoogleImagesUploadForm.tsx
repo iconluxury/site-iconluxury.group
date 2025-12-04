@@ -1090,21 +1090,34 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </CardContent>
               </Card>
             )}
-            <div className="flex flex-row items-center gap-2">
-              <p>Select Header Row:</p>
-              <select
-                value={headerIndex}
-                onChange={(e) => handleHeaderChange(Number(e.target.value))}
-                className="w-[150px] border rounded p-1"
-                aria-label="Select header row"
-              >
-                {rawData.slice(0, 20).map((_, index) => (
-                  <option key={index} value={index}>
-                    Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Card className="bg-muted/50 border-dashed mb-4">
+              <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <p className="font-semibold">Header Row Selection</p>
+                  <p className="text-sm text-muted-foreground">
+                    Select the row containing your column headers (e.g. "Style", "Brand").
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="whitespace-nowrap">Select Row:</Label>
+                  <Select
+                    value={String(headerIndex)}
+                    onValueChange={(val) => handleHeaderChange(Number(val))}
+                  >
+                    <SelectTrigger className="w-[200px] bg-background">
+                      <SelectValue placeholder="Select row" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rawData.slice(0, 20).map((_, index) => (
+                        <SelectItem key={index} value={String(index)}>
+                          Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
             <div className="overflow-x-auto border rounded-md p-2">
               <Table>
                 <TableBody>

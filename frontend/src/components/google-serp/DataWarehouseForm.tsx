@@ -29,8 +29,9 @@ import {
 import useCustomToast from "@/hooks/useCustomToast"
 import { useIframeEmail } from "@/hooks/useIframeEmail"
 import { cn } from "@/lib/utils"
-import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
-import { LuFileText } from "react-icons/lu"
+import { useTheme } from "next-themes"
+import { AlertTriangle, ArrowLeft, Check, Loader2, X, Sun, Moon } from "lucide-react"
+import { LuFileText, LuDatabase } from "react-icons/lu"
 import type React from "react"
 import { useCallback, useMemo, useRef, useState } from "react"
 import * as XLSX from "xlsx"
@@ -72,6 +73,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   backLabel,
   mode,
 }) => {
+  const { theme, setTheme } = useTheme()
   const modeConfig = DATA_WAREHOUSE_MODE_CONFIG[mode]
   const REQUIRED_COLUMNS = modeConfig.requiredColumns
   const OPTIONAL_COLUMNS = modeConfig.optionalColumns
@@ -841,35 +843,51 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 {backLabel ?? "Back to tools"}
               </Button>
             )}
-            <h1 className="text-xl font-bold">Data Warehouse</h1>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+            {isDev && (
+              <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
+                <span className="font-bold text-sm">DEV ENVIRONMENT</span>
+              </Card>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
+              href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="outline" size="sm" className="gap-2">
-                <LuFileText className="h-4 w-4" />
-                Jobs History
+              <Button variant="outline" className="gap-2">
+                <LuDatabase className="h-4 w-4" />
+                Search Warehouse
               </Button>
             </a>
-            <div className="flex items-center gap-2">
-              <Label>Server</Label>
-              <Select value={serverUrl} onValueChange={setServerUrl}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select Server" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="https://external.iconluxury.group">
-                    Production
-                  </SelectItem>
-                  <SelectItem value="https://dev-external.iconluxury.today">
-                    Development
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold">Data Warehouse</h1>
+          <div className="flex items-center gap-2">
+            <Label>Server</Label>
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Server" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <div
@@ -1053,21 +1071,34 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </CardContent>
               </Card>
             )}
-            <div className="flex flex-row items-center gap-2">
-              <p>Select Header Row:</p>
-              <select
-                value={headerIndex}
-                onChange={(e) => handleHeaderChange(Number(e.target.value))}
-                className="w-[150px] border rounded p-1"
-                aria-label="Select header row"
-              >
-                {rawData.slice(0, 20).map((_, index) => (
-                  <option key={index} value={index}>
-                    Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Card className="bg-muted/50 border-dashed mb-4">
+              <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <p className="font-semibold">Header Row Selection</p>
+                  <p className="text-sm text-muted-foreground">
+                    Select the row containing your column headers (e.g. "Style", "Brand").
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="whitespace-nowrap">Select Row:</Label>
+                  <Select
+                    value={String(headerIndex)}
+                    onValueChange={(val) => handleHeaderChange(Number(val))}
+                  >
+                    <SelectTrigger className="w-[200px] bg-background">
+                      <SelectValue placeholder="Select row" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rawData.slice(0, 20).map((_, index) => (
+                        <SelectItem key={index} value={String(index)}>
+                          Row {index + 1} {index === headerIndex ? "(Selected)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
             <div className="overflow-x-auto border rounded-md p-2">
               <Table>
                 <TableBody>
