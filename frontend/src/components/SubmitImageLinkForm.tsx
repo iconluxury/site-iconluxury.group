@@ -616,7 +616,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
 
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground">
+    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="space-y-6">
         {onBack && (
           <Button

@@ -1279,7 +1279,7 @@ const ReformatExcelForm: React.FC = () => {
   )
 
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground">
+    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6">
         {/* Backend Selector */}
         <div className="flex justify-end items-center gap-2">

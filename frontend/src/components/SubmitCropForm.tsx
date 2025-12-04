@@ -606,7 +606,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   ])
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button

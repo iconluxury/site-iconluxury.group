@@ -33,7 +33,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                 accept=".xlsx,.xls"
                 onChange={onFileChange}
                 disabled={isLoading}
-                className="bg-background border-input cursor-pointer file:cursor-pointer file:text-foreground file:bg-secondary hover:file:bg-secondary/80"
+                className="bg-[#FFFFFF] border-input cursor-pointer file:cursor-pointer file:text-foreground file:bg-secondary hover:file:bg-secondary/80"
                 aria-label="Upload Excel file"
               />
             </TooltipTrigger>

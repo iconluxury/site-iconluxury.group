@@ -822,7 +822,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="w-full bg-background text-foreground">
+    <div className="w-full bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button

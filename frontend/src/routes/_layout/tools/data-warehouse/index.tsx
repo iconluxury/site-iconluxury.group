@@ -15,7 +15,6 @@ function DataWarehouseIndex() {
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Dashboard
       </Button>
-      <h1 className="text-3xl font-bold">Data Warehouse Tool</h1>
       <Card>
         <CardHeader>
           <CardTitle>Overview</CardTitle>

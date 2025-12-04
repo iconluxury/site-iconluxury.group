@@ -10,7 +10,7 @@ export const Route = createFileRoute("/public/tools/image-links")({
 function ImageLinksPage() {
   const navigate = useNavigate()
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground">
       <Button
         variant="ghost"
         size="sm"

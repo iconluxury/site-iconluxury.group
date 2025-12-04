@@ -26,7 +26,7 @@ function DataWarehousePage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-background text-foreground">
+    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground">
       <Button
         variant="ghost"
         size="sm"
@@ -36,7 +36,6 @@ function DataWarehousePage() {
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Tools
       </Button>
-      <h1 className="text-2xl font-bold mb-6">Data Warehouse Tool</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {(Object.keys(DATA_WAREHOUSE_MODE_CONFIG) as DataWarehouseMode[]).map(
           (key) => {

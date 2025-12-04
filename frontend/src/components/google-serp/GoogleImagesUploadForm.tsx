@@ -880,7 +880,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   }
 
   return (
-    <div className="w-full bg-background text-foreground">
+    <div className="w-full bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         {onBack && (
           <Button
