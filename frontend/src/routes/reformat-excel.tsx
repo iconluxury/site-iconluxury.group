@@ -1299,6 +1299,14 @@ const ReformatExcelForm: React.FC = () => {
           </Select>
         </div>
 
+        {isDev && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <AlertTriangle className="h-4 w-4 text-red-500 inline-block mr-2" />
+            <span className="text-red-700 font-medium">Developer Mode</span>
+            <p className="text-red-600 text-sm mt-1">Not for production use.</p>
+          </div>
+        )}
+
         <div className="flex justify-between bg-muted/50 p-2 rounded-md items-center">
           <div className="flex gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (

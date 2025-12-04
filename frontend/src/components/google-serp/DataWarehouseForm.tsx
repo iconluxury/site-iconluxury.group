@@ -111,6 +111,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   const [isIconDistro, setIsIconDistro] = useState(false)
   const [isAiMode, setIsAiMode] = useState(false)
 
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
+
   const iframeEmail = useIframeEmail()
   const emailRecipient = useMemo(() => iframeEmail?.trim() ?? "", [iframeEmail])
   const sendToEmail = emailRecipient // Alias for compatibility
@@ -782,9 +785,6 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     uploadedFile,
   ])
 
-  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
-  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
-
   if (!sendToEmail) {
     return (
       <div className="w-full bg-background text-foreground">
@@ -950,6 +950,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {isDev && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <AlertTriangle className="h-4 w-4 text-red-500 inline-block mr-2" />
+            <span className="text-red-700 font-medium">Developer Mode</span>
+            <p className="text-red-600 text-sm mt-1">Not for production use.</p>
+          </div>
+        )}
 
         {step === "upload" && (
           <UploadStep

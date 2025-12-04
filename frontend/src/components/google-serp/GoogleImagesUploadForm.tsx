@@ -915,6 +915,14 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
           </Select>
         </div>
 
+        {isDev && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <AlertTriangle className="h-4 w-4 text-red-500 inline-block mr-2" />
+            <span className="text-red-700 font-medium">Developer Mode</span>
+            <p className="text-red-600 text-sm mt-1">Not for production use.</p>
+          </div>
+        )}
+
         <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center">
           <div className="flex flex-row gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
