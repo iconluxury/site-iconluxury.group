@@ -428,7 +428,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
   const activeSheetStatusColor = activeSheetIsReady
-    ? "text-green-500"
+    ? "text-blue-500"
     : "text-yellow-500"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "All required columns are mapped."
@@ -1076,7 +1076,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                             else if (isSelectedColumn)
                               bgClass = "bg-blue-50 dark:bg-blue-900/10"
                             else if (isMappedColumn)
-                              bgClass = "bg-gray-50 dark:bg-gray-800/50"
+                              bgClass = "bg-blue-50 dark:bg-blue-900/20"
 
                             return (
                               <TableCell

@@ -405,7 +405,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
   const activeSheetStatusColor = activeSheetIsReady
-    ? "text-green-400"
+    ? "text-blue-400"
     : "text-yellow-400"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "Style column mapped. Image columns are detected automatically when present."
@@ -1111,7 +1111,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                                     : isSelectedColumn
                                       ? "bg-primary/10"
                                       : isMappedColumn
-                                        ? "bg-neutral-100 dark:bg-neutral-800"
+                                        ? "bg-blue-50 dark:bg-blue-900/20"
                                         : "",
                                 )}
                                 onClick={() =>

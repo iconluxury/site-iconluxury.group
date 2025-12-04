@@ -10,7 +10,7 @@ export const Route = createFileRoute("/public/tools/crop")({
 function CropPage() {
   const navigate = useNavigate()
   return (
-    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] text-foreground">
+    <div className="container mx-auto max-w-7xl p-4 bg-[#FFFFFF] min-h-screen text-foreground">
       <Button
         variant="ghost"
         size="sm"

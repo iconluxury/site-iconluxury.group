@@ -348,7 +348,7 @@ const SubmitStep: React.FC<{
                             className={cn(
                               "flex w-fit items-center gap-1",
                               isReady
-                                ? "bg-green-500 hover:bg-green-600"
+                                ? "bg-blue-500 hover:bg-blue-600"
                                 : "bg-yellow-500 hover:bg-yellow-600",
                             )}
                           >
@@ -1052,7 +1052,7 @@ const ReformatExcelForm: React.FC = () => {
   const activeSheetStatusLabel = activeSheetIsReady ? "Ready" : "Needs mapping"
   const ActiveSheetStatusIcon = activeSheetIsReady ? Check : AlertTriangle
   const activeSheetStatusColor = activeSheetIsReady
-    ? "text-green-500"
+    ? "text-blue-500"
     : "text-yellow-500"
   const activeSheetStatusTooltip = activeSheetIsReady
     ? "All required columns are mapped."
@@ -1440,7 +1440,7 @@ const ReformatExcelForm: React.FC = () => {
                         <TooltipTrigger asChild>
                           <div className="flex gap-2 text-xs text-muted-foreground items-center">
                             {activeSheetIsReady ? (
-                              <Check className="h-3 w-3 text-green-500" />
+                              <Check className="h-3 w-3 text-blue-500" />
                             ) : (
                               <AlertTriangle className="h-3 w-3 text-yellow-500" />
                             )}
@@ -1536,7 +1536,7 @@ const ReformatExcelForm: React.FC = () => {
                           <TooltipTrigger asChild>
                             <div className="flex gap-2 text-xs text-muted-foreground items-center">
                               {activeSheetIsReady ? (
-                                <Check className="h-3 w-3 text-green-500" />
+                                <Check className="h-3 w-3 text-blue-500" />
                               ) : (
                                 <AlertTriangle className="h-3 w-3 text-yellow-500" />
                               )}
@@ -1909,7 +1909,7 @@ const ReformatExcelForm: React.FC = () => {
                                   : isSelectedColumn
                                     ? "bg-primary/10"
                                     : isMappedColumn
-                                      ? "bg-green-50"
+                                      ? "bg-blue-50"
                                       : "",
                               )}
                               onClick={() => handleColumnMapFromGrid(cellIndex)}

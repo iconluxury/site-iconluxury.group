@@ -50,8 +50,8 @@ function GoogleSerpCmsPage() {
   }
 
   return (
-    <div className="p-8 space-y-8 bg-[#FFFFFF] min-h-screen">
-      <div className="flex justify-between items-center">
+    <div className="bg-[#FFFFFF] min-h-screen">
+      <div className="flex justify-between items-center mb-8">
         <a
           href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
           target="_blank"
@@ -175,9 +175,9 @@ function GoogleSerpCmsPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="flex justify-center mt-auto pt-8 pb-4">
+      <div className="mt-8 flex justify-end">
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >

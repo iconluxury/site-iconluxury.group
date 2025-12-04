@@ -30,6 +30,7 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { useIframeEmail } from "@/hooks/useIframeEmail"
 import { cn } from "@/lib/utils"
 import { AlertTriangle, ArrowLeft, Check, Loader2, X } from "lucide-react"
+import { LuFileText } from "react-icons/lu"
 import type React from "react"
 import { useCallback, useMemo, useRef, useState } from "react"
 import * as XLSX from "xlsx"
@@ -480,7 +481,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
     : X
   const activeSheetStatusColor = activeSheetIsSelected
     ? activeSheetIsReady
-      ? "text-green-400"
+      ? "text-blue-400"
       : "text-yellow-400"
     : "text-muted-foreground"
   const activeSheetStatusTooltip = activeSheetIsSelected
@@ -824,20 +825,32 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   return (
     <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => {
-              setStep("upload")
-              onBack()
-            }}
+        <div className="flex justify-between items-center">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => {
+                setStep("upload")
+                onBack()
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {backLabel ?? "Back to tools"}
+            </Button>
+          )}
+          <a
+            href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {backLabel ?? "Back to tools"}
-          </Button>
-        )}
+            <Button variant="outline" size="sm" className="gap-2">
+              <LuFileText className="h-4 w-4" />
+              Jobs History
+            </Button>
+          </a>
+        </div>
         <div
           className={`rounded-md p-4 ${
             isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
@@ -1015,7 +1028,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         <TooltipTrigger asChild>
                           <div className="flex flex-row gap-2 text-xs text-muted-foreground items-center">
                             <ActiveSheetStatusIcon
-                              className={cn("h-3 w-3", activeSheetStatusColor)}
+                              className={cn("h-3 w-3", activeSheetStatusColor.replace("green", "blue"))}
                             />
                             <p>{activeSheetStatusLabel}</p>
                           </div>
@@ -1123,7 +1136,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                               <ActiveSheetStatusIcon
                                 className={cn(
                                   "h-3 w-3",
-                                  activeSheetStatusColor,
+                                  activeSheetStatusColor.replace("green", "blue"),
                                 )}
                               />
                               <p>{activeSheetStatusLabel}</p>
@@ -1236,8 +1249,8 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         <TooltipContent>
                           <p>Clear mapping</p>
                         </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                      </TooltipProvider>
+                    </Tooltip>
                   )}
                   <div className="w-[150px] text-sm text-muted-foreground truncate">
                     {getColumnPreview(columnMapping[field], excelData.rows)}
@@ -1513,7 +1526,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                                   : isSelectedColumn
                                     ? "bg-primary/10"
                                     : isMappedColumn
-                                      ? "bg-green-50"
+                                      ? "bg-blue-50"
                                       : "",
                                 activeMappingField
                                   ? "cursor-pointer"

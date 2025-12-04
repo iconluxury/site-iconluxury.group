@@ -537,7 +537,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
     : X
   const activeSheetStatusColor = activeSheetIsSelected
     ? activeSheetIsReady
-      ? "text-green-400"
+      ? "text-blue-500"
       : "text-yellow-400"
     : "text-muted-foreground"
   const activeSheetStatusTooltip = activeSheetIsSelected
@@ -1567,7 +1567,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                                   : isSelectedColumn
                                     ? "bg-primary/10"
                                     : isMappedColumn
-                                      ? "bg-green-50"
+                                      ? "bg-blue-50"
                                       : "",
                                 activeMappingField
                                   ? "cursor-pointer"
