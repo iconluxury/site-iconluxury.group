@@ -667,15 +667,15 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
           </div>
 
           {/* Stepper */}
-          <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center">
+          <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center mb-4 gap-4">
             <div className="flex-1 flex justify-center gap-4">
-              {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
+              {["Upload", "Header Row Selection", "Map", "Submit"].map((s, i) => (
                 <p
                   key={s}
                   className={cn(
                     "text-sm",
                     step ===
-                      s.toLowerCase().replace("header selection", "preview")
+                      s.toLowerCase().replace("header row selection", "preview")
                       ? "font-bold text-primary"
                       : "text-muted-foreground",
                     i < ["upload", "preview", "map", "submit"].indexOf(step)
@@ -690,7 +690,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
                         s
                           .toLowerCase()
                           .replace(
-                            "header selection",
+                            "header row selection",
                             "preview",
                           ) as typeof step,
                       )
@@ -741,7 +741,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
                   >
                     Next:{" "}
                     {
-                      ["Header Selection", "Map", "Submit"][
+                      ["Header Row Selection", "Map", "Submit"][
                         ["upload", "preview", "map"].indexOf(step)
                       ]
                     }

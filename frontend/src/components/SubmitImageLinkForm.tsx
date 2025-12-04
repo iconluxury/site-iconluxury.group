@@ -679,14 +679,14 @@ const SubmitImageLinkForm: React.FC<{
           </div>
 
           {/* Stepper */}
-          <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-4">
+          <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-4 gap-4">
             <div className="flex-1 flex justify-center space-x-4">
-              {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
+              {["Upload", "Header Row Selection", "Map", "Submit"].map((s, i) => (
                 <span
                   key={s}
                   className={`cursor-pointer ${
                     step ===
-                    s.toLowerCase().replace("header selection", "preview")
+                    s.toLowerCase().replace("header row selection", "preview")
                       ? "font-bold text-primary"
                       : "text-muted-foreground"
                   } ${
@@ -702,7 +702,7 @@ const SubmitImageLinkForm: React.FC<{
                         s
                           .toLowerCase()
                           .replace(
-                            "header selection",
+                            "header row selection",
                             "preview",
                           ) as typeof step,
                       )
@@ -753,7 +753,7 @@ const SubmitImageLinkForm: React.FC<{
                   >
                     Next:{" "}
                     {
-                      ["Header Selection", "Map", "Submit"][
+                      ["Header Row Selection", "Map", "Submit"][
                         ["upload", "preview", "map"].indexOf(step)
                       ]
                     }
