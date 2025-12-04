@@ -825,7 +825,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="w-full bg-background text-foreground overflow-y-auto">
+    <div className="w-full bg-background text-foreground overflow-y-auto h-full min-h-screen">
       <div className="flex flex-col gap-2 items-stretch">
         <div className="grid grid-cols-3 items-center mb-2">
             <div className="flex items-center justify-start">
@@ -1606,58 +1606,52 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="h-8">Field</TableHead>
-                      <TableHead className="h-8">Column</TableHead>
-                      <TableHead className="h-8">Preview</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getColumnMappingEntries(columnMapping)
-                      .filter(
-                        ([col, index]) =>
-                          index !== null &&
-                          col !== "readImage" &&
-                          col !== "imageAdd",
-                      )
-                      .map(([col, index]) => (
-                        <TableRow key={col} className="h-8">
-                          <TableCell className="py-2">{col}</TableCell>
-                          <TableCell className="py-2">
-                            {excelData.headers[index!] ||
-                              `Column ${indexToColumnLetter(index!)}`}
-                          </TableCell>
-                          <TableCell className="py-2">
-                            {getColumnPreview(index, excelData.rows)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    {enableImageTargetMapping && imageColumnIndex !== null && (
-                      <TableRow className="h-8">
-                        <TableCell className="py-2">Image Target</TableCell>
-                        <TableCell className="py-2">
-                          {excelData.headers[imageColumnIndex] ||
-                            `Column ${indexToColumnLetter(imageColumnIndex)}`}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          {getColumnPreview(imageColumnIndex, excelData.rows)}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {isManualBrandApplied && (
-                      <TableRow className="h-8">
-                        <TableCell className="py-2">Manual Brand</TableCell>
-                        <TableCell className="py-2">BRAND (Manual)</TableCell>
-                        <TableCell className="py-2">
-                          {excelData.rows[0]?.[excelData.headers.length - 1] ||
-                            manualBrand}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                <div className="flex flex-col gap-2">
+                  {getColumnMappingEntries(columnMapping)
+                    .filter(
+                      ([col, index]) =>
+                        index !== null &&
+                        col !== "readImage" &&
+                        col !== "imageAdd",
+                    )
+                    .map(([col, index]) => (
+                      <div
+                        key={col}
+                        className="flex flex-row gap-2 items-center p-2 border-b last:border-0"
+                      >
+                        <p className="w-[120px] font-semibold">{col}:</p>
+                        <p className="flex-1">
+                          {excelData.headers[index!] ||
+                            `Column ${indexToColumnLetter(index!)}`}
+                        </p>
+                        <p className="w-[150px] text-sm text-muted-foreground truncate">
+                          {getColumnPreview(index, excelData.rows)}
+                        </p>
+                      </div>
+                    ))}
+                  {enableImageTargetMapping && imageColumnIndex !== null && (
+                    <div className="flex flex-row gap-2 items-center p-2 border-b last:border-0">
+                      <p className="w-[120px] font-semibold">Image Target:</p>
+                      <p className="flex-1">
+                        {excelData.headers[imageColumnIndex] ||
+                          `Column ${indexToColumnLetter(imageColumnIndex)}`}
+                      </p>
+                      <p className="w-[150px] text-sm text-muted-foreground truncate">
+                        {getColumnPreview(imageColumnIndex, excelData.rows)}
+                      </p>
+                    </div>
+                  )}
+                  {isManualBrandApplied && (
+                    <div className="flex flex-row gap-2 items-center p-2 border-b last:border-0">
+                      <p className="w-[120px] font-semibold">Manual Brand:</p>
+                      <p className="flex-1">BRAND (Manual)</p>
+                      <p className="w-[150px] text-sm text-muted-foreground truncate">
+                        {excelData.rows[0]?.[excelData.headers.length - 1] ||
+                          manualBrand}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

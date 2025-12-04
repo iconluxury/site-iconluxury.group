@@ -50,7 +50,7 @@ function GoogleSerpCmsPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen text-gray-900 p-4">
+    <div className="bg-white min-h-screen text-gray-900">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Button
