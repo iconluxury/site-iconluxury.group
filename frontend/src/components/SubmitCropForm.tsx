@@ -609,7 +609,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
   ])
 
   return (
-    <div className="w-full p-4 bg-background text-foreground min-h-screen">
+    <div className="w-full bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
         <div className="grid grid-cols-3 items-center mb-4">
           <div className="flex items-center justify-start">
