@@ -132,7 +132,10 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
   return mapping
 }
 
-const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
+  onBack,
+  backLabel,
+}) => {
   const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
   const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
 
@@ -620,7 +623,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 }}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to tools
+                {backLabel ?? "Back to tools"}
               </Button>
             )}
           </div>

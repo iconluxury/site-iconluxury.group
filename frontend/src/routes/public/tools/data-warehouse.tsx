@@ -17,7 +17,7 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
-import { LuDatabase } from "react-icons/lu"
+import { LuDatabase, LuFileText } from "react-icons/lu"
 
 export const Route = createFileRoute("/public/tools/data-warehouse")({
   component: DataWarehousePage,
@@ -58,8 +58,10 @@ function DataWarehousePage() {
           <div className="flex items-center justify-end gap-4">
             <Button
               variant="outline"
+              className="gap-2"
               onClick={() => window.open(`https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp`, "_blank")}
             >
+              <LuFileText className="h-4 w-4" />
               Jobs History
             </Button>
             <a
@@ -82,12 +84,12 @@ function DataWarehousePage() {
               return (
                 <Card
                   key={key}
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow"
                   onClick={() => setMode(key)}
                 >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-6 w-6 text-blue-500" />
                       {config.label}
                     </CardTitle>
                   </CardHeader>

@@ -12,16 +12,6 @@ function GoogleImagesPage() {
   const navigate = useNavigate()
   return (
     <div className="flex flex-col bg-background min-h-screen text-foreground">
-      <div className="pt-4 pb-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/google-serp-cms" })}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Tools
-        </Button>
-      </div>
       <JobsDashboard
         filterTypeId={1}
         showChangelog={false}
@@ -29,7 +19,10 @@ function GoogleImagesPage() {
         showWelcome={false}
         showMetrics={false}
       >
-        <GoogleImagesUploadForm />
+        <GoogleImagesUploadForm
+          onBack={() => navigate({ to: "/google-serp-cms" })}
+          backLabel="Back to Tools"
+        />
       </JobsDashboard>
     </div>
   )

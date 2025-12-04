@@ -147,7 +147,10 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
 }
 
 // Component
-const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+const SubmitImageLinkForm: React.FC<{
+  onBack?: () => void
+  backLabel?: string
+}> = ({ onBack, backLabel }) => {
   const [step, setStep] = useState<"upload" | "preview" | "map" | "submit">(
     "upload",
   )
@@ -632,7 +635,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   }}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to tools
+                  {backLabel ?? "Back to tools"}
                 </Button>
               )}
             </div>

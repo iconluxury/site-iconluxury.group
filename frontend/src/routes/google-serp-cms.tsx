@@ -98,10 +98,10 @@ function GoogleSerpCmsPage() {
           search={searchParams}
           className="block h-full"
         >
-          <Card className="hover:shadow-lg transition-shadow h-full">
+          <Card className="hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <LuImage className="h-6 w-6 text-primary" />
+                <LuImage className="h-6 w-6 text-blue-500" />
                 <CardTitle>Google Images</CardTitle>
               </div>
               <CardDescription>
@@ -117,10 +117,10 @@ function GoogleSerpCmsPage() {
           search={searchParams}
           className="block h-full"
         >
-          <Card className="hover:shadow-lg transition-shadow h-full">
+          <Card className="hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <LuDatabase className="h-6 w-6 text-primary" />
+                <LuDatabase className="h-6 w-6 text-blue-500" />
                 <CardTitle>Data Warehouse</CardTitle>
               </div>
               <CardDescription>
@@ -136,10 +136,10 @@ function GoogleSerpCmsPage() {
           search={searchParams}
           className="block h-full"
         >
-          <Card className="hover:shadow-lg transition-shadow h-full">
+          <Card className="hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <LuLink className="h-6 w-6 text-primary" />
+                <LuLink className="h-6 w-6 text-blue-500" />
                 <CardTitle>Image Links</CardTitle>
               </div>
               <CardDescription>
@@ -155,10 +155,10 @@ function GoogleSerpCmsPage() {
           search={searchParams}
           className="block h-full"
         >
-          <Card className="hover:shadow-lg transition-shadow h-full">
+          <Card className="hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <LuCrop className="h-6 w-6 text-primary" />
+                <LuCrop className="h-6 w-6 text-blue-500" />
                 <CardTitle>Crop Tool</CardTitle>
               </div>
               <CardDescription>
