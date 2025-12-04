@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_layout/tools/image-links/")({
 
 function ImageLinksIndex() {
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-8">
       <h1 className="text-3xl font-bold">Image Links Tool</h1>
       <Card>
         <CardHeader>
