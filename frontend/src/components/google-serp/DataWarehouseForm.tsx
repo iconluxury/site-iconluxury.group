@@ -843,6 +843,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   {backLabel ?? "Back to tools"}
                 </Button>
               )}
+              <h1 className="text-xl font-bold">Data Warehouse</h1>
               <Button
                 variant="outline"
                 size="icon"
@@ -854,6 +855,22 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               </Button>
             </div>
             <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label>Server</Label>
+                <Select value={serverUrl} onValueChange={setServerUrl}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select Server" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="https://external.iconluxury.group">
+                      Production
+                    </SelectItem>
+                    <SelectItem value="https://dev-external.iconluxury.today">
+                      Development
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button variant="outline" onClick={() => window.open(`${serverUrl}/jobs`, '_blank')}>
                 Jobs History
               </Button>
@@ -870,25 +887,6 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             </div>
           </CardContent>
         </Card>
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">Data Warehouse</h1>
-          <div className="flex items-center gap-2">
-            <Label>Server</Label>
-            <Select value={serverUrl} onValueChange={setServerUrl}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select Server" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="https://external.iconluxury.group">
-                  Production
-                </SelectItem>
-                <SelectItem value="https://dev-external.iconluxury.today">
-                  Development
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
         <div
           className={cn(
             isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",
