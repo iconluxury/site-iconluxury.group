@@ -608,8 +608,8 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
+        <div className="grid grid-cols-3 items-center mb-4">
+          <div className="flex items-center justify-start">
             {onBack && (
               <Button
                 variant="ghost"
@@ -623,9 +623,11 @@ const SubmitCropForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 Back to tools
               </Button>
             )}
+          </div>
+          <div className="flex justify-center">
             <h1 className="text-xl font-bold">Crop Tool</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2">
             <Label>Server</Label>
             <Select value={serverUrl} onValueChange={setServerUrl}>
               <SelectTrigger className="w-[200px]">

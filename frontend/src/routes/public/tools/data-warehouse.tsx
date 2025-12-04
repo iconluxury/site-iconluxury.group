@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { LuDatabase } from "react-icons/lu"
 
@@ -27,7 +26,6 @@ export const Route = createFileRoute("/public/tools/data-warehouse")({
 function DataWarehousePage() {
   const [mode, setMode] = useState<DataWarehouseMode | null>(null)
   const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
-  const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
 
   if (mode) {
@@ -43,61 +41,38 @@ function DataWarehousePage() {
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate({ to: "/google-serp-cms" })}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Tools
+        <div className="grid grid-cols-3 items-center">
+          <div className="flex items-center justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: "/google-serp-cms" })}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tools
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <h1 className="text-xl font-bold">Data Warehouse</h1>
+          </div>
+          <div className="flex items-center justify-end gap-4">
+            <Button
+              variant="outline"
+              onClick={() => window.open(`${serverUrl}/jobs`, "_blank")}
+            >
+              Jobs History
+            </Button>
+            <a
+              href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="gap-2">
+                <LuDatabase className="h-4 w-4" />
+                Search Warehouse
               </Button>
-              <h1 className="text-xl font-bold">Data Warehouse</h1>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label>Server</Label>
-                <Select value={serverUrl} onValueChange={setServerUrl}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select Server" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="https://external.iconluxury.group">
-                      Production
-                    </SelectItem>
-                    <SelectItem value="https://dev-external.iconluxury.today">
-                      Development
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => window.open(`${serverUrl}/jobs`, "_blank")}
-              >
-                Jobs History
-              </Button>
-              <a
-                href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline" className="gap-2">
-                  <LuDatabase className="h-4 w-4" />
-                  Search Warehouse
-                </Button>
-              </a>
-            </div>
+            </a>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {(Object.keys(DATA_WAREHOUSE_MODE_CONFIG) as DataWarehouseMode[]).map(

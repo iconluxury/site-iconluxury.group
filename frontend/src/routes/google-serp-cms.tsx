@@ -50,7 +50,7 @@ function GoogleSerpCmsPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen text-foreground p-4">
+    <div className="bg-white min-h-screen text-gray-900 p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Button
@@ -198,7 +198,7 @@ function GoogleSerpCmsPage() {
       </div>
 
       <footer className="mt-auto py-6 border-t">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <div className="flex gap-4">
             <a
               href="https://dashboard.iconluxury.group/google-serp-cms"
@@ -206,7 +206,7 @@ function GoogleSerpCmsPage() {
               rel="noopener noreferrer"
               className="hover:text-primary transition-colors"
             >
-              Prefer to access legacy upload?
+              Prefer legacy upload
             </a>
             <span>|</span>
             <a
