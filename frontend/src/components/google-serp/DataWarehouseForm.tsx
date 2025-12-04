@@ -1249,8 +1249,8 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                         <TooltipContent>
                           <p>Clear mapping</p>
                         </TooltipContent>
-                      </TooltipProvider>
-                    </Tooltip>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                   <div className="w-[150px] text-sm text-muted-foreground truncate">
                     {getColumnPreview(columnMapping[field], excelData.rows)}
