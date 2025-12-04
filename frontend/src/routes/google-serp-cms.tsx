@@ -50,7 +50,7 @@ function GoogleSerpCmsPage() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 bg-[#FFFFFF] min-h-screen">
       <div className="flex justify-end items-center">
         <div className="flex items-center gap-2">
           {environment === "dev" && (
