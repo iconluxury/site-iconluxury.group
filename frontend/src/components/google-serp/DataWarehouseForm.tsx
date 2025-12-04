@@ -996,7 +996,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           <UploadStep
             onFileChange={handleFileChange}
             isLoading={isLoading}
-            title="Upload Excel File for Data Warehouse"
+
           />
         )}
 
