@@ -827,8 +827,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   return (
     <div className="w-full p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
-        <Card className="w-full">
-          <CardContent className="p-4 flex justify-between items-center">
+        <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               {onBack && (
                 <Button
@@ -861,8 +860,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+        </div>
         <div
           className={cn(
             isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",

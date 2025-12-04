@@ -620,8 +620,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <Card className="w-full">
-          <CardContent className="p-4 flex justify-between items-center">
+        <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               {onBack && (
                 <Button
@@ -654,8 +653,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+        </div>
 
         <div
           className={cn(

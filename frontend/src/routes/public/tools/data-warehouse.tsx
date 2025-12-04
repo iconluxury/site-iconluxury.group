@@ -43,8 +43,7 @@ function DataWarehousePage() {
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <Card className="w-full">
-          <CardContent className="p-4 flex justify-between items-center">
+        <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -99,8 +98,7 @@ function DataWarehousePage() {
                 </Button>
               </a>
             </div>
-          </CardContent>
-        </Card>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {(Object.keys(DATA_WAREHOUSE_MODE_CONFIG) as DataWarehouseMode[]).map(
             (key) => {
