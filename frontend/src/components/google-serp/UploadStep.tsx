@@ -11,13 +11,11 @@ import type React from "react"
 interface UploadStepProps {
   isLoading: boolean
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  title?: string
 }
 
 export const UploadStep: React.FC<UploadStepProps> = ({
   isLoading,
   onFileChange,
-  title,
 }) => {
   return (
     <div className="flex flex-col gap-4 items-stretch mt-6">
