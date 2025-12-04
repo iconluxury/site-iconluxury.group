@@ -920,7 +920,18 @@ const SubmitImageLinkForm: React.FC<{
 
           {/* Map */}
           {step === "map" && (
-            <div className="flex flex-col md:flex-row gap-4 max-h-[70vh] overflow-auto">
+            <div className="flex flex-col gap-4">
+              <Card className="bg-muted/50 border-dashed">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">Map Columns</p>
+                    <p className="text-sm text-muted-foreground">
+                      Select a field on the left, then click a column in the preview grid to map it.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="flex flex-col md:flex-row gap-4 max-h-[70vh] overflow-auto">
               <div className="flex flex-col gap-4 w-full md:w-2/5 overflow-y-auto p-4 border rounded-md">
                 {hasMultipleSheets && (
                   <Card>
@@ -1120,6 +1131,7 @@ const SubmitImageLinkForm: React.FC<{
                   </TableBody>
                 </Table>
               </div>
+            </div>
             </div>
           )}
 

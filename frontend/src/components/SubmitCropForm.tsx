@@ -922,7 +922,18 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
 
           {/* Map */}
           {step === "map" && (
-            <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
+            <div className="flex flex-col gap-4">
+              <Card className="bg-muted/50 border-dashed">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">Map Columns</p>
+                    <p className="text-sm text-muted-foreground">
+                      Select a field on the left, then click a column in the preview grid to map it.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
               <div
                 className={cn(
                   "flex flex-col gap-4 items-stretch bg-transparent p-4 rounded-md border w-full md:w-[40%] overflow-y-auto",
@@ -1151,6 +1162,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
                   </TableBody>
                 </Table>
               </div>
+            </div>
             </div>
           )}
 

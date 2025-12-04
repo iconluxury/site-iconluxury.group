@@ -1159,7 +1159,18 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         )}
 
         {step === "map" && (
-          <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
+          <div className="flex flex-col gap-4">
+            <Card className="bg-muted/50 border-dashed">
+              <CardContent className="p-4">
+                <div className="flex flex-col gap-1">
+                  <p className="font-semibold">Map Columns</p>
+                  <p className="text-sm text-muted-foreground">
+                    Select a field on the left, then click a column in the preview grid to map it.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="flex flex-col md:flex-row gap-4 items-stretch max-h-[70vh] overflow-auto">
             <div className="flex flex-col gap-4 items-stretch bg-transparent p-4 rounded-md border border-border w-full md:w-[40%] overflow-y-auto">
               {hasMultipleSheets && (
                 <Card className="bg-card border-border shadow-sm">
@@ -1602,6 +1613,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </TableBody>
               </table>
             </div>
+          </div>
           </div>
         )}
         {step === "submit" && (
