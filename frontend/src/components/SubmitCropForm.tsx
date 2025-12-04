@@ -2,7 +2,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -1167,62 +1167,42 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
           )}
 
           {/* Submit */}
-          {step === "submit" && (
-            <div className="flex flex-col gap-4 items-stretch">
-              <div className="flex flex-col gap-4 items-start">
-                <p>Rows: {excelData.rows.length}</p>
-                <div className="flex flex-col gap-2">
-                  <Label>User:</Label>
-                  {sendToEmail ? (
-                    <p className="font-medium">{sendToEmail}</p>
-                  ) : (
-                    <p className="text-sm text-red-500">
-                      No email parameter detected. Add
-                      ?sendToEmail=example@domain.com to the iframe URL.
-                    </p>
-                  )}
-                  {!isEmailValid && sendToEmail && (
-                    <p className="text-sm text-red-500 mt-1">
-                      Invalid email. Please update the iframe URL.
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="replaceImageColumn"
-                      checked={replaceImageColumn}
-                      onCheckedChange={(checked) =>
-                        setReplaceImageColumn(checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="replaceImageColumn">
-                      Replace original image column with cropped output
-                    </Label>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {replaceImageColumn
-                      ? "Only the cropped images will remain in the detected image column."
-                      : "Deselect to keep both the original and cropped image columns."}
-                  </p>
-                </div>
-                <p>Mapped Columns:</p>
-                <div className="w-full overflow-auto border rounded-md">
+        {step === "submit" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row justify-between items-center p-4 border rounded-lg bg-muted/20">
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">Total Rows</span>
+                <span className="text-2xl font-bold">
+                  {excelData.rows.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Mapped Columns
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Field</TableHead>
-                        <TableHead>Column</TableHead>
-                        <TableHead>Preview</TableHead>
+                        <TableHead className="h-8">Field</TableHead>
+                        <TableHead className="h-8">Column</TableHead>
+                        <TableHead className="h-8">Preview</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {(["style"] as (keyof ColumnMapping)[])
                         .filter((key) => columnMapping[key] !== null)
                         .map((key) => (
-                          <TableRow key={key}>
-                            <TableCell>Style # Column</TableCell>
-                            <TableCell>
+                          <TableRow key={key} className="h-8">
+                            <TableCell className="py-2">
+                              Style # Column
+                            </TableCell>
+                            <TableCell className="py-2">
                               {excelData.headers[
                                 columnMapping[key] as number
                               ] ||
@@ -1230,7 +1210,7 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
                                   columnMapping[key] as number,
                                 )}`}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="py-2">
                               {getColumnPreview(
                                 columnMapping[key],
                                 excelData.rows,
@@ -1240,14 +1220,44 @@ const SubmitCropForm: React.FC<{ onBack?: () => void; backLabel?: string }> = ({
                         ))}
                     </TableBody>
                   </Table>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Image columns are detected automatically when present; no
-                  mapping required.
-                </p>
-              </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Image columns are detected automatically when present; no
+                    mapping required.
+                  </p>
+                </CardContent>
+              </Card>
 
-              {isDev && activeSheet && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Configuration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="replaceImageColumn"
+                        checked={replaceImageColumn}
+                        onCheckedChange={(checked) =>
+                          setReplaceImageColumn(checked as boolean)
+                        }
+                      />
+                      <Label htmlFor="replaceImageColumn">
+                        Replace original image column with cropped output
+                      </Label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {replaceImageColumn
+                        ? "Only the cropped images will remain in the detected image column."
+                        : "Deselect to keep both the original and cropped image columns."}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {isDev && activeSheet && (
                 <div className="mt-4">
                   <CurlDisplay
                     url={`${serverUrl}/submitCrop`}

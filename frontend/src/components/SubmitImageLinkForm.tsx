@@ -1136,54 +1136,49 @@ const SubmitImageLinkForm: React.FC<{
           )}
 
           {/* Submit */}
-          {step === "submit" && (
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <p>Rows: {excelData.rows.length}</p>
-                <div className="space-y-2">
-                  <Label>User:</Label>
-                  {sendToEmail ? (
-                    <p className="font-medium">{sendToEmail}</p>
-                  ) : (
-                    <p className="text-sm text-red-500">
-                      No email parameter detected. Add
-                      ?sendToEmail=example@domain.com (or email/userEmail) to
-                      the iframe URL.
-                    </p>
-                  )}
-                  {!isEmailValid && sendToEmail && (
-                    <p className="text-sm text-red-500 mt-1">
-                      The email supplied in the URL looks invalid. Update the
-                      iframe query parameter before submitting.
-                    </p>
-                  )}
-                </div>
-                <p>Mapped Columns:</p>
+        {step === "submit" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row justify-between items-center p-4 border rounded-lg bg-muted/20">
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">Total Rows</span>
+                <span className="text-2xl font-bold">
+                  {excelData.rows.length}
+                </span>
+              </div>
+            </div>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Mapped Columns
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Field</TableHead>
-                      <TableHead>Column</TableHead>
-                      <TableHead>Preview</TableHead>
+                      <TableHead className="h-8">Field</TableHead>
+                      <TableHead className="h-8">Column</TableHead>
+                      <TableHead className="h-8">Preview</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(["link", "style"] as (keyof ColumnMapping)[])
                       .filter((key) => columnMapping[key] !== null)
                       .map((key) => (
-                        <TableRow key={key}>
-                          <TableCell>
+                        <TableRow key={key} className="h-8">
+                          <TableCell className="py-2">
                             {key === "style"
                               ? "Anchor / Target Column"
                               : "Image Link"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="py-2">
                             {excelData.headers[columnMapping[key] as number] ||
                               `Column ${indexToColumnLetter(
                                 columnMapping[key] as number,
                               )}`}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="py-2">
                             {getColumnPreview(
                               columnMapping[key],
                               excelData.rows,
@@ -1193,9 +1188,10 @@ const SubmitImageLinkForm: React.FC<{
                       ))}
                   </TableBody>
                 </Table>
-              </div>
+              </CardContent>
+            </Card>
 
-              {isDev && uploadedFile && sheetConfigs.length > 0 && (
+            {isDev && uploadedFile && sheetConfigs.length > 0 && (
                 <div className="mt-8 space-y-6">
                   <h3 className="text-lg font-semibold">
                     cURL Commands (Dev Mode)
