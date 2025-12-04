@@ -157,6 +157,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     keyof ColumnMapping | null
   >(null)
   const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const isDev = serverUrl.includes("dev") || serverUrl.includes("localhost")
   const activeSheet = sheetConfigs[activeSheetIndex] ?? null
   const excelData = activeSheet?.excelData ?? { headers: [], rows: [] }
   const rawData = activeSheet?.rawData ?? []
@@ -613,7 +614,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     uploadedFile,
   ])
 
-  const isDev = showDevUI()
+
   return (
     <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="space-y-6">
@@ -644,6 +645,23 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               <AlertDescription>Not for production use.</AlertDescription>
             </Alert>
           )}
+
+          {/* Backend Selector */}
+          <div className="flex justify-end mb-4">
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Backend" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Stepper */}
           <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-md mb-4">
