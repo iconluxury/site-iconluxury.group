@@ -888,7 +888,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="self-start"
                   onClick={() => {
                     setStep("upload")
                     onBack()
