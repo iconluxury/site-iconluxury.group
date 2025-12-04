@@ -618,7 +618,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6 items-stretch">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             {onBack && (
@@ -655,9 +655,9 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
 
         <div
-          className={`rounded-md p-4 ${
-            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
-          }`}
+          className={cn(
+            isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",
+          )}
         >
           <div className="flex justify-between items-center mb-4">
             {isDev ? (

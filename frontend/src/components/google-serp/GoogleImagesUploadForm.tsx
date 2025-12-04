@@ -880,7 +880,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   }
 
   return (
-    <div className="w-full p-4 bg-background text-foreground">
+    <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -919,9 +919,9 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
         </div>
 
         <div
-          className={`rounded-md p-4 ${
-            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
-          }`}
+          className={cn(
+            isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",
+          )}
         >
           <div className="flex justify-between items-center mb-4">
             {isDev ? (
@@ -936,13 +936,13 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
             )}
           </div>
 
-        <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center">
-          <div className="flex flex-row gap-4">
+        <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center">
+          <div className="flex-1 flex justify-center gap-4">
             {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
               <p
                 key={s}
                 className={cn(
-                  "cursor-pointer",
+                  "text-sm",
                   step ===
                     s.toLowerCase().replace("header selection", "preview")
                     ? "font-bold text-primary"

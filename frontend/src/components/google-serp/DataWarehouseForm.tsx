@@ -827,50 +827,49 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   return (
     <div className="w-full p-4 bg-background text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            {onBack && (
+        <Card className="w-full">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              {onBack && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStep("upload")
+                    onBack()
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {backLabel ?? "Back to tools"}
+                </Button>
+              )}
               <Button
-                variant="ghost"
-                size="sm"
-                className="self-start"
-                onClick={() => {
-                  setStep("upload")
-                  onBack()
-                }}
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                {backLabel ?? "Back to tools"}
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-            {isDev && (
-              <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
-                <span className="font-bold text-sm">DEV ENVIRONMENT</span>
-              </Card>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline" className="gap-2">
-                <LuDatabase className="h-4 w-4" />
-                Search Warehouse
+            </div>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" onClick={() => window.open(`${serverUrl}/jobs`, '_blank')}>
+                Jobs History
               </Button>
-            </a>
-          </div>
-        </div>
+              <a
+                href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="gap-2">
+                  <LuDatabase className="h-4 w-4" />
+                  Search Warehouse
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-bold">Data Warehouse</h1>
           <div className="flex items-center gap-2">
@@ -891,9 +890,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           </div>
         </div>
         <div
-          className={`rounded-md ${
-            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20 p-4" : ""
-          }`}
+          className={cn(
+            isDev ? "bg-red-50 border border-red-200 rounded-md p-3" : "",
+          )}
         >
           <div className="flex justify-between items-center mb-4">
             {isDev ? (
@@ -908,15 +907,15 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             )}
           </div>
 
-          <div className="flex flex-row justify-between bg-white border-b p-4 items-center mb-4 w-full">
-            <div className="flex flex-row gap-4">
+          <div className="flex justify-between bg-neutral-50 dark:bg-neutral-900 p-2 rounded-md items-center mb-4">
+            <div className="flex-1 flex justify-center gap-4">
               {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
                 <p
                   key={s}
                   className={cn(
-                    "cursor-pointer",
-                    step === s.toLowerCase()
-                      ? "font-bold text-primary border-b-2 border-primary pb-1"
+                    "text-sm",
+                    step === s.toLowerCase().replace("header selection", "preview")
+                      ? "font-bold text-primary"
                       : "text-muted-foreground",
                     i < ["upload", "preview", "map", "submit"].indexOf(step)
                       ? "cursor-pointer"
@@ -941,7 +940,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               ))}
             </div>
             {step !== "upload" && (
-              <div className="flex flex-row gap-2">
+              <div className="flex gap-2">
                 {step !== "preview" && (
                   <Button
                     onClick={() =>
@@ -1000,10 +999,14 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                     }
                     size="sm"
                   >
-                    {isLoading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit"
                     )}
-                    Submit
                   </Button>
                 )}
               </div>
