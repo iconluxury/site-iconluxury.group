@@ -58,7 +58,7 @@ function DataWarehousePage() {
           <div className="flex items-center justify-end gap-4">
             <Button
               variant="outline"
-              onClick={() => window.open(`${serverUrl}/jobs`, "_blank")}
+              onClick={() => window.open(`https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp`, "_blank")}
             >
               Jobs History
             </Button>
