@@ -206,7 +206,7 @@ function GoogleSerpCmsPage() {
               rel="noopener noreferrer"
               className="hover:text-primary transition-colors"
             >
-              Prefer legacy upload
+             Legacy upload
             </a>
             <span>|</span>
             <a
