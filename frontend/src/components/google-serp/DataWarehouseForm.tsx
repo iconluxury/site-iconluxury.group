@@ -844,46 +844,22 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                 </Button>
               )}
               <h1 className="text-xl font-bold">Data Warehouse</h1>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label>Server</Label>
-                <Select value={serverUrl} onValueChange={setServerUrl}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select Server" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="https://external.iconluxury.group">
-                      Production
-                    </SelectItem>
-                    <SelectItem value="https://dev-external.iconluxury.today">
-                      Development
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="outline" onClick={() => window.open(`${serverUrl}/jobs`, '_blank')}>
-                Jobs History
-              </Button>
-              <a
-                href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline" className="gap-2">
-                  <LuDatabase className="h-4 w-4" />
-                  Search Warehouse
-                </Button>
-              </a>
+            <div className="flex items-center gap-2">
+              <Label>Server</Label>
+              <Select value={serverUrl} onValueChange={setServerUrl}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="https://external.iconluxury.group">
+                    Production
+                  </SelectItem>
+                  <SelectItem value="https://dev-external.iconluxury.today">
+                    Development
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

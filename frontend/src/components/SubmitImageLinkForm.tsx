@@ -620,40 +620,42 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   return (
     <div className="w-full p-4 bg-background text-foreground min-h-screen">
       <div className="flex flex-col gap-6 items-stretch">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            {onBack && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setStep("upload")
-                  onBack()
-                }}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to tools
-              </Button>
-            )}
-            <h1 className="text-xl font-bold">Image Links</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Label>Server</Label>
-            <Select value={serverUrl} onValueChange={setServerUrl}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select Server" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="https://external.iconluxury.group">
-                  Production
-                </SelectItem>
-                <SelectItem value="https://dev-external.iconluxury.today">
-                  Development
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <Card className="w-full">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              {onBack && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStep("upload")
+                    onBack()
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to tools
+                </Button>
+              )}
+              <h1 className="text-xl font-bold">Image Links</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label>Server</Label>
+              <Select value={serverUrl} onValueChange={setServerUrl}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="https://external.iconluxury.group">
+                    Production
+                  </SelectItem>
+                  <SelectItem value="https://dev-external.iconluxury.today">
+                    Development
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         <div
           className={cn(
