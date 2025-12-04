@@ -882,20 +882,41 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
   return (
     <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => {
-              setStep("upload")
-              onBack()
-            }}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {backLabel ?? "Back to tools"}
-          </Button>
-        )}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => {
+                  setStep("upload")
+                  onBack()
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {backLabel ?? "Back to tools"}
+              </Button>
+            )}
+            <h1 className="text-xl font-bold">Google Images</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label>Server</Label>
+            <Select value={serverUrl} onValueChange={setServerUrl}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Server" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="https://external.iconluxury.group">
+                  Production
+                </SelectItem>
+                <SelectItem value="https://dev-external.iconluxury.today">
+                  Development
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <div
           className={`rounded-md p-4 ${
@@ -913,23 +934,6 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
             ) : (
               <div />
             )}
-
-            <div className="flex items-center gap-2">
-              <Label>Server</Label>
-              <Select value={serverUrl} onValueChange={setServerUrl}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select Server" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="https://external.iconluxury.group">
-                    Production
-                  </SelectItem>
-                  <SelectItem value="https://dev-external.iconluxury.today">
-                    Development
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
         <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center">

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Check,
   Info,
+  Upload,
   X,
 } from "lucide-react"
 import type React from "react"
@@ -633,7 +634,7 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 Back to tools
               </Button>
             )}
-            <h1 className="text-2xl font-bold">Image Links</h1>
+            <h1 className="text-xl font-bold">Image Links</h1>
           </div>
           <div className="flex items-center gap-2">
             <Label>Server</Label>
@@ -772,27 +773,32 @@ const SubmitImageLinkForm: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
           {/* Upload */}
           {step === "upload" && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold">
-                Convert Image Links to Pictures
-              </h2>
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleFileChange}
-                        disabled={isLoading}
-                        className="cursor-pointer"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Upload an Excel file (.xlsx or .xls) up to 50MB</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+            <div className="space-y-4 mt-6">
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:bg-gray-50 transition-colors cursor-pointer"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const file = e.dataTransfer.files[0]
+                  if (file) handleFileChange({ target: { files: [file] } } as any)
+                }}
+                onClick={() => document.getElementById('file-upload')?.click()}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="h-10 w-10 text-gray-400" />
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">Excel files (.xlsx, .xls) up to 50MB</p>
+                </div>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileChange}
+                  disabled={isLoading}
+                  className="hidden"
+                />
               </div>
               {isLoading && (
                 <div className="flex justify-center">

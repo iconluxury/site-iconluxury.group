@@ -823,51 +823,37 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
   }
 
   return (
-    <div className="container mx-auto p-4 bg-[#FFFFFF] text-foreground">
+    <div className="w-full p-4 bg-[#FFFFFF] text-foreground">
       <div className="flex flex-col gap-6 items-stretch">
         <div className="flex justify-between items-center">
-          {onBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="self-start"
-              onClick={() => {
-                setStep("upload")
-                onBack()
-              }}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {backLabel ?? "Back to tools"}
-            </Button>
-          )}
-          <a
-            href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline" size="sm" className="gap-2">
-              <LuFileText className="h-4 w-4" />
-              Jobs History
-            </Button>
-          </a>
-        </div>
-        <div
-          className={`rounded-md p-4 ${
-            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20" : ""
-          }`}
-        >
-          <div className="flex justify-between items-center mb-4">
-            {isDev ? (
-              <div className="flex items-center gap-2 text-red-600">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium text-sm">
-                  Not for production use
-                </span>
-              </div>
-            ) : (
-              <div />
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => {
+                  setStep("upload")
+                  onBack()
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {backLabel ?? "Back to tools"}
+              </Button>
             )}
-
+            <h1 className="text-xl font-bold">Data Warehouse</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="gap-2">
+                <LuFileText className="h-4 w-4" />
+                Jobs History
+              </Button>
+            </a>
             <div className="flex items-center gap-2">
               <Label>Server</Label>
               <Select value={serverUrl} onValueChange={setServerUrl}>
@@ -885,8 +871,26 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
               </Select>
             </div>
           </div>
+        </div>
+        <div
+          className={`rounded-md ${
+            isDev ? "bg-red-50 border border-red-200 dark:bg-red-900/20 p-4" : ""
+          }`}
+        >
+          <div className="flex justify-between items-center mb-4">
+            {isDev ? (
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  Not for production use
+                </span>
+              </div>
+            ) : (
+              <div />
+            )}
+          </div>
 
-          <div className="flex flex-row justify-between bg-muted p-2 rounded-md items-center mb-4">
+          <div className="flex flex-row justify-between bg-white border-b p-4 items-center mb-4 w-full">
             <div className="flex flex-row gap-4">
               {["Upload", "Header Selection", "Map", "Submit"].map((s, i) => (
                 <p
@@ -894,7 +898,7 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                   className={cn(
                     "cursor-pointer",
                     step === s.toLowerCase()
-                      ? "font-bold text-primary"
+                      ? "font-bold text-primary border-b-2 border-primary pb-1"
                       : "text-muted-foreground",
                     i < ["upload", "preview", "map", "submit"].indexOf(step)
                       ? "cursor-pointer"
