@@ -1091,7 +1091,7 @@ export const GoogleImagesUploadForm: React.FC<FormWithBackProps> = ({
                 </CardContent>
               </Card>
             )}
-            <Card className="bg-muted/50 border-dashed mb-2">
+                   <Card className="bg-muted/50 border-dashed">
               <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <p className="font-semibold">Header Row Selection</p>
