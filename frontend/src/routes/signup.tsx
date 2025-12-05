@@ -1,5 +1,15 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  Button,
+  Container,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Image,
+  Input,
+  Link,
+  Text,
+} from "@chakra-ui/react"
 import {
   Link as RouterLink,
   createFileRoute,
@@ -7,6 +17,7 @@ import {
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
+import Logo from "/assets/images/lm-logo-blk.svg"
 import type { UserRegister } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "../utils"
@@ -49,13 +60,30 @@ function SignUp() {
   }
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center md:flex-row">
-      <div className="container flex h-screen max-w-sm flex-col items-stretch justify-center gap-4 mx-auto">
-        <span className="text-2xl font-bold text-primary self-center mb-4">
-          ICON LUXURY GROUP
-        </span>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="grid gap-2">
+    <>
+      <Flex flexDir={{ base: "column", md: "row" }} justify="center" h="100vh">
+        <Container
+          as="form"
+          onSubmit={handleSubmit(onSubmit)}
+          h="100vh"
+          maxW="sm"
+          alignItems="stretch"
+          justifyContent="center"
+          gap={4}
+          centerContent
+        >
+          <Image
+            src={Logo}
+            alt="logo"
+            height="auto"
+            maxW="2xs"
+            alignSelf="center"
+            mb={4}
+          />
+          <FormControl id="full_name" isInvalid={!!errors.full_name}>
+            <FormLabel htmlFor="full_name" srOnly>
+              Full Name
+            </FormLabel>
             <Input
               id="full_name"
               minLength={3}
@@ -64,12 +92,13 @@ function SignUp() {
               type="text"
             />
             {errors.full_name && (
-              <span className="text-red-500 text-sm">
-                {errors.full_name.message}
-              </span>
+              <FormErrorMessage>{errors.full_name.message}</FormErrorMessage>
             )}
-          </div>
-          <div className="grid gap-2">
+          </FormControl>
+          <FormControl id="email" isInvalid={!!errors.email}>
+            <FormLabel htmlFor="email" srOnly>
+              Email
+            </FormLabel>
             <Input
               id="email"
               {...register("email", {
@@ -80,12 +109,13 @@ function SignUp() {
               type="email"
             />
             {errors.email && (
-              <span className="text-red-500 text-sm">
-                {errors.email.message}
-              </span>
+              <FormErrorMessage>{errors.email.message}</FormErrorMessage>
             )}
-          </div>
-          <div className="grid gap-2">
+          </FormControl>
+          <FormControl id="password" isInvalid={!!errors.password}>
+            <FormLabel htmlFor="password" srOnly>
+              Password
+            </FormLabel>
             <Input
               id="password"
               {...register("password", passwordRules())}
@@ -93,12 +123,17 @@ function SignUp() {
               type="password"
             />
             {errors.password && (
-              <span className="text-red-500 text-sm">
-                {errors.password.message}
-              </span>
+              <FormErrorMessage>{errors.password.message}</FormErrorMessage>
             )}
-          </div>
-          <div className="grid gap-2">
+          </FormControl>
+          <FormControl
+            id="confirm_password"
+            isInvalid={!!errors.confirm_password}
+          >
+            <FormLabel htmlFor="confirm_password" srOnly>
+              Confirm Password
+            </FormLabel>
+
             <Input
               id="confirm_password"
               {...register("confirm_password", confirmPasswordRules(getValues))}
@@ -106,23 +141,23 @@ function SignUp() {
               type="password"
             />
             {errors.confirm_password && (
-              <span className="text-red-500 text-sm">
+              <FormErrorMessage>
                 {errors.confirm_password.message}
-              </span>
+              </FormErrorMessage>
             )}
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
+          </FormControl>
+          <Button variant="primary" type="submit" isLoading={isSubmitting}>
             Sign Up
           </Button>
-        </form>
-        <div className="text-center">
-          Already have an account?{" "}
-          <RouterLink to="/login" className="text-blue-500 hover:underline">
-            Log In
-          </RouterLink>
-        </div>
-      </div>
-    </div>
+          <Text>
+            Already have an account?{" "}
+            <Link as={RouterLink} to="/login" color="blue.500">
+              Log In
+            </Link>
+          </Text>
+        </Container>
+      </Flex>
+    </>
   )
 }
 

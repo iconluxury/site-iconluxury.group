@@ -1,411 +1,175 @@
-import { type ThemeConfig, extendTheme } from "@chakra-ui/react"
+import { extendTheme, ThemeConfig } from "@chakra-ui/react";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
   useSystemColorMode: false,
-}
-
-const fonts = {
-  heading: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-  body: '"Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-  mono: '"JetBrains Mono", "SFMono-Regular", Menlo, monospace',
-}
-
-const colors = {
-  brand: {
-    50: "#ecfdf5",
-    100: "#d1fae5",
-    200: "#a7f3d0",
-    300: "#6ee7b7",
-    400: "#34d399",
-    500: "#16a34a",
-    600: "#15803d",
-    700: "#166534",
-    800: "#14532d",
-    900: "#0f3920",
-  },
-  neutral: {
-    50: "#f8fafc",
-    100: "#f1f5f9",
-    200: "#e2e8f0",
-    300: "#cbd5f5",
-    400: "#94a3b8",
-    500: "#64748b",
-    600: "#475569",
-    700: "#334155",
-    800: "#1e293b",
-    900: "#0f172a",
-  },
-  success: {
-    50: "#ecfdf5",
-    100: "#d1fae5",
-    200: "#a7f3d0",
-    300: "#6ee7b7",
-    400: "#34d399",
-    500: "#16a34a",
-    600: "#15803d",
-    700: "#166534",
-    800: "#14532d",
-    900: "#0f3920",
-  },
-  warning: {
-    50: "#fffbeb",
-    100: "#fef3c7",
-    200: "#fde68a",
-    300: "#fcd34d",
-    400: "#fbbf24",
-    500: "#f59e0b",
-    600: "#d97706",
-    700: "#b45309",
-    800: "#92400e",
-    900: "#78350f",
-  },
-  danger: {
-    50: "#fef2f2",
-    100: "#fee2e2",
-    200: "#fecaca",
-    300: "#fca5a5",
-    400: "#f87171",
-    500: "#ef4444",
-    600: "#dc2626",
-    700: "#b91c1c",
-    800: "#991b1b",
-    900: "#7f1d1d",
-  },
-  info: {
-    50: "#e0f2fe",
-    100: "#bae6fd",
-    200: "#7dd3fc",
-    300: "#38bdf8",
-    400: "#0ea5e9",
-    500: "#0284c7",
-    600: "#0369a1",
-    700: "#075985",
-    800: "#0c4a6e",
-    900: "#0a3651",
-  },
-}
-
-const semanticTokens = {
-  colors: {
-    background: {
-      default: "neutral.50",
-      _dark: "gray.900",
-    },
-    surface: {
-      default: "white",
-      _dark: "gray.800",
-    },
-    text: {
-      default: "neutral.800",
-      _dark: "gray.100",
-    },
-    subtle: {
-      default: "neutral.500",
-      _dark: "gray.400",
-    },
-    border: {
-      default: "neutral.200",
-      _dark: "neutral.700",
-    },
-    highlight: {
-      default: "brand.50",
-      _dark: "brand.800",
-    },
-  },
-}
-
-const components = {
-  Button: {
-    baseStyle: {
-      fontWeight: "600",
-      borderRadius: "md",
-      px: 4,
-      py: 2,
-    },
-    variants: {
-      primary: {
-        bg: "brand.600",
-        color: "white",
-        _hover: { bg: "brand.700" },
-        _active: { bg: "brand.800" },
-        _disabled: {
-          bg: "brand.200",
-          color: "white",
-          cursor: "not-allowed",
-        },
-      },
-      secondary: {
-        bg: "surface",
-        color: "brand.600",
-        border: "1px solid",
-        borderColor: "border",
-        _hover: {
-          borderColor: "brand.200",
-          bg: "brand.50",
-        },
-      },
-      outline: {
-        bg: "transparent",
-        border: "1px solid",
-        borderColor: "brand.600",
-        color: "brand.600",
-        _hover: {
-          bg: "brand.50",
-        },
-      },
-      ghost: {
-        bg: "transparent",
-        color: "brand.600",
-        _hover: {
-          bg: "brand.50",
-        },
-      },
-      link: {
-        color: "brand.600",
-        fontWeight: "600",
-        bg: "transparent",
-        _hover: {
-          color: "brand.700",
-          textDecoration: "underline",
-        },
-      },
-      danger: {
-        bg: "danger.500",
-        color: "white",
-        _hover: { bg: "danger.600" },
-        _active: { bg: "danger.700" },
-      },
-    },
-    defaultProps: {
-      variant: "primary",
-    },
-  },
-  Input: {
-    baseStyle: {
-      field: {
-        borderRadius: "md",
-        borderColor: "border",
-        bg: "surface",
-        _placeholder: {
-          color: "neutral.500",
-        },
-        _hover: {
-          borderColor: "neutral.300",
-        },
-        _focus: {
-          borderColor: "brand.500",
-          boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
-        },
-      },
-    },
-  },
-  Select: {
-    baseStyle: {
-      field: {
-        borderRadius: "md",
-        borderColor: "border",
-        bg: "surface",
-        _hover: {
-          borderColor: "neutral.300",
-        },
-        _focus: {
-          borderColor: "brand.500",
-          boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
-        },
-      },
-    },
-  },
-  Textarea: {
-    baseStyle: {
-      borderRadius: "md",
-      borderColor: "border",
-      bg: "surface",
-      _hover: {
-        borderColor: "neutral.300",
-      },
-      _focus: {
-        borderColor: "brand.500",
-        boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
-      },
-    },
-  },
-  Table: {
-    baseStyle: {
-      th: {
-        bg: "neutral.100",
-        color: "text",
-        fontWeight: "600",
-        fontSize: "sm",
-        textTransform: "none",
-        letterSpacing: "normal",
-        borderBottom: "1px solid",
-        borderColor: "border",
-        py: 3,
-        px: 4,
-      },
-      td: {
-        borderColor: "border",
-        color: "subtle",
-        fontSize: "sm",
-        py: 3,
-        px: 4,
-      },
-    },
-  },
-  Card: {
-    baseStyle: {
-      container: {
-        bg: "surface",
-        borderRadius: "lg",
-        border: "1px solid",
-        borderColor: "border",
-        boxShadow: "none",
-      },
-      header: {
-        borderBottom: "1px solid",
-        borderColor: "border",
-        py: 4,
-        px: 5,
-      },
-      body: {
-        px: 5,
-        py: 4,
-      },
-    },
-  },
-  Checkbox: {
-    baseStyle: {
-      control: {
-        borderRadius: "md",
-        borderColor: "border",
-        _checked: {
-          bg: "brand.600",
-          borderColor: "brand.600",
-          _hover: {
-            bg: "brand.700",
-            borderColor: "brand.700",
-          },
-        },
-      },
-      label: {
-        color: "subtle",
-        fontWeight: "500",
-      },
-    },
-  },
-  Badge: {
-    baseStyle: {
-      borderRadius: "md",
-      fontWeight: "600",
-      textTransform: "none",
-      letterSpacing: "normal",
-      px: 2,
-      py: 1,
-    },
-    variants: {
-      solid: {
-        bg: "brand.50",
-        color: "brand.700",
-      },
-      success: {
-        bg: "success.100",
-        color: "success.700",
-      },
-      danger: {
-        bg: "danger.100",
-        color: "danger.700",
-      },
-      warning: {
-        bg: "warning.100",
-        color: "warning.700",
-      },
-    },
-  },
-  Tooltip: {
-    baseStyle: {
-      bg: "neutral.700",
-      color: "white",
-      borderRadius: "md",
-      px: 3,
-      py: 2,
-      boxShadow: "md",
-      fontSize: "sm",
-    },
-  },
-  Tabs: {
-    variants: {
-      enclosed: {
-        tab: {
-          color: "subtle",
-          fontWeight: "500",
-          _selected: {
-            color: "brand.700",
-            borderBottomWidth: "2px",
-            borderBottomColor: "brand.600",
-          },
-          _hover: {
-            color: "brand.700",
-          },
-        },
-        tablist: {
-          borderBottom: "1px solid",
-          borderColor: "border",
-        },
-      },
-    },
-  },
-  Alert: {
-    baseStyle: {
-      container: {
-        borderRadius: "lg",
-        border: "1px solid",
-        borderColor: "border",
-        boxShadow: "none",
-      },
-      title: {
-        fontWeight: "600",
-      },
-    },
-  },
-  Link: {
-    baseStyle: {
-      color: "brand.600",
-      fontWeight: "500",
-      _hover: {
-        color: "brand.700",
-        textDecoration: "underline",
-      },
-    },
-  },
-}
-
-const styles = {
-  global: {
-    "*, *::before, *::after": {
-      boxSizing: "border-box",
-    },
-    body: {
-      fontFamily: "body",
-      bg: "background",
-      color: "text",
-      lineHeight: "1.6",
-      minHeight: "100vh",
-      margin: 0,
-    },
-    "a, button": {
-      transition: "all 0.15s ease-in-out",
-    },
-  },
-}
+};
 
 const theme = extendTheme({
   config,
-  fonts,
-  colors,
-  semanticTokens,
-  components,
-  styles,
-})
+  styles: {
+    global: {
+      "html, body": {
+        fontFamily: '"42dot Sans", "Helvetica", "Arial", sans-serif',
+        lineHeight: "1.7",
+        bg: "gray.50",
+        color: "gray.800",
+        padding: "20px",
+      },
+      ".sidebar": {
+        bg: "gray.100",
+        minHeight: "100vh",
+        p: 4,
+      },
+    },
+  },
+  colors: {
+    ui: {
+      main: "#FFD700", // Gold
+      secondary: "#FFF8E1", // Light cream
+      success: "#38A169", // Green
+      danger: "#E53E3E", // Red
+      light: "#FFFFFF", // White
+      dim: "#A0AEC0", // Light gray
+    },
+  },
+  shadows: {
+    card: "0 2px 8px rgba(0, 0, 0, 0.1)",
+  },
+  components: {
+    Heading: {
+      baseStyle: {
+        color: "gray.900",
+        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+      },
+    },
+    Text: {
+      baseStyle: {
+        color: "gray.800",
+        fontSize: "sm",
+        fontWeight: "medium",
+        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+      },
+    },
+    Code: {
+      baseStyle: {
+        bg: "gray.100",
+        color: "gray.800",
+        fontSize: "sm",
+        p: 3,
+        borderRadius: "md",
+      },
+    },
+    Button: {
+      baseStyle: {
+        fontWeight: "bold",
+        borderRadius: "md",
+        fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+      },
+      variants: {
+        primary: {
+          backgroundColor: "ui.main",
+          color: "gray.800",
+          _hover: {
+            backgroundColor: "#E6C200",
+          },
+          _disabled: {
+            backgroundColor: "ui.main",
+            opacity: 0.6,
+          },
+        },
+        secondary: {
+          backgroundColor: "ui.secondary",
+          color: "gray.800",
+          _hover: {
+            backgroundColor: "#F5E1E1",
+          },
+          _disabled: {
+            backgroundColor: "ui.secondary",
+            opacity: 0.6,
+          },
+        },
+        danger: {
+          backgroundColor: "ui.danger",
+          color: "ui.light",
+          _hover: {
+            backgroundColor: "#E32727",
+          },
+        },
+      },
+      defaultProps: {
+        variant: "primary",
+      },
+    },
+    Tabs: {
+      variants: {
+        enclosed: {
+          tab: {
+            color: "ui.dim",
+            _selected: {
+              color: "ui.main",
+              fontWeight: "bold",
+              borderBottomColor: "ui.main",
+              borderBottomWidth: "2px",
+            },
+            _hover: {
+              color: "ui.secondary",
+            },
+          },
+        },
+      },
+    },
+    Toast: {
+      baseStyle: {
+        container: {
+          bg: "ui.light",
+          color: "gray.700",
+          borderRadius: "md",
+          padding: "16px",
+          position: "absolute",
+          top: "20px",
+          transform: "translateX(-50%)",
+          minWidth: "300px",
+          maxWidth: "90%",
+          fontFamily: '"Futura", "Helvetica", "Arial", sans-serif',
+        },
+      },
+      variants: {
+        error: {
+          container: {
+            bg: "red.100",
+            color: "red.800",
+            border: "1px solid",
+            borderColor: "red.300",
+          },
+        },
+        success: {
+          container: {
+            bg: "green.100",
+            color: "green.800",
+            border: "1px solid",
+            borderColor: "green.300",
+          },
+        },
+        info: {
+          container: {
+            bg: "blue.100",
+            color: "blue.800",
+            border: "1px solid",
+            borderColor: "blue.300",
+          },
+        },
+        warning: {
+          container: {
+            bg: "yellow.100",
+            color: "yellow.800",
+            border: "1px solid",
+            borderColor: "yellow.300",
+          },
+        },
+      },
+    },
+  },
+});
 
-export default theme
+export default theme;

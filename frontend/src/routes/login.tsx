@@ -1,15 +1,24 @@
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import {
-  Link as RouterLink,
-  createFileRoute,
-  redirect,
-} from "@tanstack/react-router"
-import { Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
+  Button,
+  Container,
+  FormControl,
+  FormErrorMessage,
+  Icon,
+  Image,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Link,
+  Text,
+  Flex,
+  useBoolean,
+} from "@chakra-ui/react"
+import { Link as RouterLink, createFileRoute, redirect } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
+import Logo from "/assets/images/lm-logo-blk.svg"
 import type { Body_login_login_access_token as AccessToken } from "../client"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { emailPattern } from "../utils"
 
@@ -23,7 +32,7 @@ export const Route = createFileRoute("/login")({
 })
 
 function Login() {
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useBoolean()
   const { loginMutation, error, resetError } = useAuth()
   const {
     register,
@@ -49,134 +58,158 @@ function Login() {
 
   // Social media logo components
   const GitHubLogo = () => (
-    <a
+    <Link
       href="https://github.com/iconluxurygroup"
       target="_blank"
       rel="noopener noreferrer"
-      className="hover:opacity-80 transition-opacity"
     >
-      <img
+      <Image
         src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
         alt="GitHub Logo"
-        className="w-8 h-8"
+        boxSize="32px"
       />
-    </a>
+    </Link>
   )
 
   const LinkedInLogo = () => (
-    <a
+    <Link
       href="https://www.linkedin.com/company/iconluxurygroup"
       target="_blank"
       rel="noopener noreferrer"
-      className="hover:opacity-80 transition-opacity"
     >
-      <img
+      <Image
         src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
         alt="LinkedIn Logo"
-        className="w-8 h-8"
+        boxSize="32px"
       />
-    </a>
+    </Link>
   )
 
   const XLogo = () => (
-    <a
+    <Link
       href="https://twitter.com/iconluxurygroup"
       target="_blank"
       rel="noopener noreferrer"
-      className="hover:opacity-80 transition-opacity"
-    >
-      <img
+     >
+      <Image
         src="/assets/images/twitter-x.svg"
         alt="X Logo"
-        className="w-8 h-8"
+        boxSize="32px"
       />
-    </a>
+    </Link>
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 bg-background">
-      <div className="w-full max-w-md bg-card border rounded-xl shadow-none py-10 px-6 md:px-10 flex flex-col gap-6">
-        <a
-          href="https://iconluxury.group"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="self-center"
-        >
-          <span className="text-2xl font-bold text-primary">
-            ICON LUXURY GROUP
-          </span>
-        </a>
+    <Container
+      as="form"
+      onSubmit={handleSubmit(onSubmit)}
+      maxW="sm"
+      p={10}
+      centerContent
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      height="100vh"
+      gap={6}
+    >
+      <Link href="https://iconluxury.group" target="_blank" rel="noopener noreferrer">
+        <Image
+          src={Logo}
+          alt="iconluxurygroup logo"
+          height="auto"
+          maxW="180px"
+          p={6}
+        />
+      </Link>
+      <FormControl id="username" isInvalid={!!errors.username || !!error}>
+        <Input
+          id="username"
+          {...register("username", {
+            required: "Username is required",
+            pattern: emailPattern,
+          })}
+          placeholder="Email"
+          type="email"
+          required
+          bg="gray.700"
+          color="gray.100"
+          _placeholder={{ color: "gray.400" }}
+          borderColor="gray.600"
+          _focus={{ borderColor: "#FFD700" }}
+        />
+        {errors.username && (
+          <FormErrorMessage>{errors.username.message}</FormErrorMessage>
+        )}
+      </FormControl>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <Input
-              id="username"
-              {...register("username", {
-                required: "Username is required",
-                pattern: emailPattern,
-              })}
-              placeholder="Email"
-              type="email"
-              required
-              className={errors.username || error ? "border-destructive" : ""}
+      <FormControl id="password" isInvalid={!!error}>
+        <InputGroup>
+          <Input
+            {...register("password", { required: "Password is required" })}
+            type={show ? "text" : "password"}
+            placeholder="Password"
+            required
+            bg="gray.700"
+            color="gray.100"
+            _placeholder={{ color: "gray.400" }}
+            borderColor="gray.600"
+            _focus={{ borderColor: "#FFD700" }}
+          />
+          <InputRightElement color="gray.400" _hover={{ cursor: "pointer" }}>
+            <Icon
+              as={show ? ViewOffIcon : ViewIcon}
+              onClick={setShow.toggle}
+              aria-label={show ? "Hide password" : "Show password"}
             />
-            {errors.username && (
-              <p className="text-sm text-destructive font-medium">
-                {errors.username.message}
-              </p>
-            )}
-          </div>
+          </InputRightElement>
+        </InputGroup>
+        {error && <FormErrorMessage>{error}</FormErrorMessage>}
+      </FormControl>
 
-          <div className="flex flex-col gap-2">
-            <div className="relative">
-              <Input
-                {...register("password", { required: "Password is required" })}
-                type={show ? "text" : "password"}
-                placeholder="Password"
-                required
-                className={error ? "border-destructive pr-10" : "pr-10"}
-              />
-              <button
-                type="button"
-                onClick={() => setShow(!show)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={show ? "Hide password" : "Show password"}
-              >
-                {show ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            {error && (
-              <p className="text-sm text-destructive font-medium">{error}</p>
-            )}
-          </div>
+      <Link
+        as={RouterLink}
+        to="/recover-password"
+        color="gray.100"
+        _hover={{ borderBottom: "1px solid #FFD700" }}
+        fontWeight="bold"
+      >
+        Forgot password?
+      </Link>
 
-          <RouterLink
-            to="/recover-password"
-            className="text-primary font-semibold self-end hover:underline"
-          >
-            Forgot password?
-          </RouterLink>
+      <Button
+        variant="primary"
+        type="submit"
+        isLoading={isSubmitting}
+        w="full"
+        bg="gray.700"
+        color="gray.100"
+        border="2px solid"
+        borderColor="#FFD700"
+        _hover={{ bg: "gray.600" }}
+      >
+        Log In
+      </Button>
 
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Logging In..." : "Log In"}
-          </Button>
-        </form>
+      <Text color="gray.100">
+        Don't have an account?{" "}
+        <Link
+          as={RouterLink}
+          to="/signup"
+          color="gray.100"
+          _hover={{ borderBottom: "1px solid #FFD700" }}
+          fontWeight="bold"
+        >
+          Sign up
+        </Link>
+      </Text>
 
-        <p className="text-muted-foreground text-center">
-          Don't have an account?{" "}
-          <RouterLink
-            to="/signup"
-            className="text-primary font-semibold hover:underline"
-          >
-            Sign up
-          </RouterLink>
-        </p>
-      </div>
-    </div>
+      <Flex direction="row" justify="center" align="center" gap={4} mt={8}>
+        <GitHubLogo />
+        <LinkedInLogo />
+        <XLogo />
+      </Flex>
+    </Container>
   )
 }
 

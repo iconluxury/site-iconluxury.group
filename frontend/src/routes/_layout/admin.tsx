@@ -1,3 +1,18 @@
+import {
+  Badge,
+  Box,
+  Container,
+  Flex,
+  Heading,
+  SkeletonText,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useEffect } from "react"
@@ -5,25 +20,9 @@ import { z } from "zod"
 
 import { type UserPublic, UsersService } from "../../client"
 import AddUser from "../../components/Admin/AddUser"
-import ApiStatusManagement from "../../components/Admin/ApiStatusManagement"
 import ActionsMenu from "../../components/Common/ActionsMenu"
 import Navbar from "../../components/Common/Navbar"
 import { PaginationFooter } from "../../components/Common/PaginationFooter.tsx"
-import { Badge } from "../../components/ui/badge"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs"
 
 const usersSearchSchema = z.object({
   page: z.number().catch(1),
@@ -50,9 +49,7 @@ function UsersTable() {
   const { page } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const setPage = (page: number) =>
-    navigate({
-      search: (prev: { [key: string]: string }) => ({ ...prev, page }),
-    })
+    navigate({ search: (prev: {[key: string]: string}) => ({ ...prev, page }) })
 
   const {
     data: users,
@@ -74,70 +71,72 @@ function UsersTable() {
 
   return (
     <>
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[20%]">Full name</TableHead>
-              <TableHead className="w-[50%]">Email</TableHead>
-              <TableHead className="w-[10%]">Role</TableHead>
-              <TableHead className="w-[10%]">Status</TableHead>
-              <TableHead className="w-[10%]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isPending ? (
-              <TableRow>
-                {new Array(5).fill(null).map((_, index) => (
-                  <TableCell key={index}>
-                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                  </TableCell>
+      <TableContainer>
+        <Table size={{ base: "sm", md: "md" }}>
+          <Thead>
+            <Tr>
+              <Th width="20%">Full name</Th>
+              <Th width="50%">Email</Th>
+              <Th width="10%">Role</Th>
+              <Th width="10%">Status</Th>
+              <Th width="10%">Actions</Th>
+            </Tr>
+          </Thead>
+          {isPending ? (
+            <Tbody>
+              <Tr>
+                {new Array(4).fill(null).map((_, index) => (
+                  <Td key={index}>
+                    <SkeletonText noOfLines={1} paddingBlock="16px" />
+                  </Td>
                 ))}
-              </TableRow>
-            ) : (
-              users?.data.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="max-w-[150px] truncate">
-                    <span
-                      className={!user.full_name ? "text-muted-foreground" : ""}
-                    >
-                      {user.full_name || "N/A"}
-                    </span>
+              </Tr>
+            </Tbody>
+          ) : (
+            <Tbody>
+              {users?.data.map((user) => (
+                <Tr key={user.id}>
+                  <Td
+                    color={!user.full_name ? "ui.dim" : "inherit"}
+                    isTruncated
+                    maxWidth="150px"
+                  >
+                    {user.full_name || "N/A"}
                     {currentUser?.id === user.id && (
-                      <Badge className="ml-2" variant="secondary">
+                      <Badge ml="1" colorScheme="teal">
                         You
                       </Badge>
                     )}
-                  </TableCell>
-                  <TableCell className="max-w-[150px] truncate">
+                  </Td>
+                  <Td isTruncated maxWidth="150px">
                     {user.email}
-                  </TableCell>
-                  <TableCell>
-                    {user.is_superuser ? "Superuser" : "User"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          user.is_active ? "bg-green-500" : "bg-red-500"
-                        }`}
+                  </Td>
+                  <Td>{user.is_superuser ? "Superuser" : "User"}</Td>
+                  <Td>
+                    <Flex gap={2}>
+                      <Box
+                        w="2"
+                        h="2"
+                        borderRadius="50%"
+                        bg={user.is_active ? "ui.success" : "ui.danger"}
+                        alignSelf="center"
                       />
                       {user.is_active ? "Active" : "Inactive"}
-                    </div>
-                  </TableCell>
-                  <TableCell>
+                    </Flex>
+                  </Td>
+                  <Td>
                     <ActionsMenu
                       type="User"
                       value={user}
                       disabled={currentUser?.id === user.id}
                     />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          )}
         </Table>
-      </div>
+      </TableContainer>
       <PaginationFooter
         onChangePage={setPage}
         page={page}
@@ -150,26 +149,13 @@ function UsersTable() {
 
 function Admin() {
   return (
-    <div className="container mx-auto max-w-full px-4">
-      <h1 className="text-2xl font-bold text-center md:text-left pt-12 mb-4">
-        Admin Dashboard
-      </h1>
+    <Container maxW="full">
+      <Heading size="lg" textAlign={{ base: "center", md: "left" }} pt={12}>
+        Users Management
+      </Heading>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="api-status">API Status</TabsTrigger>
-        </TabsList>
-        <TabsContent value="users" className="space-y-4">
-          <Navbar type={"User"} addModalAs={AddUser} />
-          <UsersTable />
-        </TabsContent>
-        <TabsContent value="api-status">
-          <ApiStatusManagement />
-        </TabsContent>
-      </Tabs>
-    </div>
+      <Navbar type={"User"} addModalAs={AddUser} />
+      <UsersTable />
+    </Container>
   )
 }
-
-export default Admin

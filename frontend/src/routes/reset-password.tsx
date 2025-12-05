@@ -1,6 +1,13 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {
+  Button,
+  Container,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  Text,
+} from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -8,7 +15,7 @@ import { type SubmitHandler, useForm } from "react-hook-form"
 import { type ApiError, LoginService, type NewPassword } from "../client"
 import { isLoggedIn } from "../hooks/useAuth"
 import useCustomToast from "../hooks/useCustomToast"
-import { handleError, passwordRules } from "../utils"
+import { confirmPasswordRules, handleError, passwordRules } from "../utils"
 
 interface NewPasswordForm extends NewPassword {
   confirm_password: string
@@ -67,56 +74,49 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center p-4">
-      <div className="w-full max-w-sm flex flex-col gap-4">
-        <h1 className="text-2xl font-bold text-primary text-center mb-2">
-          Reset Password
-        </h1>
-        <p className="text-center text-muted-foreground">
-          Please enter your new password and confirm it to reset your password.
-        </p>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Set Password</Label>
-            <Input
-              id="password"
-              {...register("new_password", passwordRules())}
-              placeholder="Password"
-              type="password"
-            />
-            {errors.new_password && (
-              <p className="text-sm text-destructive">
-                {errors.new_password.message}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="confirm_password">Confirm Password</Label>
-            <Input
-              id="confirm_password"
-              {...register("confirm_password", {
-                validate: (value) =>
-                  value === getValues().new_password ||
-                  "The passwords do not match",
-              })}
-              placeholder="Confirm Password"
-              type="password"
-            />
-            {errors.confirm_password && (
-              <p className="text-sm text-destructive">
-                {errors.confirm_password.message}
-              </p>
-            )}
-          </div>
-          <Button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full"
-          >
-            {mutation.isPending ? "Resetting..." : "Reset Password"}
-          </Button>
-        </form>
-      </div>
-    </div>
+    <Container
+      as="form"
+      onSubmit={handleSubmit(onSubmit)}
+      h="100vh"
+      maxW="sm"
+      alignItems="stretch"
+      justifyContent="center"
+      gap={4}
+      centerContent
+    >
+      <Heading size="xl" color="ui.main" textAlign="center" mb={2}>
+        Reset Password
+      </Heading>
+      <Text textAlign="center">
+        Please enter your new password and confirm it to reset your password.
+      </Text>
+      <FormControl mt={4} isInvalid={!!errors.new_password}>
+        <FormLabel htmlFor="password">Set Password</FormLabel>
+        <Input
+          id="password"
+          {...register("new_password", passwordRules())}
+          placeholder="Password"
+          type="password"
+        />
+        {errors.new_password && (
+          <FormErrorMessage>{errors.new_password.message}</FormErrorMessage>
+        )}
+      </FormControl>
+      <FormControl mt={4} isInvalid={!!errors.confirm_password}>
+        <FormLabel htmlFor="confirm_password">Confirm Password</FormLabel>
+        <Input
+          id="confirm_password"
+          {...register("confirm_password", confirmPasswordRules(getValues))}
+          placeholder="Password"
+          type="password"
+        />
+        {errors.confirm_password && (
+          <FormErrorMessage>{errors.confirm_password.message}</FormErrorMessage>
+        )}
+      </FormControl>
+      <Button variant="primary" type="submit">
+        Reset Password
+      </Button>
+    </Container>
   )
 }

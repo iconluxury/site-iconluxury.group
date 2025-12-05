@@ -1,61 +1,66 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useEffect } from "react"
-import { type SubmitHandler, useForm } from "react-hook-form"
-import { Button } from "../ui/button"
-import { Checkbox } from "../ui/checkbox"
+import { useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
+  Button,
+  Checkbox,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+} from "@chakra-ui/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
   type ApiError,
   type UserPublic as BaseUserPublic, // Rename to avoid conflict
   type UserUpdate as BaseUserUpdate,
   UsersService,
-} from "../../client"
-import useCustomToast from "../../hooks/useCustomToast"
-import { emailPattern, handleError } from "../../utils"
+} from "../../client";
+import useCustomToast from "../../hooks/useCustomToast";
+import { emailPattern, handleError } from "../../utils";
 
 // Extend UserPublic to match database schema
 interface ExtendedUserPublic extends BaseUserPublic {
-  has_subscription?: boolean
-  is_trial?: boolean
-  is_deactivated?: boolean
+  has_subscription?: boolean;
+  is_trial?: boolean;
+  is_deactivated?: boolean;
 }
 
 interface UserUpdate extends BaseUserUpdate {
-  has_subscription?: boolean
-  is_trial?: boolean
-  is_deactivated?: boolean
+  has_subscription?: boolean;
+  is_trial?: boolean;
+  is_deactivated?: boolean;
 }
 
 interface EditUserProps {
-  user: ExtendedUserPublic
-  isOpen: boolean
-  onClose: () => void
+  user: ExtendedUserPublic;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 interface UserUpdateForm extends UserUpdate {
-  confirm_password: string
+  confirm_password: string;
 }
 
 const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
-  const queryClient = useQueryClient()
-  const showToast = useCustomToast()
+  const queryClient = useQueryClient();
+  const showToast = useCustomToast();
+
+  console.log("Initial user prop:", JSON.stringify(user, null, 2));
 
   const {
     register,
     handleSubmit,
     reset,
     getValues,
-    setValue,
-    watch,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<UserUpdateForm>({
     mode: "onBlur",
@@ -66,21 +71,17 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
       is_trial: user.is_trial || false,
       is_deactivated: user.is_deactivated || false,
     },
-  })
-
-  // Watch checkbox values to update state correctly
-  const hasSubscription = watch("has_subscription")
-  const isTrial = watch("is_trial")
-  const isDeactivated = watch("is_deactivated")
+  });
 
   useEffect(() => {
+    console.log("Resetting form with user:", JSON.stringify(user, null, 2));
     reset({
       ...user,
       has_subscription: user.has_subscription || false,
       is_trial: user.is_trial || false,
       is_deactivated: user.is_deactivated || false,
-    })
-  }, [user, reset])
+    });
+  }, [user, reset]);
 
   const mutation = useMutation({
     mutationFn: (data: UserUpdateForm) => {
@@ -89,180 +90,151 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
         has_subscription: data.has_subscription || false,
         is_trial: data.is_trial || false,
         is_deactivated: data.is_deactivated || false,
-      }
-      ;(requestData as any).confirm_password = undefined
+      };
+      delete (requestData as any).confirm_password;
+      console.log("Sending to API:", JSON.stringify(requestData, null, 2));
       return UsersService.updateUser({
         userId: user.id,
         requestBody: requestData,
-      })
+      });
     },
-    onSuccess: () => {
-      showToast("Success!", "User updated successfully.", "success")
-      onClose()
+    onSuccess: (response) => {
+      console.log("API response:", JSON.stringify(response, null, 2));
+      showToast("Success!", "User updated successfully.", "success");
+      queryClient.refetchQueries({ queryKey: ["users"] });
+      onClose();
     },
     onError: (err: ApiError) => {
-      handleError(err, showToast)
+      console.log("Mutation error:", err);
+      handleError(err, showToast);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] })
+      console.log("Invalidating users query");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-  })
+  });
 
   const onSubmit: SubmitHandler<UserUpdateForm> = async (data) => {
-    mutation.mutate(data)
-  }
+    if (data.password === "") {
+      data.password = undefined;
+    }
+    console.log("Form submitted with data:", JSON.stringify(data, null, 2));
+    mutation.mutate(data);
+  };
 
   const onCancel = () => {
-    reset()
-    onClose()
-  }
+    console.log("Cancel clicked, resetting form");
+    reset();
+    onClose();
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: emailPattern,
-                })}
-                placeholder="Email"
-                type="email"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
-              )}
-            </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={{ base: "sm", md: "md" }}
+      isCentered
+    >
+      <ModalOverlay />
+      <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
+        <ModalHeader>Edit User</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <FormControl isInvalid={!!errors.email}>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <Input
+              id="email"
+              {...register("email", {
+                required: "Email is required",
+                pattern: emailPattern,
+              })}
+              placeholder="Email"
+              type="email"
+            />
+            {errors.email && (
+              <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl mt={4}>
+            <FormLabel htmlFor="name">Full name</FormLabel>
+            <Input id="name" {...register("full_name")} type="text" />
+          </FormControl>
+          <FormControl mt={4} isInvalid={!!errors.password}>
+            <FormLabel htmlFor="password">Set Password</FormLabel>
+            <Input
+              id="password"
+              {...register("password", {
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters",
+                },
+              })}
+              placeholder="Password"
+              type="password"
+            />
+            {errors.password && (
+              <FormErrorMessage>{errors.password.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl mt={4} isInvalid={!!errors.confirm_password}>
+            <FormLabel htmlFor="confirm_password">Confirm Password</FormLabel>
+            <Input
+              id="confirm_password"
+              {...register("confirm_password", {
+                validate: (value) =>
+                  value === getValues().password || "The passwords do not match",
+              })}
+              placeholder="Password"
+              type="password"
+            />
+            {errors.confirm_password && (
+              <FormErrorMessage>{errors.confirm_password.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <Flex gap={4} mt={4}>
+            <FormControl>
+              <Checkbox {...register("is_superuser")} colorScheme="teal">
+                Is superuser?
+              </Checkbox>
+            </FormControl>
+            <FormControl>
+              <Checkbox {...register("is_active")} colorScheme="teal">
+                Is active?
+              </Checkbox>
+            </FormControl>
+          </Flex>
+          <Flex direction="column" mt={4} gap={2}>
+            <FormControl>
+              <Checkbox {...register("has_subscription")} colorScheme="teal">
+              Supplier
+              </Checkbox>
+            </FormControl>
+            <FormControl>
+              <Checkbox {...register("is_trial")} colorScheme="teal">
+                Limited
+              </Checkbox>
+            </FormControl>
+            <FormControl>
+              <Checkbox {...register("is_deactivated")} colorScheme="teal">
+              Restricted
+              </Checkbox>
+            </FormControl>
+          </Flex>
+        </ModalBody>
+        <ModalFooter gap={3}>
+          <Button
+            variant="primary"
+            type="submit"
+            isLoading={isSubmitting}
+            isDisabled={!isDirty}
+          >
+            Save
+          </Button>
+          <Button onClick={onCancel}>Cancel</Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+};
 
-            <div className="grid gap-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                {...register("full_name")}
-                placeholder="Full Name"
-                type="text"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                {...register("password", {
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                })}
-                placeholder="Password"
-                type="password"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="confirm_password">Confirm Password</Label>
-              <Input
-                id="confirm_password"
-                {...register("confirm_password", {
-                  validate: (value) => {
-                    const { password } = getValues()
-                    return password === value || "Passwords do not match"
-                  },
-                })}
-                placeholder="Confirm Password"
-                type="password"
-              />
-              {errors.confirm_password && (
-                <p className="text-sm text-red-500">
-                  {errors.confirm_password.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="is_superuser"
-                checked={watch("is_superuser")}
-                onCheckedChange={(checked) =>
-                  setValue("is_superuser", checked === true)
-                }
-              />
-              <Label htmlFor="is_superuser">Is Superuser?</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="is_active"
-                checked={watch("is_active")}
-                onCheckedChange={(checked) =>
-                  setValue("is_active", checked === true)
-                }
-              />
-              <Label htmlFor="is_active">Is Active?</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="has_subscription"
-                checked={hasSubscription}
-                onCheckedChange={(checked) =>
-                  setValue("has_subscription", checked === true, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-              <Label htmlFor="has_subscription">Has Subscription?</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="is_trial"
-                checked={isTrial}
-                onCheckedChange={(checked) =>
-                  setValue("is_trial", checked === true, { shouldDirty: true })
-                }
-              />
-              <Label htmlFor="is_trial">Is Trial?</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="is_deactivated"
-                checked={isDeactivated}
-                onCheckedChange={(checked) =>
-                  setValue("is_deactivated", checked === true, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-              <Label htmlFor="is_deactivated">Is Deactivated?</Label>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting || !isDirty}>
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export default EditUser
+export default EditUser;

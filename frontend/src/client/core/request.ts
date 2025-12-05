@@ -1,9 +1,9 @@
 import axios from "axios"
 import type {
   AxiosError,
-  AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
+  AxiosInstance,
 } from "axios"
 
 import { ApiError } from "./ApiError"
@@ -57,21 +57,15 @@ export const getQueryString = (params: Record<string, unknown>): string => {
     if (value instanceof Date) {
       append(key, value.toISOString())
     } else if (Array.isArray(value)) {
-      for (const item of value) {
-        encodePair(key, item)
-      }
+      value.forEach((v) => encodePair(key, v))
     } else if (typeof value === "object") {
-      for (const [k, v] of Object.entries(value)) {
-        encodePair(`${key}[${k}]`, v)
-      }
+      Object.entries(value).forEach(([k, v]) => encodePair(`${key}[${k}]`, v))
     } else {
       append(key, value)
     }
   }
 
-  for (const [key, value] of Object.entries(params)) {
-    encodePair(key, value)
-  }
+  Object.entries(params).forEach(([key, value]) => encodePair(key, value))
 
   return qs.length ? `?${qs.join("&")}` : ""
 }
@@ -82,10 +76,7 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
   const path = options.url
     .replace("{api-version}", config.VERSION)
     .replace(/{(.*?)}/g, (substring: string, group: string) => {
-      if (
-        options.path &&
-        Object.prototype.hasOwnProperty.call(options.path, group)
-      ) {
+      if (options.path?.hasOwnProperty(group)) {
         return encoder(String(options.path[group]))
       }
       return substring
@@ -109,16 +100,15 @@ export const getFormData = (
       }
     }
 
-    for (const [key, value] of Object.entries(options.formData)) {
-      if (value === undefined || value === null) continue
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          process(key, item)
+    Object.entries(options.formData)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => process(key, v))
+        } else {
+          process(key, value)
         }
-      } else {
-        process(key, value)
-      }
-    }
+      })
 
     return formData
   }
@@ -152,25 +142,27 @@ export const getHeaders = async <T>(
     resolve(options, config.HEADERS),
   ])
 
-  const headers: Record<string, string> = {}
-  const headerEntries = Object.entries({
+  const headers = Object.entries({
     Accept: "application/json",
     ...additionalHeaders,
     ...options.headers,
   })
-
-  for (const [key, value] of headerEntries) {
-    if (value === undefined || value === null) continue
-    headers[key] = String(value)
-  }
+    .filter(([, value]) => value !== undefined && value !== null)
+    .reduce(
+      (headers, [key, value]) => ({
+        ...headers,
+        [key]: String(value),
+      }),
+      {} as Record<string, string>,
+    )
 
   if (isStringWithValue(token)) {
-    headers.Authorization = `Bearer ${token}`
+    headers["Authorization"] = `Bearer ${token}`
   }
 
   if (isStringWithValue(username) && isStringWithValue(password)) {
     const credentials = base64(`${username}:${password}`)
-    headers.Authorization = `Basic ${credentials}`
+    headers["Authorization"] = `Basic ${credentials}`
   }
 
   if (options.body !== undefined) {

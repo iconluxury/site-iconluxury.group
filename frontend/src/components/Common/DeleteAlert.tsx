@@ -1,17 +1,15 @@
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Button,
+} from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import React from "react"
 import { useForm } from "react-hook-form"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog"
-import { Button } from "../ui/button"
 
 import { ItemsService, UsersService } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
@@ -26,6 +24,7 @@ interface DeleteProps {
 const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
   const queryClient = useQueryClient()
   const showToast = useCustomToast()
+  const cancelRef = React.useRef<HTMLButtonElement | null>(null)
   const {
     handleSubmit,
     formState: { isSubmitting },
@@ -70,30 +69,44 @@ const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
   }
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent asChild>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {type}</AlertDialogTitle>
-            <AlertDialogDescription>
+    <>
+      <AlertDialog
+        isOpen={isOpen}
+        onClose={onClose}
+        leastDestructiveRef={cancelRef}
+        size={{ base: "sm", md: "md" }}
+        isCentered
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
+            <AlertDialogHeader>Delete {type}</AlertDialogHeader>
+
+            <AlertDialogBody>
               {type === "User" && (
                 <span>
                   All items associated with this user will also be{" "}
-                  <strong>permanently deleted. </strong>
+                  <strong>permantly deleted. </strong>
                 </span>
               )}
               Are you sure? You will not be able to undo this action.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-            <Button variant="destructive" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Deleting..." : "Delete"}
-            </Button>
-          </AlertDialogFooter>
-        </form>
-      </AlertDialogContent>
-    </AlertDialog>
+            </AlertDialogBody>
+
+            <AlertDialogFooter gap={3}>
+              <Button variant="danger" type="submit" isLoading={isSubmitting}>
+                Delete
+              </Button>
+              <Button
+                ref={cancelRef}
+                onClick={onClose}
+                isDisabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    </>
   )
 }
 

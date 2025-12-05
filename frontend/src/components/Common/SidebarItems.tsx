@@ -1,210 +1,224 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { Link, useLocation } from "@tanstack/react-router"
+import { Box, Flex, Icon, Text, Tooltip, Avatar } from "@chakra-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useLocation } from "@tanstack/react-router";
 import {
-  Archive,
-  BarChart,
-  Briefcase,
-  Calendar,
-  Crop,
-  Database,
-  Eye,
-  FileSpreadsheet,
-  FileText,
-  Globe,
-  HelpCircle,
-  Home,
-  Image,
-  Layers,
-  Layout,
-  Link as LinkIcon,
-  LogOut,
-  MessageSquare,
-  Search,
-  Settings,
-  Shield,
-  Users,
-  Wrench,
-} from "lucide-react"
-import type { UserPublic } from "../../client"
-import useAuth from "../../hooks/useAuth"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Badge } from "../ui/badge"
+  FiHome,
+  FiUsers,
+  FiLayers,
+  FiCalendar,
+  FiFileText,
+  FiMessageSquare,
+  FiGlobe,
+  FiShield,
+  FiLogOut,
+  FiSearch,
+  FiArchive,
+  FiImage,
+  FiEye,
+  FiGlobe as FiGoogleSerp,
+} from "react-icons/fi";
+import type { UserPublic } from "../../client";
+import useAuth from "../../hooks/useAuth";
 
 interface SidebarItem {
-  title: string
-  icon?: any
-  path?: string
-  subItems?: SidebarItem[]
-  action?: () => void
+  title: string;
+  icon?: any;
+  path?: string;
+  subItems?: SidebarItem[];
+  action?: () => void;
 }
 
 const sidebarStructure: SidebarItem[] = [
-  { title: "Dashboard", path: "/", icon: Home },
-  {
-    title: "Tools",
-    icon: Wrench,
+    {
+    title: "Drophip",
     subItems: [
-      { title: "Google Images", path: "/tools/google-images", icon: Image },
-      {
-        title: "Data Warehouse",
-        path: "/tools/data-warehouse",
-        icon: Database,
-        subItems: [
-          {
-            title: "Jobs History",
-            path: "https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp",
-            icon: FileText,
-          },
-        ],
-      },
-      { title: "Image Links", path: "/tools/image-links", icon: LinkIcon },
-      { title: "Crop Tool", path: "/tools/crop", icon: Crop },
-      {
-        title: "Reformat Excel",
-        path: "/reformat-excel",
-        icon: FileSpreadsheet,
-      },
+      { title: "Image Hosting", path: "/dropship", icon: FiImage },
+    ],},
+  {
+    title: "Scraper",
+    subItems: [
+      { title: "Jobs", path: "/scraping-api/explore", icon: FiSearch },
+      { title: "Google SERP", path: "/scraping-api/google-serp", icon: FiGoogleSerp },
+      { title: "Archive", path: "/explore", icon: FiArchive },]
+  },
+  {
+    title: "Logs",
+    subItems: [
+      { title: "Network Logs", path: "/support/network-logs", icon: FiFileText },
+      { title: "Email Logs", path: "/support/email", icon: FiMessageSquare },
     ],
   },
-  { title: "Settings", path: "/settings", icon: Settings },
-  { title: "Jobs", path: "/scraping-api/jobs", icon: Search },
-  { title: "Insights", path: "/scraping-api/insights", icon: BarChart },
-  { title: "File Explorer", path: "/file-explorer", icon: Archive },
-  { title: "Sign out", icon: LogOut, action: () => {} },
-]
+  { title: "VPN", icon: FiShield, path: "/vpn" },
+  {
+    title: "Vendor Demo",
+    subItems: [
+      { title: "Dashboard", icon: FiHome, path: "/supplier/dashboard" },
+      { title: "Offers", icon: FiCalendar, path: "/offers" },
+      { title: "Orders", icon: FiLayers, path: "/orders" },
+      { title: "Customers", icon: FiUsers, path: "/customers" },
+    ],
+  },
+  { title: "Sign out", icon: FiLogOut, action: () => {} },
+];
 
 interface SidebarItemsProps {
-  onClose?: () => void
+  onClose?: () => void;
 }
 
 const SidebarItems = ({ onClose }: SidebarItemsProps) => {
-  const queryClient = useQueryClient()
-  const { logout } = useAuth()
-  const location = useLocation()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const queryClient = useQueryClient();
+  const { logout } = useAuth();
+  const location = useLocation();
+  const textColor = "gray.800";
+  const disabledColor = "ui.dim";
+  const hoverColor = "ui.main";
+  const bgActive = "ui.light";
+  const activeTextColor = "gray.800";
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"]);
 
-  const avatarOptions = ["https://i.pravatar.cc/150"]
-  const hardcodedAvatar =
-    avatarOptions[Math.floor(Math.random() * avatarOptions.length)]
+  const avatarOptions = [
+    "https://i.pravatar.cc/150",
+  ];
+  const hardcodedAvatar = avatarOptions[Math.floor(Math.random() * avatarOptions.length)];
 
-  const finalSidebarStructure = [...sidebarStructure]
-  if (
-    currentUser?.is_superuser &&
-    !finalSidebarStructure.some((item) => item.title === "Admin")
-  ) {
-    finalSidebarStructure.splice(finalSidebarStructure.length - 1, 0, {
-      title: "Admin",
-      icon: Shield,
-      path: "/admin",
-    })
+  const finalSidebarStructure = [...sidebarStructure];
+  if (currentUser?.is_superuser && !finalSidebarStructure.some(item => item.title === "Admin")) {
+    finalSidebarStructure.splice(finalSidebarStructure.length - 2, 0, { title: "Admin", icon: FiShield, path: "/admin" });
   }
 
   const isEnabled = (title: string) => {
-    if (["Dashboard", "Sign out"].includes(title)) {
-      return true
+    if (["Dashboard", "Orders", "Offers", "Customers", "Sign out"].includes(title)) {
+      return true;
     }
-    if (["Jobs", "Insights", "File Explorer", "Admin"].includes(title)) {
-      return currentUser?.is_superuser || false
+    if (["Scraper", "Jobs", "Archive", "Google SERP", "Logs", "Network Logs", "Email Logs", "VPN", "Admin"].includes(title)) {
+      return currentUser?.is_superuser || false;
     }
-    return true
-  }
+    return true;
+  };
 
   const renderItems = (items: SidebarItem[]) =>
-    items.map(({ icon: Icon, title, path, subItems, action }) => {
-      const enabled = isEnabled(title)
+    items.map(({ icon, title, path, subItems, action }) => {
+      const enabled = isEnabled(title);
       if (!enabled) {
-        return null
+        return null;
       }
-      const showAdminLabel = [
-        "File Explorer",
-        "Admin",
-        "Jobs",
-        "Insights",
-      ].includes(title)
-      const isActive =
-        path === location.pathname || (path === "/" && location.pathname === "")
+      const showAdminLabel = ["Archive", "VPN", "Admin", "Jobs", "Google SERP", "Network Logs", "Email Logs"].includes(title);
+      const isActive = path === location.pathname || (path === "/" && location.pathname === "");
       return (
-        <div key={title} className="mb-2">
+        <Box key={title} mb={2}>
           {path ? (
-            <Link
+            <Flex
+              as={Link}
               to={path}
-              className={`flex w-full p-2 rounded-md items-center justify-between transition-colors ${
-                isActive
-                  ? "bg-muted text-foreground shadow-sm"
-                  : "text-foreground hover:text-primary hover:bg-muted/50"
-              }`}
+              w="100%"
+              p={2}
+              borderRadius="md"
+              style={isActive ? {
+                background: bgActive,
+                boxShadow: "card",
+                color: activeTextColor,
+                borderRadius: "md",
+              } : {}}
+              color={textColor}
+              _hover={{ color: hoverColor }}
               onClick={onClose}
+              align="center"
+              justify="space-between"
             >
-              <div className="flex items-center">
-                {Icon && (
-                  <Icon
-                    className={`mr-2 h-4 w-4 ${
-                      isActive ? "text-foreground" : "text-foreground"
-                    }`}
-                  />
-                )}
-                <span>{title}</span>
-              </div>
+              <Flex align="center">
+                {icon && <Icon as={icon} mr={2} color={isActive ? activeTextColor : textColor} />}
+                <Text>{title}</Text>
+              </Flex>
               {showAdminLabel && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs font-medium px-2 py-0.5 rounded-full"
+                <Text
+                  fontSize="xs"
+                  fontWeight="medium"
+                  bg="gray.200"
+                  color={textColor}
+                  px={2}
+                  py={0.5}
+                  borderRadius="full"
                 >
                   Admin
-                </Badge>
+                </Text>
               )}
-            </Link>
+            </Flex>
           ) : action ? (
-            <div
-              className="flex w-full p-2 rounded-md text-foreground hover:text-primary hover:bg-muted/50 cursor-pointer items-center transition-colors"
+            <Flex
+              w="100%"
+              p={2}
+              borderRadius="md"
+              color={textColor}
+              _hover={{ color: hoverColor }}
               onClick={() => {
-                if (title === "Sign out") logout()
-                onClose?.()
+                if (title === "Sign out") logout();
+                onClose?.();
               }}
+              cursor="pointer"
+              align="center"
             >
-              {Icon && <Icon className="mr-2 h-4 w-4" />}
-              <span>{title}</span>
-            </div>
+              {icon && <Icon as={icon} mr={2} />}
+              <Text>{title}</Text>
+            </Flex>
           ) : (
-            <div>
-              <div className="p-2 font-bold">{title}</div>
-              <div className="pl-4">{subItems && renderItems(subItems)}</div>
-            </div>
+            <Box>
+              <Text p={2} fontWeight="bold">{title}</Text>
+              <Box>{subItems && renderItems(subItems)}</Box>
+            </Box>
           )}
-        </div>
-      )
-    })
+        </Box>
+      );
+    });
 
   return (
-    <div className="sidebar">
-      <div>{renderItems(finalSidebarStructure)}</div>
+    <Box className="sidebar">
+      <Box>{renderItems(finalSidebarStructure)}</Box>
       {currentUser && (
-        <Link
+        <Flex
+          as={Link}
           to="/settings"
-          className="flex w-full p-2 mt-4 rounded-md bg-muted/50 shadow-sm text-foreground border-2 border-transparent hover:text-primary hover:bg-muted hover:border-primary transition-all duration-200 items-center"
+          w="100%"
+          p={2}
+          mt={4}
+          borderRadius="md"
+          bg="gray.100"
+          boxShadow="card"
+          color={textColor}
+          border="2px solid"
+          borderColor="transparent"
+          _hover={{
+            color: hoverColor,
+            bg: "gray.50",
+            borderColor: "ui.main",
+          }}
+          transition="all 0.2s ease"
           onClick={onClose}
+          align="center"
         >
-          <Avatar className="h-8 w-8 mr-2 border-2 border-transparent hover:border-primary transition-all duration-200 grayscale hover:grayscale-0">
-            <AvatarImage
-              src={hardcodedAvatar}
-              alt={currentUser.full_name || "User"}
-            />
-            <AvatarFallback>
-              {currentUser.full_name ? currentUser.full_name.charAt(0) : "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 overflow-hidden">
-            <p className="font-medium truncate">
-              {currentUser.full_name || "User"}
-            </p>
-            <p className="text-xs text-muted-foreground truncate whitespace-normal break-words">
+          <Avatar
+            size="sm"
+            name={currentUser.full_name || "User"}
+            src={hardcodedAvatar}
+            mr={2}
+            filter="grayscale(100%)"
+            border="2px solid"
+            borderColor="transparent"
+            _hover={{
+              filter: "grayscale(0)",
+              borderColor: "ui.main",
+            }}
+            transition="all 0.2s ease"
+          />
+          <Box flex="1">
+            <Text fontWeight="medium">{currentUser.full_name || "User"}</Text>
+            <Text fontSize="xs" color="ui.dim" isTruncated={false} whiteSpace="normal">
               {currentUser.email || "email@example.com"}
-            </p>
-          </div>
-        </Link>
+            </Text>
+          </Box>
+        </Flex>
       )}
-    </div>
-  )
-}
+    </Box>
+  );
+};
 
-export default SidebarItems
+export default SidebarItems;

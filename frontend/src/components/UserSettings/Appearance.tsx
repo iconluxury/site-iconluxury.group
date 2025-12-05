@@ -1,40 +1,44 @@
-import { useTheme } from "next-themes"
-import type React from "react"
-import { Badge } from "../ui/badge"
-import { Label } from "../ui/label"
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
+// src/components/Appearance.tsx
+import React from "react";
+import {
+  Badge,
+  Container,
+  Heading,
+  Radio,
+  RadioGroup,
+  Stack,
+  useColorMode,
+} from "@chakra-ui/react";
 
 const Appearance: React.FC = () => {
-  const { theme, setTheme } = useTheme()
+  // Get the current color mode and the toggle function from Chakra UI
+  const { colorMode, toggleColorMode } = useColorMode();
 
   return (
-    <div className="max-w-full">
-      <h2 className="text-lg font-semibold py-4">Appearance</h2>
-      <RadioGroup
-        value={theme}
-        onValueChange={setTheme}
-        className="flex flex-col space-y-2"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="light" id="light" />
-          <Label htmlFor="light" className="flex items-center gap-2">
+    <Container maxW="full">
+      <Heading size="sm" py={4}>
+        Appearance
+      </Heading>
+      {/* The RadioGroup value is bound to the current color mode,
+          and toggling a radio will trigger toggleColorMode */}
+      <RadioGroup onChange={toggleColorMode} value={colorMode}>
+        <Stack direction="column">
+          {/* If you have configured your theme to use a custom color scheme (for example, "ui"),
+              you can either update the Radio props below or remove the explicit scheme so that
+              the theme defaults apply. */}
+          <Radio value="dark">
+            Dark Mode
+          </Radio>
+          <Radio value="light">
             Light Mode
-            <Badge variant="secondary" className="ml-1">
+            <Badge ml="1">
               Default
             </Badge>
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="dark" id="dark" />
-          <Label htmlFor="dark">Dark Mode</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="system" id="system" />
-          <Label htmlFor="system">System</Label>
-        </div>
+          </Radio>
+        </Stack>
       </RadioGroup>
-    </div>
-  )
-}
+    </Container>
+  );
+};
 
-export default Appearance
+export default Appearance;

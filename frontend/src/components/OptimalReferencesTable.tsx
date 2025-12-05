@@ -1,36 +1,38 @@
-import { useEffect, useState } from "react"
-import { Card, CardContent } from "./ui/card"
+// src/components/OptimalReferencesTable.tsx
+import { useState, useEffect } from "react";
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table"
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Image,
+  Flex,
+} from "@chakra-ui/react";
 
 interface Reference {
-  category: string
-  url: string
+  category: string;
+  url: string;
 }
 
 interface ReferencesData {
-  [key: string]: string
+  [key: string]: string;
 }
 
 const OptimalReferencesTable = () => {
-  const [references, setReferences] = useState<Reference[]>([])
+  const [references, setReferences] = useState<Reference[]>([]);
 
   // Fetch data from the GitHub URL on component mount
   useEffect(() => {
     fetch(
-      "https://raw.githubusercontent.com/iconluxurygroup/settings-static-data/refs/heads/main/optimal-references.json",
+      "https://raw.githubusercontent.com/iconluxurygroup/settings-static-data/refs/heads/main/optimal-references.json"
     )
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok")
+          throw new Error("Network response was not ok");
         }
-        return response.json() as Promise<ReferencesData>
+        return response.json() as Promise<ReferencesData>;
       })
       .then((data) => {
         // Transform the JSON object into an array of Reference objects
@@ -38,49 +40,47 @@ const OptimalReferencesTable = () => {
           ([category, url]) => ({
             category,
             url,
-          }),
-        )
-        setReferences(fetchedReferences)
+          })
+        );
+        setReferences(fetchedReferences);
       })
       .catch((error) => {
-        console.error("Error fetching references:", error)
-        setReferences([]) // Fallback to empty array on error
-      })
-  }, []) // Empty dependency array ensures this runs only once on mount
+        console.error("Error fetching references:", error);
+        setReferences([]); // Fallback to empty array on error
+      });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Image URL</TableHead>
-              <TableHead>Image</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {references.map((ref) => (
-              <TableRow key={ref.category}>
-                <TableCell>{ref.category}</TableCell>
-                <TableCell className="max-w-xs truncate" title={ref.url}>
-                  {ref.url}
-                </TableCell>
-                <TableCell>
-                  <img
-                    src={ref.url}
-                    alt={ref.category}
-                    className="h-[100px] w-[100px] object-cover rounded-md"
-                    loading="lazy"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  )
-}
+    <Flex direction="column" p={4}>
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Category</Th>
+            <Th>Image URL</Th>
+            <Th>Image</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {references.map((ref) => (
+            <Tr key={ref.category}>
+              <Td>{ref.category}</Td>
+              <Td>{ref.url}</Td>
+              <Td>
+                <Image
+                  src={ref.url}
+                  alt={ref.category}
+                  boxSize="100px"
+                  objectFit="cover"
+                  fallbackSrc="https://via.placeholder.com/100"
+                  loading="lazy"
+                />
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </Flex>
+  );
+};
 
-export default OptimalReferencesTable
+export default OptimalReferencesTable;

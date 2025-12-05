@@ -1,57 +1,76 @@
-import { LogOut, User } from "lucide-react"
-import useAuth from "../../hooks/useAuth"
-import { Button } from "../ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
+  Box,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+} from "@chakra-ui/react";
+import { Link } from "@tanstack/react-router";
+import { FaUserSecret } from "react-icons/fa";
+import { FiLogOut, FiUser } from "react-icons/fi";
+
+import useAuth from "../../hooks/useAuth";
 
 const UserMenu = () => {
-  const { logout } = useAuth()
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    logout()
-  }
+    logout();
+  };
 
   return (
     <>
       {/* Desktop */}
-      <div className="hidden md:block fixed top-4 right-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-gray-50 border-yellow-300 hover:bg-yellow-100 hover:border-yellow-400 active:bg-yellow-200 active:border-yellow-500"
-              data-testid="user-menu"
-            >
-              <User className="h-[18px] w-[18px] text-gray-800" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="bg-gray-50 border-gray-200 text-gray-800 shadow-md"
+      <Box
+        display={{ base: "none", md: "block" }}
+        position="fixed"
+        top={4}
+        right={4}
+      >
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label="Options"
+            icon={<FiUser color="gray.800" fontSize="18px" />}
+            bg="gray.50" // Subtle gray instead of pure white
+            border="1px solid"
+            borderColor="yellow.300"
+            _hover={{ bg: "yellow.100", borderColor: "yellow.400" }}
+            _active={{ bg: "yellow.200", borderColor: "yellow.500" }}
+            isRound
+            data-testid="user-menu"
+          />
+          <MenuList
+            bg="gray.50" // Subtle gray instead of pure white
+            borderColor="gray.200"
+            color="gray.800"
+            boxShadow="md"
           >
-            {/* <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex items-center cursor-pointer hover:bg-yellow-100 hover:text-yellow-500">
-                <User className="mr-2 h-[18px] w-[18px] text-gray-600" />
-                Settings
-              </Link>
-            </DropdownMenuItem> */}
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-red-500 font-bold hover:bg-red-100 cursor-pointer focus:text-red-500 focus:bg-red-100"
+            {/* <MenuItem
+              icon={<FiUser fontSize="18px" color="gray.600" />}
+              as={Link}
+              to="/settings"
+              bg="gray.50"
+              _hover={{ bg: "yellow.100", color: "yellow.500" }}
             >
-              <LogOut className="mr-2 h-[18px] w-[18px] text-red-500" />
+              Settings
+            </MenuItem> */}
+            <MenuItem
+              icon={<FiLogOut fontSize="18px" color="red.500" />}
+              onClick={handleLogout}
+              color="red.500"
+              fontWeight="bold"
+              bg="gray.50"
+              _hover={{ bg: "red.100" }}
+            >
               Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      </Box>
     </>
-  )
-}
+  );
+};
 
-export default UserMenu
+export default UserMenu;

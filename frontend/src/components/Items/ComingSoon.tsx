@@ -1,20 +1,30 @@
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Info } from "lucide-react"
-import type React from "react"
+import React from 'react';
+import { 
+  Box, 
+  Text, 
+  Alert, 
+  AlertIcon, 
+  VStack 
+} from "@chakra-ui/react";
 
 const ComingSoon: React.FC = () => {
   return (
-    <div className="max-w-full mx-auto px-6 md:px-12 py-10">
-      <div className="flex flex-col gap-6 items-stretch">
-        <Alert className="bg-gray-50 text-gray-800 border-none rounded-md">
-          <Info className="h-4 w-4 text-blue-500" />
-          <AlertDescription className="text-sm">
-            Features are in development.
-          </AlertDescription>
+    <Box maxW="100%" mx="auto" px={{ base: 6, md: 12 }} py={10}>
+      <VStack spacing={6} align="stretch">
+        <Alert 
+          status="info" 
+          borderRadius="md" 
+          bg="gray.50"
+          color="gray.800"
+        >
+          <AlertIcon color="blue.500" /> 
+          <Text fontSize="sm">
+           Features are in development. 
+          </Text>
         </Alert>
-      </div>
-    </div>
-  )
-}
+      </VStack>
+    </Box>
+  );
+};
 
-export default ComingSoon
+export default ComingSoon;
