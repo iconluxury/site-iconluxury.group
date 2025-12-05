@@ -1,8 +1,24 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
-import path from "path";
-import { nodePolyfills } from "vite-plugin-node-polyfills"; // Use named import
+import { resolve } from "node:path"
+import { fileURLToPath } from "node:url"
+import { TanStackRouterVite } from "@tanstack/router-vite-plugin"
+import react from "@vitejs/plugin-react-swc"
+import { defineConfig } from "vite"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
+
+// Resolve the polyfill shims to absolute paths so Rollup can bundle them reliably
+const polyfillAliases = Object.fromEntries(
+  ["buffer", "global", "process"].map((shim) => [
+    `vite-plugin-node-polyfills/shims/${shim}`,
+    fileURLToPath(
+      new URL(
+        `./node_modules/vite-plugin-node-polyfills/shims/${shim}/dist/index.js`,
+        import.meta.url,
+      ),
+    ),
+  ]),
+) as Record<string, string>
+
+const rootDir = fileURLToPath(new URL(".", import.meta.url))
 
 export default defineConfig({
   plugins: [
@@ -11,16 +27,18 @@ export default defineConfig({
       routesDirectory: "./src/routes",
       generatedRouteTree: "./src/routeTree.gen.ts",
     }),
-    nodePolyfills({ // Use the named export here
+    nodePolyfills({
       globals: {
-        Buffer: true, // Enable Buffer polyfill
-        global: true, // Enable global polyfill
+        Buffer: true,
+        global: true,
+        process: true,
       },
     }),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": resolve(rootDir, "src"),
+      ...polyfillAliases,
     },
   },
   optimizeDeps: {
@@ -30,4 +48,4 @@ export default defineConfig({
       },
     },
   },
-});
+})

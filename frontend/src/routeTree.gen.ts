@@ -21,23 +21,37 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as ProgressJobIdImport } from './routes/progress/$jobId'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
+import { Route as LayoutOrdersImport } from './routes/_layout/orders'
+import { Route as LayoutOffersImport } from './routes/_layout/offers'
+import { Route as LayoutItemsImport } from './routes/_layout/items'
 import { Route as LayoutFileExplorerImport } from './routes/_layout/file-explorer'
+import { Route as LayoutExploreImport } from './routes/_layout/explore'
+import { Route as LayoutCustomersImport } from './routes/_layout/customers'
 import { Route as LayoutCmsImport } from './routes/_layout/cms'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
+import { Route as LayoutDropshipIndexImport } from './routes/_layout/dropship/index'
 import { Route as PublicToolsImageLinksImport } from './routes/public/tools/image-links'
 import { Route as PublicToolsGoogleImagesImport } from './routes/public/tools/google-images'
 import { Route as PublicToolsDataWarehouseImport } from './routes/public/tools/data-warehouse'
 import { Route as PublicToolsCropImport } from './routes/public/tools/crop'
+import { Route as LayoutSupplierDashboardImport } from './routes/_layout/supplier/dashboard'
+import { Route as LayoutSubmitFormSuccessImport } from './routes/_layout/submit-form/success'
+import { Route as LayoutSubmitFormOfferImport } from './routes/_layout/submit-form/offer'
+import { Route as LayoutScrapingApiUserAgentsImport } from './routes/_layout/scraping-api/user-agents'
 import { Route as LayoutScrapingApiJobsImport } from './routes/_layout/scraping-api/jobs'
 import { Route as LayoutScrapingApiInsightsImport } from './routes/_layout/scraping-api/insights'
+import { Route as LayoutScrapingApiGoogleSerpImport } from './routes/_layout/scraping-api/google-serp'
+import { Route as LayoutScrapingApiExploreImport } from './routes/_layout/scraping-api/explore'
 import { Route as LayoutToolsImageLinksIndexImport } from './routes/_layout/tools/image-links/index'
 import { Route as LayoutToolsGoogleImagesIndexImport } from './routes/_layout/tools/google-images/index'
 import { Route as LayoutToolsDataWarehouseIndexImport } from './routes/_layout/tools/data-warehouse/index'
 import { Route as LayoutToolsCropIndexImport } from './routes/_layout/tools/crop/index'
+import { Route as LayoutScrapingApiScrapingJobsIndexImport } from './routes/_layout/scraping-api/scraping-jobs/index'
 import { Route as LayoutToolsImageLinksUploadImport } from './routes/_layout/tools/image-links/upload'
 import { Route as LayoutToolsGoogleImagesUploadImport } from './routes/_layout/tools/google-images/upload'
 import { Route as LayoutToolsDataWarehouseUploadImport } from './routes/_layout/tools/data-warehouse/upload'
 import { Route as LayoutToolsCropUploadImport } from './routes/_layout/tools/crop/upload'
+import { Route as LayoutSupplierOfferFileIdImport } from './routes/_layout/supplier/offer/$fileId'
 import { Route as LayoutScrapingApiScrapingJobsJobIdImport } from './routes/_layout/scraping-api/scraping-jobs/$jobId'
 import { Route as LayoutScrapingApiScrapingJobsLegacyJobIdImport } from './routes/_layout/scraping-api/scraping-jobs/legacy/$jobId'
 
@@ -102,9 +116,39 @@ const LayoutSettingsRoute = LayoutSettingsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutOrdersRoute = LayoutOrdersImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutOffersRoute = LayoutOffersImport.update({
+  id: '/offers',
+  path: '/offers',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutItemsRoute = LayoutItemsImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutFileExplorerRoute = LayoutFileExplorerImport.update({
   id: '/file-explorer',
   path: '/file-explorer',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutExploreRoute = LayoutExploreImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutCustomersRoute = LayoutCustomersImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -117,6 +161,12 @@ const LayoutCmsRoute = LayoutCmsImport.update({
 const LayoutAdminRoute = LayoutAdminImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutDropshipIndexRoute = LayoutDropshipIndexImport.update({
+  id: '/dropship/',
+  path: '/dropship/',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -144,6 +194,31 @@ const PublicToolsCropRoute = PublicToolsCropImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const LayoutSupplierDashboardRoute = LayoutSupplierDashboardImport.update({
+  id: '/supplier/dashboard',
+  path: '/supplier/dashboard',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutSubmitFormSuccessRoute = LayoutSubmitFormSuccessImport.update({
+  id: '/submit-form/success',
+  path: '/submit-form/success',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutSubmitFormOfferRoute = LayoutSubmitFormOfferImport.update({
+  id: '/submit-form/offer',
+  path: '/submit-form/offer',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutScrapingApiUserAgentsRoute =
+  LayoutScrapingApiUserAgentsImport.update({
+    id: '/scraping-api/user-agents',
+    path: '/scraping-api/user-agents',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+
 const LayoutScrapingApiJobsRoute = LayoutScrapingApiJobsImport.update({
   id: '/scraping-api/jobs',
   path: '/scraping-api/jobs',
@@ -153,6 +228,19 @@ const LayoutScrapingApiJobsRoute = LayoutScrapingApiJobsImport.update({
 const LayoutScrapingApiInsightsRoute = LayoutScrapingApiInsightsImport.update({
   id: '/scraping-api/insights',
   path: '/scraping-api/insights',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutScrapingApiGoogleSerpRoute =
+  LayoutScrapingApiGoogleSerpImport.update({
+    id: '/scraping-api/google-serp',
+    path: '/scraping-api/google-serp',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+
+const LayoutScrapingApiExploreRoute = LayoutScrapingApiExploreImport.update({
+  id: '/scraping-api/explore',
+  path: '/scraping-api/explore',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -184,6 +272,13 @@ const LayoutToolsCropIndexRoute = LayoutToolsCropIndexImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutScrapingApiScrapingJobsIndexRoute =
+  LayoutScrapingApiScrapingJobsIndexImport.update({
+    id: '/scraping-api/scraping-jobs/',
+    path: '/scraping-api/scraping-jobs/',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+
 const LayoutToolsImageLinksUploadRoute =
   LayoutToolsImageLinksUploadImport.update({
     id: '/tools/image-links/upload',
@@ -208,6 +303,12 @@ const LayoutToolsDataWarehouseUploadRoute =
 const LayoutToolsCropUploadRoute = LayoutToolsCropUploadImport.update({
   id: '/tools/crop/upload',
   path: '/tools/crop/upload',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutSupplierOfferFileIdRoute = LayoutSupplierOfferFileIdImport.update({
+  id: '/supplier/offer/$fileId',
+  path: '/supplier/offer/$fileId',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -292,11 +393,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCmsImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/customers': {
+      id: '/_layout/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof LayoutCustomersImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/explore': {
+      id: '/_layout/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof LayoutExploreImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/file-explorer': {
       id: '/_layout/file-explorer'
       path: '/file-explorer'
       fullPath: '/file-explorer'
       preLoaderRoute: typeof LayoutFileExplorerImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/items': {
+      id: '/_layout/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof LayoutItemsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/offers': {
+      id: '/_layout/offers'
+      path: '/offers'
+      fullPath: '/offers'
+      preLoaderRoute: typeof LayoutOffersImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/orders': {
+      id: '/_layout/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof LayoutOrdersImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/settings': {
@@ -320,6 +456,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/scraping-api/explore': {
+      id: '/_layout/scraping-api/explore'
+      path: '/scraping-api/explore'
+      fullPath: '/scraping-api/explore'
+      preLoaderRoute: typeof LayoutScrapingApiExploreImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/scraping-api/google-serp': {
+      id: '/_layout/scraping-api/google-serp'
+      path: '/scraping-api/google-serp'
+      fullPath: '/scraping-api/google-serp'
+      preLoaderRoute: typeof LayoutScrapingApiGoogleSerpImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/scraping-api/insights': {
       id: '/_layout/scraping-api/insights'
       path: '/scraping-api/insights'
@@ -332,6 +482,34 @@ declare module '@tanstack/react-router' {
       path: '/scraping-api/jobs'
       fullPath: '/scraping-api/jobs'
       preLoaderRoute: typeof LayoutScrapingApiJobsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/scraping-api/user-agents': {
+      id: '/_layout/scraping-api/user-agents'
+      path: '/scraping-api/user-agents'
+      fullPath: '/scraping-api/user-agents'
+      preLoaderRoute: typeof LayoutScrapingApiUserAgentsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/submit-form/offer': {
+      id: '/_layout/submit-form/offer'
+      path: '/submit-form/offer'
+      fullPath: '/submit-form/offer'
+      preLoaderRoute: typeof LayoutSubmitFormOfferImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/submit-form/success': {
+      id: '/_layout/submit-form/success'
+      path: '/submit-form/success'
+      fullPath: '/submit-form/success'
+      preLoaderRoute: typeof LayoutSubmitFormSuccessImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/supplier/dashboard': {
+      id: '/_layout/supplier/dashboard'
+      path: '/supplier/dashboard'
+      fullPath: '/supplier/dashboard'
+      preLoaderRoute: typeof LayoutSupplierDashboardImport
       parentRoute: typeof LayoutImport
     }
     '/public/tools/crop': {
@@ -362,11 +540,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicToolsImageLinksImport
       parentRoute: typeof rootRoute
     }
+    '/_layout/dropship/': {
+      id: '/_layout/dropship/'
+      path: '/dropship'
+      fullPath: '/dropship'
+      preLoaderRoute: typeof LayoutDropshipIndexImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/scraping-api/scraping-jobs/$jobId': {
       id: '/_layout/scraping-api/scraping-jobs/$jobId'
       path: '/scraping-api/scraping-jobs/$jobId'
       fullPath: '/scraping-api/scraping-jobs/$jobId'
       preLoaderRoute: typeof LayoutScrapingApiScrapingJobsJobIdImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/supplier/offer/$fileId': {
+      id: '/_layout/supplier/offer/$fileId'
+      path: '/supplier/offer/$fileId'
+      fullPath: '/supplier/offer/$fileId'
+      preLoaderRoute: typeof LayoutSupplierOfferFileIdImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/tools/crop/upload': {
@@ -395,6 +587,13 @@ declare module '@tanstack/react-router' {
       path: '/tools/image-links/upload'
       fullPath: '/tools/image-links/upload'
       preLoaderRoute: typeof LayoutToolsImageLinksUploadImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/scraping-api/scraping-jobs/': {
+      id: '/_layout/scraping-api/scraping-jobs/'
+      path: '/scraping-api/scraping-jobs'
+      fullPath: '/scraping-api/scraping-jobs'
+      preLoaderRoute: typeof LayoutScrapingApiScrapingJobsIndexImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/tools/crop/': {
@@ -440,16 +639,30 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutCmsRoute: typeof LayoutCmsRoute
+  LayoutCustomersRoute: typeof LayoutCustomersRoute
+  LayoutExploreRoute: typeof LayoutExploreRoute
   LayoutFileExplorerRoute: typeof LayoutFileExplorerRoute
+  LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutOffersRoute: typeof LayoutOffersRoute
+  LayoutOrdersRoute: typeof LayoutOrdersRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutScrapingApiExploreRoute: typeof LayoutScrapingApiExploreRoute
+  LayoutScrapingApiGoogleSerpRoute: typeof LayoutScrapingApiGoogleSerpRoute
   LayoutScrapingApiInsightsRoute: typeof LayoutScrapingApiInsightsRoute
   LayoutScrapingApiJobsRoute: typeof LayoutScrapingApiJobsRoute
+  LayoutScrapingApiUserAgentsRoute: typeof LayoutScrapingApiUserAgentsRoute
+  LayoutSubmitFormOfferRoute: typeof LayoutSubmitFormOfferRoute
+  LayoutSubmitFormSuccessRoute: typeof LayoutSubmitFormSuccessRoute
+  LayoutSupplierDashboardRoute: typeof LayoutSupplierDashboardRoute
+  LayoutDropshipIndexRoute: typeof LayoutDropshipIndexRoute
   LayoutScrapingApiScrapingJobsJobIdRoute: typeof LayoutScrapingApiScrapingJobsJobIdRoute
+  LayoutSupplierOfferFileIdRoute: typeof LayoutSupplierOfferFileIdRoute
   LayoutToolsCropUploadRoute: typeof LayoutToolsCropUploadRoute
   LayoutToolsDataWarehouseUploadRoute: typeof LayoutToolsDataWarehouseUploadRoute
   LayoutToolsGoogleImagesUploadRoute: typeof LayoutToolsGoogleImagesUploadRoute
   LayoutToolsImageLinksUploadRoute: typeof LayoutToolsImageLinksUploadRoute
+  LayoutScrapingApiScrapingJobsIndexRoute: typeof LayoutScrapingApiScrapingJobsIndexRoute
   LayoutToolsCropIndexRoute: typeof LayoutToolsCropIndexRoute
   LayoutToolsDataWarehouseIndexRoute: typeof LayoutToolsDataWarehouseIndexRoute
   LayoutToolsGoogleImagesIndexRoute: typeof LayoutToolsGoogleImagesIndexRoute
@@ -460,17 +673,32 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutCmsRoute: LayoutCmsRoute,
+  LayoutCustomersRoute: LayoutCustomersRoute,
+  LayoutExploreRoute: LayoutExploreRoute,
   LayoutFileExplorerRoute: LayoutFileExplorerRoute,
+  LayoutItemsRoute: LayoutItemsRoute,
+  LayoutOffersRoute: LayoutOffersRoute,
+  LayoutOrdersRoute: LayoutOrdersRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutScrapingApiExploreRoute: LayoutScrapingApiExploreRoute,
+  LayoutScrapingApiGoogleSerpRoute: LayoutScrapingApiGoogleSerpRoute,
   LayoutScrapingApiInsightsRoute: LayoutScrapingApiInsightsRoute,
   LayoutScrapingApiJobsRoute: LayoutScrapingApiJobsRoute,
+  LayoutScrapingApiUserAgentsRoute: LayoutScrapingApiUserAgentsRoute,
+  LayoutSubmitFormOfferRoute: LayoutSubmitFormOfferRoute,
+  LayoutSubmitFormSuccessRoute: LayoutSubmitFormSuccessRoute,
+  LayoutSupplierDashboardRoute: LayoutSupplierDashboardRoute,
+  LayoutDropshipIndexRoute: LayoutDropshipIndexRoute,
   LayoutScrapingApiScrapingJobsJobIdRoute:
     LayoutScrapingApiScrapingJobsJobIdRoute,
+  LayoutSupplierOfferFileIdRoute: LayoutSupplierOfferFileIdRoute,
   LayoutToolsCropUploadRoute: LayoutToolsCropUploadRoute,
   LayoutToolsDataWarehouseUploadRoute: LayoutToolsDataWarehouseUploadRoute,
   LayoutToolsGoogleImagesUploadRoute: LayoutToolsGoogleImagesUploadRoute,
   LayoutToolsImageLinksUploadRoute: LayoutToolsImageLinksUploadRoute,
+  LayoutScrapingApiScrapingJobsIndexRoute:
+    LayoutScrapingApiScrapingJobsIndexRoute,
   LayoutToolsCropIndexRoute: LayoutToolsCropIndexRoute,
   LayoutToolsDataWarehouseIndexRoute: LayoutToolsDataWarehouseIndexRoute,
   LayoutToolsGoogleImagesIndexRoute: LayoutToolsGoogleImagesIndexRoute,
@@ -492,21 +720,35 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/cms': typeof LayoutCmsRoute
+  '/customers': typeof LayoutCustomersRoute
+  '/explore': typeof LayoutExploreRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
+  '/items': typeof LayoutItemsRoute
+  '/offers': typeof LayoutOffersRoute
+  '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
+  '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
+  '/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/scraping-api/jobs': typeof LayoutScrapingApiJobsRoute
+  '/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
+  '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
+  '/supplier/dashboard': typeof LayoutSupplierDashboardRoute
   '/public/tools/crop': typeof PublicToolsCropRoute
   '/public/tools/data-warehouse': typeof PublicToolsDataWarehouseRoute
   '/public/tools/google-images': typeof PublicToolsGoogleImagesRoute
   '/public/tools/image-links': typeof PublicToolsImageLinksRoute
+  '/dropship': typeof LayoutDropshipIndexRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
+  '/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/tools/crop/upload': typeof LayoutToolsCropUploadRoute
   '/tools/data-warehouse/upload': typeof LayoutToolsDataWarehouseUploadRoute
   '/tools/google-images/upload': typeof LayoutToolsGoogleImagesUploadRoute
   '/tools/image-links/upload': typeof LayoutToolsImageLinksUploadRoute
+  '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
   '/tools/crop': typeof LayoutToolsCropIndexRoute
   '/tools/data-warehouse': typeof LayoutToolsDataWarehouseIndexRoute
   '/tools/google-images': typeof LayoutToolsGoogleImagesIndexRoute
@@ -523,21 +765,35 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/cms': typeof LayoutCmsRoute
+  '/customers': typeof LayoutCustomersRoute
+  '/explore': typeof LayoutExploreRoute
   '/file-explorer': typeof LayoutFileExplorerRoute
+  '/items': typeof LayoutItemsRoute
+  '/offers': typeof LayoutOffersRoute
+  '/orders': typeof LayoutOrdersRoute
   '/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/': typeof LayoutIndexRoute
+  '/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
+  '/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
   '/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/scraping-api/jobs': typeof LayoutScrapingApiJobsRoute
+  '/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/submit-form/offer': typeof LayoutSubmitFormOfferRoute
+  '/submit-form/success': typeof LayoutSubmitFormSuccessRoute
+  '/supplier/dashboard': typeof LayoutSupplierDashboardRoute
   '/public/tools/crop': typeof PublicToolsCropRoute
   '/public/tools/data-warehouse': typeof PublicToolsDataWarehouseRoute
   '/public/tools/google-images': typeof PublicToolsGoogleImagesRoute
   '/public/tools/image-links': typeof PublicToolsImageLinksRoute
+  '/dropship': typeof LayoutDropshipIndexRoute
   '/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
+  '/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/tools/crop/upload': typeof LayoutToolsCropUploadRoute
   '/tools/data-warehouse/upload': typeof LayoutToolsDataWarehouseUploadRoute
   '/tools/google-images/upload': typeof LayoutToolsGoogleImagesUploadRoute
   '/tools/image-links/upload': typeof LayoutToolsImageLinksUploadRoute
+  '/scraping-api/scraping-jobs': typeof LayoutScrapingApiScrapingJobsIndexRoute
   '/tools/crop': typeof LayoutToolsCropIndexRoute
   '/tools/data-warehouse': typeof LayoutToolsDataWarehouseIndexRoute
   '/tools/google-images': typeof LayoutToolsGoogleImagesIndexRoute
@@ -556,21 +812,35 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/cms': typeof LayoutCmsRoute
+  '/_layout/customers': typeof LayoutCustomersRoute
+  '/_layout/explore': typeof LayoutExploreRoute
   '/_layout/file-explorer': typeof LayoutFileExplorerRoute
+  '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/offers': typeof LayoutOffersRoute
+  '/_layout/orders': typeof LayoutOrdersRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/progress/$jobId': typeof ProgressJobIdRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/scraping-api/explore': typeof LayoutScrapingApiExploreRoute
+  '/_layout/scraping-api/google-serp': typeof LayoutScrapingApiGoogleSerpRoute
   '/_layout/scraping-api/insights': typeof LayoutScrapingApiInsightsRoute
   '/_layout/scraping-api/jobs': typeof LayoutScrapingApiJobsRoute
+  '/_layout/scraping-api/user-agents': typeof LayoutScrapingApiUserAgentsRoute
+  '/_layout/submit-form/offer': typeof LayoutSubmitFormOfferRoute
+  '/_layout/submit-form/success': typeof LayoutSubmitFormSuccessRoute
+  '/_layout/supplier/dashboard': typeof LayoutSupplierDashboardRoute
   '/public/tools/crop': typeof PublicToolsCropRoute
   '/public/tools/data-warehouse': typeof PublicToolsDataWarehouseRoute
   '/public/tools/google-images': typeof PublicToolsGoogleImagesRoute
   '/public/tools/image-links': typeof PublicToolsImageLinksRoute
+  '/_layout/dropship/': typeof LayoutDropshipIndexRoute
   '/_layout/scraping-api/scraping-jobs/$jobId': typeof LayoutScrapingApiScrapingJobsJobIdRoute
+  '/_layout/supplier/offer/$fileId': typeof LayoutSupplierOfferFileIdRoute
   '/_layout/tools/crop/upload': typeof LayoutToolsCropUploadRoute
   '/_layout/tools/data-warehouse/upload': typeof LayoutToolsDataWarehouseUploadRoute
   '/_layout/tools/google-images/upload': typeof LayoutToolsGoogleImagesUploadRoute
   '/_layout/tools/image-links/upload': typeof LayoutToolsImageLinksUploadRoute
+  '/_layout/scraping-api/scraping-jobs/': typeof LayoutScrapingApiScrapingJobsIndexRoute
   '/_layout/tools/crop/': typeof LayoutToolsCropIndexRoute
   '/_layout/tools/data-warehouse/': typeof LayoutToolsDataWarehouseIndexRoute
   '/_layout/tools/google-images/': typeof LayoutToolsGoogleImagesIndexRoute
@@ -590,21 +860,35 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/cms'
+    | '/customers'
+    | '/explore'
     | '/file-explorer'
+    | '/items'
+    | '/offers'
+    | '/orders'
     | '/settings'
     | '/progress/$jobId'
     | '/'
+    | '/scraping-api/explore'
+    | '/scraping-api/google-serp'
     | '/scraping-api/insights'
     | '/scraping-api/jobs'
+    | '/scraping-api/user-agents'
+    | '/submit-form/offer'
+    | '/submit-form/success'
+    | '/supplier/dashboard'
     | '/public/tools/crop'
     | '/public/tools/data-warehouse'
     | '/public/tools/google-images'
     | '/public/tools/image-links'
+    | '/dropship'
     | '/scraping-api/scraping-jobs/$jobId'
+    | '/supplier/offer/$fileId'
     | '/tools/crop/upload'
     | '/tools/data-warehouse/upload'
     | '/tools/google-images/upload'
     | '/tools/image-links/upload'
+    | '/scraping-api/scraping-jobs'
     | '/tools/crop'
     | '/tools/data-warehouse'
     | '/tools/google-images'
@@ -620,21 +904,35 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/cms'
+    | '/customers'
+    | '/explore'
     | '/file-explorer'
+    | '/items'
+    | '/offers'
+    | '/orders'
     | '/settings'
     | '/progress/$jobId'
     | '/'
+    | '/scraping-api/explore'
+    | '/scraping-api/google-serp'
     | '/scraping-api/insights'
     | '/scraping-api/jobs'
+    | '/scraping-api/user-agents'
+    | '/submit-form/offer'
+    | '/submit-form/success'
+    | '/supplier/dashboard'
     | '/public/tools/crop'
     | '/public/tools/data-warehouse'
     | '/public/tools/google-images'
     | '/public/tools/image-links'
+    | '/dropship'
     | '/scraping-api/scraping-jobs/$jobId'
+    | '/supplier/offer/$fileId'
     | '/tools/crop/upload'
     | '/tools/data-warehouse/upload'
     | '/tools/google-images/upload'
     | '/tools/image-links/upload'
+    | '/scraping-api/scraping-jobs'
     | '/tools/crop'
     | '/tools/data-warehouse'
     | '/tools/google-images'
@@ -651,21 +949,35 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/cms'
+    | '/_layout/customers'
+    | '/_layout/explore'
     | '/_layout/file-explorer'
+    | '/_layout/items'
+    | '/_layout/offers'
+    | '/_layout/orders'
     | '/_layout/settings'
     | '/progress/$jobId'
     | '/_layout/'
+    | '/_layout/scraping-api/explore'
+    | '/_layout/scraping-api/google-serp'
     | '/_layout/scraping-api/insights'
     | '/_layout/scraping-api/jobs'
+    | '/_layout/scraping-api/user-agents'
+    | '/_layout/submit-form/offer'
+    | '/_layout/submit-form/success'
+    | '/_layout/supplier/dashboard'
     | '/public/tools/crop'
     | '/public/tools/data-warehouse'
     | '/public/tools/google-images'
     | '/public/tools/image-links'
+    | '/_layout/dropship/'
     | '/_layout/scraping-api/scraping-jobs/$jobId'
+    | '/_layout/supplier/offer/$fileId'
     | '/_layout/tools/crop/upload'
     | '/_layout/tools/data-warehouse/upload'
     | '/_layout/tools/google-images/upload'
     | '/_layout/tools/image-links/upload'
+    | '/_layout/scraping-api/scraping-jobs/'
     | '/_layout/tools/crop/'
     | '/_layout/tools/data-warehouse/'
     | '/_layout/tools/google-images/'
@@ -733,16 +1045,30 @@ export const routeTree = rootRoute
       "children": [
         "/_layout/admin",
         "/_layout/cms",
+        "/_layout/customers",
+        "/_layout/explore",
         "/_layout/file-explorer",
+        "/_layout/items",
+        "/_layout/offers",
+        "/_layout/orders",
         "/_layout/settings",
         "/_layout/",
+        "/_layout/scraping-api/explore",
+        "/_layout/scraping-api/google-serp",
         "/_layout/scraping-api/insights",
         "/_layout/scraping-api/jobs",
+        "/_layout/scraping-api/user-agents",
+        "/_layout/submit-form/offer",
+        "/_layout/submit-form/success",
+        "/_layout/supplier/dashboard",
+        "/_layout/dropship/",
         "/_layout/scraping-api/scraping-jobs/$jobId",
+        "/_layout/supplier/offer/$fileId",
         "/_layout/tools/crop/upload",
         "/_layout/tools/data-warehouse/upload",
         "/_layout/tools/google-images/upload",
         "/_layout/tools/image-links/upload",
+        "/_layout/scraping-api/scraping-jobs/",
         "/_layout/tools/crop/",
         "/_layout/tools/data-warehouse/",
         "/_layout/tools/google-images/",
@@ -776,8 +1102,28 @@ export const routeTree = rootRoute
       "filePath": "_layout/cms.tsx",
       "parent": "/_layout"
     },
+    "/_layout/customers": {
+      "filePath": "_layout/customers.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/explore": {
+      "filePath": "_layout/explore.tsx",
+      "parent": "/_layout"
+    },
     "/_layout/file-explorer": {
       "filePath": "_layout/file-explorer.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/items": {
+      "filePath": "_layout/items.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/offers": {
+      "filePath": "_layout/offers.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/orders": {
+      "filePath": "_layout/orders.tsx",
       "parent": "/_layout"
     },
     "/_layout/settings": {
@@ -791,12 +1137,36 @@ export const routeTree = rootRoute
       "filePath": "_layout/index.tsx",
       "parent": "/_layout"
     },
+    "/_layout/scraping-api/explore": {
+      "filePath": "_layout/scraping-api/explore.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/scraping-api/google-serp": {
+      "filePath": "_layout/scraping-api/google-serp.tsx",
+      "parent": "/_layout"
+    },
     "/_layout/scraping-api/insights": {
       "filePath": "_layout/scraping-api/insights.tsx",
       "parent": "/_layout"
     },
     "/_layout/scraping-api/jobs": {
       "filePath": "_layout/scraping-api/jobs.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/scraping-api/user-agents": {
+      "filePath": "_layout/scraping-api/user-agents.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/submit-form/offer": {
+      "filePath": "_layout/submit-form/offer.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/submit-form/success": {
+      "filePath": "_layout/submit-form/success.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/supplier/dashboard": {
+      "filePath": "_layout/supplier/dashboard.tsx",
       "parent": "/_layout"
     },
     "/public/tools/crop": {
@@ -811,8 +1181,16 @@ export const routeTree = rootRoute
     "/public/tools/image-links": {
       "filePath": "public/tools/image-links.tsx"
     },
+    "/_layout/dropship/": {
+      "filePath": "_layout/dropship/index.tsx",
+      "parent": "/_layout"
+    },
     "/_layout/scraping-api/scraping-jobs/$jobId": {
       "filePath": "_layout/scraping-api/scraping-jobs/$jobId.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/supplier/offer/$fileId": {
+      "filePath": "_layout/supplier/offer/$fileId.tsx",
       "parent": "/_layout"
     },
     "/_layout/tools/crop/upload": {
@@ -829,6 +1207,10 @@ export const routeTree = rootRoute
     },
     "/_layout/tools/image-links/upload": {
       "filePath": "_layout/tools/image-links/upload.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/scraping-api/scraping-jobs/": {
+      "filePath": "_layout/scraping-api/scraping-jobs/index.tsx",
       "parent": "/_layout"
     },
     "/_layout/tools/crop/": {
