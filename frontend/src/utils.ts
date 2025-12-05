@@ -51,3 +51,24 @@ export const handleError = (err: ApiError, showToast: any) => {
   }
   showToast("Error", errorMessage, "error")
 }
+
+export const showDevUI = () => {
+  return (
+    typeof window !== "undefined" &&
+    window.location.hostname.includes("localhost")
+  )
+}
+
+const isDevEnvironment = () => {
+  if (typeof window === "undefined") return false
+  const params = new URLSearchParams(window.location.search)
+  return params.get("environment") === "dev"
+}
+
+export const SERVER_URL = isDevEnvironment()
+  ? "https://dev-external.iconluxury.today"
+  : "https://external.iconluxury.group"
+
+export const EXTERNAL_API_BASE = isDevEnvironment()
+  ? "https://dev-external.iconluxury.today"
+  : "https://external.iconluxury.group"

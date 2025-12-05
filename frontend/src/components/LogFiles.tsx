@@ -1,37 +1,40 @@
-// src/components/LogFiles.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "@tanstack/react-router"
+import debounce from "lodash/debounce"
+import { Download, Loader2, RefreshCw } from "lucide-react"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import useCustomToast from "./../hooks/useCustomToast"
+import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
 import {
-  Box,
-  Text,
-  Flex,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Spinner,
-  Button,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table"
+import {
   Tooltip,
-} from "@chakra-ui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import useCustomToast from "./../hooks/useCustomToast"; // Ensure path is correct
-import debounce from "lodash/debounce";
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip"
 
 interface LogFile {
-  fileId: string;
-  fileName: string;
-  url: string | null;
-  lastModified: string;
-  entries: LogEntry[] | null; // Not used here, but kept for consistency
+  fileId: string
+  fileName: string
+  url: string | null
+  lastModified: string
+  entries: LogEntry[] | null
 }
 
 interface LogEntry {
-  timestamp: string;
-  endpoint: string;
-  query: string;
-  status: "success" | "error";
-  responseTime: number;
+  timestamp: string
+  endpoint: string
+  query: string
+  status: "success" | "error"
+  responseTime: number
 }
 
 const logFileUrls = [
@@ -52,121 +55,147 @@ const logFileUrls = [
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_79.log",
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_80.log",
   "https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/job_logs/job_82.log",
-];
+]
 
 const LogFiles: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [logFiles, setLogFiles] = useState<LogFile[]>([]);
-  const showToast = useCustomToast();
+  const [isLoading, setIsLoading] = useState(true)
+  const [logFiles, setLogFiles] = useState<LogFile[]>([])
+  const showToast = useCustomToast()
 
   const initializeLogFiles = () => {
     const initialLogFiles = logFileUrls.map((url, index) => {
-      const jobId = parseInt(url?.split("/").pop()?.replace("job_", "").replace(".log", "") || `${index + 3}`, 10);
-      const fileName = url ? url.split("/").pop() || `job_${jobId}.log` : `job_${jobId}.log`;
-      const fileId = fileName.replace(".log", "");
+      const jobId = Number.parseInt(
+        url?.split("/").pop()?.replace("job_", "").replace(".log", "") ||
+          `${index + 3}`,
+        10,
+      )
+      const fileName = url
+        ? url.split("/").pop() || `job_${jobId}.log`
+        : `job_${jobId}.log`
+      const fileId = fileName.replace(".log", "")
       return {
         fileId,
         fileName,
         url,
         lastModified: new Date(Date.now() - index * 86400000).toISOString(),
         entries: null,
-      };
-    });
-    setLogFiles(initialLogFiles);
-    setIsLoading(false);
-  };
+      }
+    })
+    setLogFiles(initialLogFiles)
+    setIsLoading(false)
+  }
 
   const debouncedFetchLogFiles = useCallback(
     debounce(() => {
-      setIsLoading(true);
-      setLogFiles([]);
-      initializeLogFiles();
+      setIsLoading(true)
+      setLogFiles([])
+      initializeLogFiles()
     }, 500),
-    []
-  );
+    [],
+  )
 
   useEffect(() => {
-    initializeLogFiles();
-  }, []);
+    initializeLogFiles()
+  }, [])
 
   const handleDownload = (url: string | null) => {
-    if (url) { // Explicitly check for null and narrow type to string
-      window.open(url, "_blank");
-      showToast("File Opened", `Opened ${url.split("/").pop()} in new tab`, "info");
+    if (url) {
+      window.open(url, "_blank")
+      showToast(
+        "File Opened",
+        `Opened ${url.split("/").pop()} in new tab`,
+        "info",
+      )
     }
-  };
+  }
 
   return (
-    <Box p={4} width="100%">
-      <Flex justify="space-between" align="center" mb={4}>
-        <Text fontSize="lg" fontWeight="bold">Log Files</Text>
-        <Flex gap={2}>
-          <Tooltip label="Refresh log files">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={debouncedFetchLogFiles}
-              isLoading={isLoading}
-            >
-              Refresh
-            </Button>
-          </Tooltip>
-          <Button
-            size="sm"
-            colorScheme="teal"
-            as={Link}
-            to="/scraping-api/log-details"
-          >
-            View Details
+    <div className="p-4 w-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold">Log Files</h2>
+        <div className="flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={debouncedFetchLogFiles}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Refresh</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh log files</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button size="sm" asChild>
+            <Link to="/scraping-api/log-details">View Details</Link>
           </Button>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
 
       {isLoading ? (
-        <Flex justify="center" align="center" h="200px">
-          <Spinner size="xl" color="blue.500" />
-          <Text ml={4}>Loading log files...</Text>
-        </Flex>
+        <div className="flex justify-center items-center h-[200px]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <span className="ml-4 text-muted-foreground">
+            Loading log files...
+          </span>
+        </div>
       ) : logFiles.length === 0 ? (
-        <Text color="gray.500" textAlign="center">
+        <div className="text-center text-muted-foreground">
           No log files available.
-        </Text>
+        </div>
       ) : (
-        <Box shadow="md" borderWidth="1px" borderRadius="md" overflowX="auto">
-          <Table variant="simple" size="sm">
-            <Thead>
-              <Tr>
-                <Th>File Name</Th>
-                <Th>Last Modified</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {logFiles.map((file) => (
-                <Tr key={file.fileId}>
-                  <Td>{file.fileName}</Td>
-                  <Td>{new Date(file.lastModified).toLocaleString()}</Td>
-                  <Td>
-                    {file.url ? (
-                      <Button
-                        size="xs"
-                        colorScheme="teal"
-                        onClick={() => handleDownload(file.url)}
-                      >
-                        Download
-                      </Button>
-                    ) : (
-                      <Text fontSize="xs" color="gray.500">No file</Text>
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Last Modified</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logFiles.map((file) => (
+                  <TableRow key={file.fileId}>
+                    <TableCell>{file.fileName}</TableCell>
+                    <TableCell>
+                      {new Date(file.lastModified).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      {file.url ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDownload(file.url)}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          No file
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
-    </Box>
-  );
-};
+    </div>
+  )
+}
 
-export default LogFiles;
+export default LogFiles

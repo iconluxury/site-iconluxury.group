@@ -1,0 +1,109 @@
+import { DataWarehouseForm } from "@/components/google-serp/DataWarehouseForm"
+import {
+  DATA_WAREHOUSE_MODE_CONFIG,
+  SERVER_URL as INITIAL_SERVER_URL,
+} from "@/components/google-serp/constants"
+import type { DataWarehouseMode } from "@/components/google-serp/types"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { ArrowLeft } from "lucide-react"
+import { useState } from "react"
+import { LuDatabase, LuFileText } from "react-icons/lu"
+
+export const Route = createFileRoute("/public/tools/data-warehouse")({
+  component: DataWarehousePage,
+})
+
+function DataWarehousePage() {
+  const [mode, setMode] = useState<DataWarehouseMode | null>(null)
+  const [serverUrl, setServerUrl] = useState(INITIAL_SERVER_URL)
+  const navigate = useNavigate()
+
+  if (mode) {
+    return (
+      <DataWarehouseForm
+        mode={mode}
+        onBack={() => setMode(null)}
+        backLabel="Back to Data Warehouse options"
+      />
+    )
+  }
+
+  return (
+    <div className="w-full p-4 bg-background text-foreground min-h-screen">
+      <div className="flex flex-col gap-6 items-stretch">
+        <div className="grid grid-cols-3 items-center">
+          <div className="flex items-center justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: "/google-serp-cms" })}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tools
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <h1 className="text-xl font-bold">Data Warehouse</h1>
+          </div>
+          <div className="flex items-center justify-end gap-4">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => window.open(`https://cms.rtsplusdev.com/webadmin/ImageScraperList.asp`, "_blank")}
+            >
+              <LuFileText className="h-4 w-4" />
+              Jobs History
+            </Button>
+            <a
+              href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="gap-2">
+                <LuDatabase className="h-4 w-4" />
+                Search Warehouse
+              </Button>
+            </a>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {(Object.keys(DATA_WAREHOUSE_MODE_CONFIG) as DataWarehouseMode[]).map(
+            (key) => {
+              const config = DATA_WAREHOUSE_MODE_CONFIG[key]
+              const Icon = config.icon
+              return (
+                <Card
+                  key={key}
+                  className="cursor-pointer hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-shadow"
+                  onClick={() => setMode(key)}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Icon className="h-6 w-6 text-blue-500" />
+                      {config.label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-500">
+                      {config.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            },
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

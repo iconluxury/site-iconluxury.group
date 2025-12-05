@@ -1,67 +1,85 @@
+import { Edit, MoreVertical, Trash } from "lucide-react"
+import { useState } from "react"
+import { Button } from "../ui/button"
 import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { FiEdit, FiTrash } from "react-icons/fi";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu"
 
-import type { ItemPublic, UserPublic } from "../../client";
-import EditUser from "../Admin/EditUser";
-import EditItem from "../Items/EditItem";
-import Delete from "./DeleteAlert";
+import type { ItemPublic, UserPublic } from "../../client"
+import EditUser from "../Admin/EditUser"
+import EditItem from "../Items/EditItem"
+import Delete from "./DeleteAlert"
 
 interface UserActionsMenuProps {
-  type: "User";
-  value: UserPublic;
-  disabled?: boolean;
+  type: "User"
+  value: UserPublic
+  disabled?: boolean
 }
 
 interface ItemActionsMenuProps {
-  type: "Item";
-  value: ItemPublic;
-  disabled?: boolean;
+  type: "Item"
+  value: ItemPublic
+  disabled?: boolean
 }
 
-type ActionsMenuProps = UserActionsMenuProps | ItemActionsMenuProps;
+type ActionsMenuProps = UserActionsMenuProps | ItemActionsMenuProps
 
 const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
-  const editModal = useDisclosure();
-  const deleteModal = useDisclosure();
+  const [editIsOpen, setEditIsOpen] = useState(false)
+  const [deleteIsOpen, setDeleteIsOpen] = useState(false)
 
   return (
     <>
-      <Menu>
-        <MenuButton
-          isDisabled={disabled}
-          as={Button}
-          rightIcon={<BsThreeDotsVertical />}
-          variant="unstyled"
-        />
-        <MenuList>
-          <MenuItem onClick={editModal.onOpen} icon={<FiEdit fontSize="16px" />}>
-            Edit {type}
-          </MenuItem>
-          <MenuItem
-            onClick={deleteModal.onOpen}
-            icon={<FiTrash fontSize="16px" />}
-            color="ui.danger"
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            disabled={disabled}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 p-0"
           >
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setEditIsOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit {type}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setDeleteIsOpen(true)}
+            className="text-red-600 focus:text-red-600 focus:bg-red-100"
+          >
+            <Trash className="mr-2 h-4 w-4" />
             Delete {type}
-          </MenuItem>
-        </MenuList>
-        {type === "User" ? (
-          <EditUser user={value} isOpen={editModal.isOpen} onClose={editModal.onClose} />
-        ) : (
-          <EditItem item={value} isOpen={editModal.isOpen} onClose={editModal.onClose} />
-        )}
-        <Delete type={type} id={value.id} isOpen={deleteModal.isOpen} onClose={deleteModal.onClose} />
-      </Menu>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {type === "User" ? (
+        <EditUser
+          user={value}
+          isOpen={editIsOpen}
+          onClose={() => setEditIsOpen(false)}
+        />
+      ) : (
+        <EditItem
+          item={value}
+          isOpen={editIsOpen}
+          onClose={() => setEditIsOpen(false)}
+        />
+      )}
+      <Delete
+        type={type}
+        id={value.id}
+        isOpen={deleteIsOpen}
+        onClose={() => setDeleteIsOpen(false)}
+      />
     </>
-  );
-};
+  )
+}
 
-export default ActionsMenu;
+export default ActionsMenu

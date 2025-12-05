@@ -1,89 +1,65 @@
-import {
-  Box,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerOverlay,
-  Flex,
-  IconButton,
-  Image,
-  Link,
-  Text,
-} from "@chakra-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { FiMenu } from "react-icons/fi";
-import Logo from "/assets/images/lm-logo-blk.svg";
-import type { UserPublic } from "../../client";
-import { useDisclosure } from "@chakra-ui/react";
-import SidebarItems from "./SidebarItems";
+import { useQueryClient } from "@tanstack/react-query"
+import { Menu } from "lucide-react"
+import { useState } from "react"
+import type { UserPublic } from "../../client"
+import { Button } from "../ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet"
+import SidebarItems from "./SidebarItems"
 
 const Sidebar = () => {
-  const queryClient = useQueryClient();
-  const bgColor = "gray.100"; // Matches theme's .sidebar background
-  const textColor = "gray.800"; // Matches theme's text color
-  const accentColor = "ui.main"; // Yellow accent from theme
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const queryClient = useQueryClient()
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
       {/* Mobile */}
-      <IconButton
-        onClick={onOpen}
-        display={{ base: "flex", md: "none" }}
-        aria-label="Open Menu"
-        position="absolute"
-        fontSize="20px"
-        m={4}
-        color={accentColor}
-        icon={<FiMenu />}
-      />
-      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
-        <DrawerOverlay />
-        <DrawerContent maxW="250px">
-          <DrawerCloseButton color={textColor} />
-          <DrawerBody py={8} bg="ui.light" className="sidebar">
-            <Flex flexDir="column" h="100%">
-              <Box>
-                <Link href="https://dashboard.iconluxury.group">
-                  <Image src={Logo} alt="Logo" p={6} />
-                </Link>
-                <SidebarItems onClose={onClose} />
-              </Box>
-            </Flex>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden absolute top-4 left-4 text-primary"
+            aria-label="Open Menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          className="w-[250px] p-0 bg-background sidebar"
+        >
+          <div className="flex flex-col h-full py-8 px-4">
+            <div>
+              <a
+                href="https://dashboard.iconluxury.group"
+                className="block mb-6"
+              >
+                <span className="text-lg font-bold p-4 block text-primary">
+                  ICON LUXURY GROUP
+                </span>
+              </a>
+              <SidebarItems onClose={() => setIsOpen(false)} />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Desktop */}
-      <Box
-        bg={bgColor}
-        p={3}
-        h="100%"
-        position="sticky"
-        top="0"
-        display={{ base: "none", md: "flex" }}
-        className="sidebar"
-      >
-        <Flex
-          flexDir="column"
-          justify="space-between"
-          p={4}
-          borderRadius="md"
-          boxShadow="card"
-          w="250px"
-        >
-          <Box>
-            <Link href="https://dashboard.iconluxury.group">
-              <Image src={Logo} alt="Logo" w="180px" maxW="2xs" p={6} />
-            </Link>
+      <div className="hidden md:flex bg-muted/40 p-3 h-full sticky top-0 sidebar">
+        <div className="flex flex-col justify-between p-4 rounded-md shadow-sm w-[250px] bg-card h-full">
+          <div>
+            <a href="https://dashboard.iconluxury.group" className="block mb-6">
+              <span className="text-lg font-bold p-4 block text-primary">
+                ICON LUXURY GROUP
+              </span>
+            </a>
             <SidebarItems />
-          </Box>
-        </Flex>
-      </Box>
+          </div>
+        </div>
+      </div>
     </>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar
