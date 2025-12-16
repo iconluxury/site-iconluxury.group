@@ -265,21 +265,23 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
       if (field && !ALL_COLUMNS.includes(field)) return
       updateSheetConfig(activeSheetIndex, (sheet) => {
         const newMapping = { ...sheet.columnMapping }
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (
-            newMapping[key] === index &&
-            key !== "readImage" &&
-            key !== "imageAdd"
-          ) {
-            newMapping[key] = null
-            if (key === "brand") {
-              setManualBrand("")
-              setIsManualBrandApplied(false)
+        if (index !== -1) {
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+            if (
+              newMapping[key] === index &&
+              key !== "readImage" &&
+              key !== "imageAdd"
+            ) {
+              newMapping[key] = null
+              if (key === "brand") {
+                setManualBrand("")
+                setIsManualBrandApplied(false)
+              }
             }
-          }
-        })
+          })
+        }
         if (field && ALL_COLUMNS.includes(field)) {
-          newMapping[field as keyof ColumnMapping] = index
+          newMapping[field as keyof ColumnMapping] = index === -1 ? null : index
           if (field === "brand") {
             setManualBrand("")
             setIsManualBrandApplied(false)
@@ -730,6 +732,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
             "CategoryColImage",
             indexToColumnLetter(mapping.category),
           )
+        }
+        if (mapping.msrp !== null) {
+          formData.append("msrpColImage", indexToColumnLetter(mapping.msrp))
         }
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
@@ -1230,7 +1235,12 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                               : ""
                           }
                           onChange={(e) =>
-                            handleDataColumnMap(Number(e.target.value), field)
+                            handleDataColumnMap(
+                              e.target.value === ""
+                                ? -1
+                                : Number(e.target.value),
+                              field,
+                            )
                           }
                           onFocus={() => setActiveMappingField(field)}
                           onClick={() => setActiveMappingField(field)}
@@ -1310,7 +1320,9 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
                               }
                               onChange={(e) =>
                                 handleDataColumnMap(
-                                  Number(e.target.value),
+                                  e.target.value === ""
+                                    ? -1
+                                    : Number(e.target.value),
                                   field,
                                 )
                               }

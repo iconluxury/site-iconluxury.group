@@ -874,17 +874,19 @@ const ReformatExcelForm: React.FC = () => {
         const newMapping = cloneColumnMapping(workingSheet.columnMapping)
 
         // Unmap any other field that is currently mapped to this index
-        ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
-          if (newMapping[key] === index) {
-            newMapping[key] = null
-          }
-        })
+        if (index !== -1) {
+          ;(Object.keys(newMapping) as (keyof ColumnMapping)[]).forEach((key) => {
+            if (newMapping[key] === index) {
+              newMapping[key] = null
+            }
+          })
+        }
 
         // Set the new mapping
         if (field) {
-          newMapping[field as keyof ColumnMapping] = index
+          newMapping[field as keyof ColumnMapping] = index === -1 ? null : index
           if (field === "readImage") {
-            newMapping.imageAdd = index
+            newMapping.imageAdd = index === -1 ? null : index
           }
         }
 
@@ -1229,6 +1231,9 @@ const ReformatExcelForm: React.FC = () => {
             "CategoryColImage",
             indexToColumnLetter(mapping.category),
           )
+        }
+        if (mapping.msrp !== null) {
+          formData.append("msrpColImage", indexToColumnLetter(mapping.msrp))
         }
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
@@ -1617,7 +1622,10 @@ const ReformatExcelForm: React.FC = () => {
                                     : ""
                                 }
                                 onValueChange={(val) =>
-                                  handleColumnMap(Number(val), field)
+                                  handleColumnMap(
+                                    val === "unmapped" ? -1 : Number(val),
+                                    field,
+                                  )
                                 }
                                 disabled={isManualApplied}
                               >
@@ -1767,7 +1775,10 @@ const ReformatExcelForm: React.FC = () => {
                                   : ""
                               }
                               onValueChange={(val) =>
-                                handleColumnMap(Number(val), field)
+                                handleColumnMap(
+                                  val === "unmapped" ? -1 : Number(val),
+                                  field,
+                                )
                               }
                             >
                               <SelectTrigger
