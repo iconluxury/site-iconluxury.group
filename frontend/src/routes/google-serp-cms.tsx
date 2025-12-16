@@ -169,7 +169,7 @@ function GoogleSerpCmsPage() {
         </Link>
 
         {/* Coming Soon */}
-        <Card className="bg-muted/50 border-dashed h-full">
+        {/* <Card className="bg-muted/50 border-dashed h-full">
           <CardHeader>
             <CardTitle>Coming Soon</CardTitle>
             <CardDescription>
@@ -194,7 +194,7 @@ function GoogleSerpCmsPage() {
               <span>PDF Transform</span>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <footer className="mt-auto py-6 border-t">
