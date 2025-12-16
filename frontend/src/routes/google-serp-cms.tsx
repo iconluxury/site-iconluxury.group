@@ -197,32 +197,7 @@ function GoogleSerpCmsPage() {
         </Card> */}
       </div>
 
-      <footer className="mt-auto py-6 border-t">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <div className="flex gap-4">
-            <a
-              href="https://dashboard.iconluxury.group/google-serp-cms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-             Legacy upload
-            </a>
-            <span>|</span>
-            <a
-              href="https://dashboard.iconluxury.group/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              Scraper Admin
-            </a>
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} Icon Luxury Group. All rights reserved.
-          </div>
-        </div>
-      </footer>
+  
     </div>
   )
 }
