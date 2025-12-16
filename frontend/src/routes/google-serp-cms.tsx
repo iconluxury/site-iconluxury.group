@@ -53,7 +53,7 @@ function GoogleSerpCmsPage() {
     <div className="bg-white min-h-screen text-gray-900">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             variant="outline"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -61,7 +61,7 @@ function GoogleSerpCmsPage() {
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
-          </Button>
+          </Button> */}
           {environment === "dev" && (
             <Card className="bg-yellow-100 border-yellow-400 text-yellow-800 px-4 py-2 flex items-center">
               <span className="font-bold text-sm">DEV ENVIRONMENT</span>
