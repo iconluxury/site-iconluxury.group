@@ -994,14 +994,10 @@ export const DataWarehouseForm: React.FC<DataWarehouseFormProps> = ({
           </div>
 
         {step === "upload" && (
-          <Card className="bg-card">
-            <CardContent className="p-6">
-              <UploadStep
-                onFileChange={handleFileChange}
-                isLoading={isLoading}
-              />
-            </CardContent>
-          </Card>
+          <UploadStep
+            onFileChange={handleFileChange}
+            isLoading={isLoading}
+          />
         )}
 
         {step === "preview" && (
