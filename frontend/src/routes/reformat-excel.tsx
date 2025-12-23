@@ -381,7 +381,7 @@ const SubmitStep: React.FC<{
                           {isDev && isReady && (
                             <div className="mt-2 max-w-[400px]">
                               <CurlDisplay
-                                url={`${serverUrl}/submitImage`}
+                                url={`${serverUrl}/reformatExcel`}
                                 method="POST"
                                 formDataEntries={{
                                   fileUploadImage: uploadedFile
@@ -1245,7 +1245,7 @@ const ReformatExcelForm: React.FC = () => {
         formData.append("isAiMode", "false")
         formData.append("skipDataWarehouse", "false")
 
-        const response = await fetch(`${serverUrl}/submitImage`, {
+        const response = await fetch(`${serverUrl}/reformatExcel`, {
           method: "POST",
           body: formData,
         })
