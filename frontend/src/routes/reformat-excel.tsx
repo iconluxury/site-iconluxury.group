@@ -432,6 +432,9 @@ const SubmitStep: React.FC<{
                                   header_index: String(sheet.headerIndex + 1),
                                   sendToEmail: sendToEmail,
                                   currency: currency,
+                                  isIconDistro: "false",
+                                  isAiMode: "false",
+                                  skipDataWarehouse: "false",
                                 }}
                               />
                             </div>
@@ -1238,6 +1241,9 @@ const ReformatExcelForm: React.FC = () => {
         formData.append("header_index", String(sheet.headerIndex + 1))
         formData.append("sendToEmail", sendToEmail)
         formData.append("currency", currency)
+        formData.append("isIconDistro", "false")
+        formData.append("isAiMode", "false")
+        formData.append("skipDataWarehouse", "false")
 
         const response = await fetch(`${serverUrl}/submitImage`, {
           method: "POST",
