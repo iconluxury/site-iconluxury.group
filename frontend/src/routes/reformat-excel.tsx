@@ -54,8 +54,8 @@ type ColumnType =
   | "color"
   | "msrp"
   | "gender"
-  | "size"
-  | "qty"
+  | "sizeStart"
+  | "sizeEnd"
   | "price"
 
 const MAX_PREVIEW_ROWS = 20
@@ -89,8 +89,8 @@ const GOOGLE_IMAGES_OPTIONAL_COLUMNS: ColumnType[] = [
   "color",
   "msrp",
   "gender",
-  "size",
-  "qty",
+  "sizeStart",
+  "sizeEnd",
   "price",
 ]
 const GOOGLE_IMAGES_ALL_COLUMNS: ColumnType[] = [
@@ -114,8 +114,8 @@ const createEmptyColumnMapping = (): ColumnMapping => ({
   color: null,
   msrp: null,
   gender: null,
-  size: null,
-  qty: null,
+  sizeStart: null,
+  sizeEnd: null,
   price: null,
   readImage: null,
   imageAdd: null,
@@ -133,8 +133,8 @@ const cloneColumnMapping = (mapping: ColumnMapping): ColumnMapping => ({
   color: mapping.color,
   msrp: mapping.msrp,
   gender: mapping.gender,
-  size: mapping.size,
-  qty: mapping.qty,
+  sizeStart: mapping.sizeStart,
+  sizeEnd: mapping.sizeEnd,
   price: mapping.price,
   readImage: mapping.readImage,
   imageAdd: mapping.imageAdd,
@@ -518,8 +518,8 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
     color: null,
     msrp: null,
     gender: null,
-    size: null,
-    qty: null,
+    sizeStart: null,
+    sizeEnd: null,
     price: null,
     readImage: null,
     imageAdd: null,
@@ -531,8 +531,8 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
     msrp: /^(msrp|manufacturer\s*suggested\s*retail\s*price|list\s*price|suggested\s*retail)/i,
     image: /^(image|photo|picture|img|readImage|imageAdd)/i,
     gender: /^(gender|sex)/i,
-    size: /^(size)/i,
-    qty: /^(qty|quantity)/i,
+    sizeStart: /^(size|size\s*start)/i,
+    sizeEnd: /^(size\s*end)/i,
     price: /^(price|cost)/i,
   }
   headers.forEach((header, index) => {
@@ -546,10 +546,10 @@ const autoMapColumns = (headers: string[]): ColumnMapping => {
       mapping.msrp = index
     else if (patterns.gender.test(normalizedHeader) && mapping.gender === null)
       mapping.gender = index
-    else if (patterns.size.test(normalizedHeader) && mapping.size === null)
-      mapping.size = index
-    else if (patterns.qty.test(normalizedHeader) && mapping.qty === null)
-      mapping.qty = index
+    else if (patterns.sizeStart.test(normalizedHeader) && mapping.sizeStart === null)
+      mapping.sizeStart = index
+    else if (patterns.sizeEnd.test(normalizedHeader) && mapping.sizeEnd === null)
+      mapping.sizeEnd = index
     else if (patterns.price.test(normalizedHeader) && mapping.price === null)
       mapping.price = index
     else if (
@@ -676,8 +676,8 @@ const ReformatExcelForm: React.FC = () => {
     "color",
     "msrp",
     "gender",
-    "size",
-    "qty",
+    "sizeStart",
+    "sizeEnd",
     "price",
   ]
   const DISPLAY_ORDER: (ColumnType | "readImage")[] = [
@@ -687,8 +687,8 @@ const ReformatExcelForm: React.FC = () => {
     "style",
     "color",
     "category",
-    "size",
-    "qty",
+    "sizeStart",
+    "sizeEnd",
     "price",
     "msrp",
   ]
@@ -698,8 +698,8 @@ const ReformatExcelForm: React.FC = () => {
     "gender",
     "color",
     "category",
-    "size",
-    "qty",
+    "sizeStart",
+    "sizeEnd",
     "price",
     "msrp",
   ]
@@ -1588,7 +1588,11 @@ const ReformatExcelForm: React.FC = () => {
                     ? "Picture"
                     : field === "color"
                       ? "Color"
-                      : field.charAt(0).toUpperCase() + field.slice(1)
+                      : field === "sizeStart"
+                        ? "Size Start"
+                        : field === "sizeEnd"
+                          ? "Size End"
+                          : field.charAt(0).toUpperCase() + field.slice(1)
 
                 const isManualField = ["brand", "gender", "category"].includes(
                   field,
