@@ -79,16 +79,6 @@ function GoogleSerpCmsPage() {
               Jobs History
             </Button>
           </a>
-          <a
-            href="https://cms.rtsplusdev.com/webadmin/IconWarehouse.asp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline" className="gap-2">
-              <LuDatabase className="h-4 w-4" />
-              Search Warehouse
-            </Button>
-          </a>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -124,7 +114,7 @@ function GoogleSerpCmsPage() {
                 <CardTitle>Data Warehouse</CardTitle>
               </div>
               <CardDescription>
-                Manage and process data warehouse entries.
+                Search data warehouse entries.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -143,7 +133,7 @@ function GoogleSerpCmsPage() {
                 <CardTitle>Image Links</CardTitle>
               </div>
               <CardDescription>
-                Process and validate image links.
+                Convert image URLs to Excel format.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -162,7 +152,7 @@ function GoogleSerpCmsPage() {
                 <CardTitle>Crop Tool</CardTitle>
               </div>
               <CardDescription>
-                Crop and adjust images for production.
+                Crop Excel images.
               </CardDescription>
             </CardHeader>
           </Card>
